@@ -15,7 +15,7 @@ interface HeaderProps {
 
 export default function Header({ onToggleSidebar, onOpenCreateTeam }: HeaderProps) {
   return (
-    <header className="h-16 border-b border-white/5 bg-[#0B0D10]/80 backdrop-blur-md sticky top-0 z-20 px-8 flex items-center justify-between">
+    <header className="h-16 border-b-2 border-border bg-surface sticky top-0 z-20 px-8 flex items-center justify-between">
       <div className="flex items-center gap-4">
         <SidebarToggle onToggle={onToggleSidebar} />
       </div>
@@ -25,7 +25,6 @@ export default function Header({ onToggleSidebar, onOpenCreateTeam }: HeaderProp
           <InviteRewardButton />
           <CoinsVipButton />
         </div>
-
         <HeaderSearch />
         <LanguageMenu />
         <NotificationButton />

@@ -14,15 +14,18 @@ export default function DashboardGroupLayout({
   const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0B0D10] text-white flex">
+    <div className="min-h-screen bg-background text-text-primary flex">
       <DashboardSidebar isOpen={isSidebarOpen} />
 
-      <main className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${isSidebarOpen ? "ml-64" : "ml-20"}`}>
+      <main
+        className={`flex-1 flex flex-col min-h-screen transition-all duration-(--duration-medium) ${
+          isSidebarOpen ? "ml-64" : "ml-20"
+        }`}
+      >
         <Header
           onToggleSidebar={() => setIsSidebarOpen((v) => !v)}
           onOpenCreateTeam={() => setIsCreateTeamOpen(true)}
         />
-
         <div className="flex-1 p-8 overflow-y-auto">{children}</div>
       </main>
 

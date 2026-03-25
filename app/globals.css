@@ -1,6 +1,160 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #0B0D10;
-  --color-surface: #0F1115;
+  /* ── Soft Brutalism 色彩系统 ── */
+  --color-background: #FAF9F4;
+  --color-surface: #FFFFFF;
+  --color-surface-hover: #F5F4EE;
+
+  /* 实色块调色盘 */
+  --color-accent: #FF6B6B;
+  --color-accent-hover: #FF5252;
+  --color-yellow: #FFD93D;
+  --color-teal: #4ECDC4;
+  --color-green: #6BCB77;
+  --color-purple: #C77DFF;
+  --color-blue: #74B9FF;
+  --color-pink: #FFB3C6;
+
+  /* 文字 */
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #5A5A5A;
+  --color-text-muted: #9A9A9A;
+
+  /* Brutalist 核心：黑色粗边框 */
+  --color-border: #1A1A1A;
+  --color-border-light: rgba(26, 26, 26, 0.12);
+
+  --color-success: #6BCB77;
+  --color-warning: #FFD93D;
+  --color-error: #FF6B6B;
+
+  /* ── 字体 ── */
+  --font-body: "Rubik", system-ui, sans-serif;
+
+  /* ── 动画 ── */
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.25, 0.8, 0.25, 1);
+  --duration-medium: 180ms;
+  --duration-fast: 100ms;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+::selection {
+  background: var(--color-yellow);
+  color: var(--color-text-primary);
+}
+
+/* ══════════════════════════════════
+   Brutalist 核心：粗边框 + 偏移投影
+══════════════════════════════════ */
+
+.brut-card {
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 4px 4px 0px var(--color-border);
+  transition: transform var(--duration-fast) var(--ease-smooth),
+              box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.brut-card:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 6px 6px 0px var(--color-border);
+}
+
+.brut-card:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px var(--color-border);
+}
+
+.brut-btn {
+  border: 2px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: 4px 4px 0px var(--color-border);
+  font-weight: 700;
+  transition: transform var(--duration-fast) var(--ease-smooth),
+              box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.brut-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px var(--color-border);
+}
+
+.brut-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px var(--color-border);
+}
+
+.brut-btn-pill {
+  border: 2px solid var(--color-border);
+  border-radius: 999px;
+  box-shadow: 4px 4px 0px var(--color-border);
+  font-weight: 700;
+  transition: transform var(--duration-fast) var(--ease-smooth),
+              box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.brut-btn-pill:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px var(--color-border);
+}
+
+.brut-btn-pill:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px var(--color-border);
+}
+
+.brut-tag {
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  display: inline-block;
+  box-shadow: 2px 2px 0px var(--color-border);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* ── 动效 ── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-up { animation: fade-up 0.45s var(--ease-smooth) both; }
+.animate-fade-in { animation: fade-in 0.3s ease-out both; }
+
+.delay-1 { animation-delay: 50ms; }
+.delay-2 { animation-delay: 100ms; }
+.delay-3 { animation-delay: 150ms; }
+.delay-4 { animation-delay: 200ms; }
+.delay-5 { animation-delay: 250ms; }
+.delay-6 { animation-delay: 300ms; }
+
+/* ── 滚动条 ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(26, 26, 26, 0.15);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(26, 26, 26, 0.3);
 }

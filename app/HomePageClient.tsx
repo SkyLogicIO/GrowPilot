@@ -4,7 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Login from "../components/Login";
 import OnboardingModal from "../components/OnboardingModal";
-import { Camera, FolderUp, Image as ImageIcon, Lightbulb, PlaySquare, Video } from "lucide-react";
+import {
+  Image as ImageIcon,
+  Sprout,
+  Video,
+  ArrowRight,
+  Scissors,
+  Shirt,
+  Paintbrush,
+  PenLine,
+} from "lucide-react";
 
 export default function HomePageClient() {
   const router = useRouter();
@@ -13,152 +22,201 @@ export default function HomePageClient() {
 
   const features = [
     {
-      title: "爆款案例拆解",
-      description: "一键获取千万级播放量的视频脚本公式，让成功可以复制",
-      icon: <PlaySquare className="w-12 h-12 mb-4 text-white" />,
-      action: "免费拆解",
-      bgImage: "https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?q=80&w=2070&auto=format&fit=crop",
-    },
-    {
-      title: "云端素材管家",
-      description: "随时随地管理您的核心资产，支持多端同步与智能分类",
-      icon: <FolderUp className="w-12 h-12 mb-4 text-white" />,
-      action: "上传素材",
-      bgImage: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop",
-    },
-    {
-      title: "灵感生成器",
-      description: "告别创作瓶颈，AI 实时追踪全网热点，告诉您「现在该拍什么」",
-      icon: <Lightbulb className="w-12 h-12 mb-4 text-white" />,
-      action: "获取灵感",
-      bgImage: "https://images.unsplash.com/photo-1555421689-d68471e189f2?q=80&w=2070&auto=format&fit=crop",
-    },
-    {
       title: "AI 视频工场",
-      description: "输入创意，AI 自动生成高品质短视频，批量生产流量引擎",
-      icon: <Video className="w-12 h-12 mb-4 text-white" />,
+      description: "输入一句创意或一张图片，AI 自动生成高品质营销短视频",
+      icon: Video,
       action: "立即生成",
-      bgImage: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2071&auto=format&fit=crop",
+      bg: "bg-[#74B9FF]",
+      tag: "视频",
+      tagBg: "bg-[#C77DFF] text-white",
     },
     {
       title: "AI 绘画工作室",
-      description: "文字秒变大片，轻松制作封面图、插画与营销海报",
-      icon: <ImageIcon className="w-12 h-12 mb-4 text-white" />,
+      description: "一句话生成营销海报、商品主图与创意插画，告别设计外包",
+      icon: ImageIcon,
       action: "开始绘图",
-      bgImage: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2064&auto=format&fit=crop",
+      bg: "bg-[#C77DFF]",
+      tag: "绘图",
+      tagBg: "bg-[#FFB3C6] text-black",
     },
     {
-      title: "智能拍摄教练",
-      description: "手把手教您运镜、打光与构图，小白也能拍出电影感",
-      icon: <Camera className="w-12 h-12 mb-4 text-white" />,
-      action: "开启教学",
-      bgImage: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1638&auto=format&fit=crop",
+      title: "AI 智能编辑",
+      description: "一键抠图去背景、智能换场景、擦除多余元素，商品图秒变大片",
+      icon: Scissors,
+      action: "开始编辑",
+      bg: "bg-[#4ECDC4]",
+      tag: "编辑",
+      tagBg: "bg-[#FFD93D] text-black",
+    },
+    {
+      title: "AI 模特换装",
+      description: "上传服装与模特照片，AI 自动生成真实换装效果，电商必备利器",
+      icon: Shirt,
+      action: "立即换装",
+      bg: "bg-[#FFD93D]",
+      tag: "换装",
+      tagBg: "bg-[#FF6B6B] text-white",
+    },
+    {
+      title: "AI 局部重绘",
+      description: "框选不满意的区域，AI 精准重绘，哪里不满意改哪里",
+      icon: Paintbrush,
+      action: "开始重绘",
+      bg: "bg-[#FFB3C6]",
+      tag: "重绘",
+      tagBg: "bg-[#4ECDC4] text-white",
+    },
+    {
+      title: "AI 营销文案",
+      description: "对话式生成爆款文案、直播话术、带货脚本，您的专属营销智囊",
+      icon: PenLine,
+      action: "生成文案",
+      bg: "bg-[#6BCB77]",
+      tag: "文案",
+      tagBg: "bg-[#74B9FF] text-white",
     },
   ];
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-gray-900 text-white relative overflow-hidden">
-      <div
-        className="absolute inset-0 z-0 opacity-20 pointer-events-none"
-        style={{
-          backgroundImage:
-            'url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop")',
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      />
+    <main className="min-h-screen bg-background text-text-primary">
+      <div className="max-w-6xl mx-auto px-6 md:px-12 py-8">
 
-      <div className="z-10 w-full max-w-7xl px-8 md:px-12 py-12 flex flex-col items-center">
-        <div className="w-full flex flex-col md:flex-row justify-between items-center mb-16 backdrop-blur-md bg-white/5 rounded-2xl p-6 border border-white/10">
-          <div className="flex flex-col mb-4 md:mb-0">
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
-              GrowPilot
-            </h1>
-            <p className="text-sm text-gray-300 mt-1">您的数字AI增长助理</p>
+        {/* ── 导航 ── */}
+        <nav className="flex justify-between items-center mb-16 animate-fade-up">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-xl bg-accent border-2 border-border flex items-center justify-center shadow-[3px_3px_0px_#1A1A1A]">
+              <Sprout size={20} className="text-white" />
+            </div>
+            <span className="text-xl font-black text-text-primary tracking-tight">GrowPilot</span>
           </div>
 
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="hidden md:flex flex-col items-end">
-              <span className="text-xl font-bold tracking-tight text-white/80 italic">Build Growth Once, Scale Everywhere</span>
-              <span className="text-sm text-gray-300 mt-1">从内容采集到流量变现，一站式 AI 驱动的增长操作系统</span>
-            </div>
+          <div className="flex items-center gap-5">
+            <span className="hidden md:block text-sm text-text-muted font-medium">AI Growth Engine</span>
             <button
               onClick={() => setIsAuthOpen(true)}
-              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-full font-medium transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50"
+              className="brut-btn-pill bg-accent text-white px-6 py-2.5 text-sm"
             >
-              立即创作
+              <span className="flex items-center gap-2">
+                立即创作
+                <ArrowRight size={15} />
+              </span>
             </button>
           </div>
-        </div>
+        </nav>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full mb-20">
-          {features.map((feature, index) => (
-            <div
-              key={index}
-              className="group relative aspect-[4/3] w-full rounded-2xl overflow-hidden border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/20 cursor-pointer"
-            >
-              <div
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                style={{
-                  backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.12), rgba(0,0,0,0.12)), url(${feature.bgImage})`,
-                  backgroundColor: "#0F1115",
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }}
-              />
+        {/* ── Hero ── */}
+        <div className="mb-20 animate-fade-up delay-1">
+          <div className="relative">
+            <div className="absolute -top-4 -left-3 w-14 h-14 bg-[#FFD93D] rounded-xl border-2 border-border opacity-60 rotate-[-8deg]" />
+            <div className="absolute -top-2 right-12 w-8 h-8 bg-[#4ECDC4] rounded-full border-2 border-border opacity-50" />
+            <div className="absolute top-10 right-0 w-10 h-10 bg-[#FFB3C6] rounded-lg border-2 border-border opacity-50 rotate-6" />
 
-              <div
-                className={`absolute inset-0 bg-gradient-to-t transition-opacity ${
-                  index === 4
-                    ? "from-black/90 via-black/50 to-transparent opacity-80 group-hover:opacity-70"
-                    : "from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-50"
-                }`}
-              />
+            <div className="relative z-10 max-w-2xl">
+              <div className="inline-flex items-center gap-2 mb-6">
+                <span className="brut-tag bg-[#FFD93D] text-black">AI 增长平台</span>
+                <span className="brut-tag bg-[#4ECDC4] text-white">营销创作者专属</span>
+              </div>
 
-              <div className="absolute inset-0 p-8 flex flex-col justify-end items-start">
-                <div className="mb-auto pt-4 transform transition-transform duration-300 group-hover:-translate-y-2">{feature.icon}</div>
+              <h1 className="text-5xl md:text-7xl font-black leading-[1.05] tracking-tight mb-6 text-text-primary">
+                数字AI助理
+                <br />
+                <span className="relative inline-block">
+                  <span className="relative z-10">帮您成就增长</span>
+                  <span className="absolute bottom-1 left-0 right-0 h-4 bg-[#FFD93D] z-0 -rotate-1" />
+                </span>
+              </h1>
 
-                <h3 className="text-2xl font-bold mb-2 text-white group-hover:text-blue-200 transition-colors">
-                  {feature.title}
-                </h3>
+              <p className="text-text-secondary text-lg leading-relaxed mb-10 max-w-lg font-medium">
+                AI 生图、生视频、智能编辑、模特换装、营销文案，
+                一站式 AI 视觉营销工具集，为电商与设计团队而生。
+              </p>
 
-                <p className="text-gray-300 text-sm mb-6 line-clamp-2 group-hover:text-white transition-colors">
-                  {feature.description}
-                </p>
-
-                <button className="flex items-center space-x-2 px-6 py-3 bg-white/10 hover:bg-blue-600 backdrop-blur-sm rounded-lg text-sm font-medium transition-all duration-300 border border-white/20 hover:border-blue-500 w-full justify-center group-hover:translate-y-0 translate-y-2 opacity-0 group-hover:opacity-100">
-                  <span>{feature.action}</span>
-                  <span className="text-lg">→</span>
+              <div className="flex items-center gap-4 flex-wrap">
+                <button
+                  onClick={() => setIsAuthOpen(true)}
+                  className="brut-btn bg-accent text-white px-8 py-3.5 text-base"
+                >
+                  <span className="flex items-center gap-2">
+                    免费开始
+                    <ArrowRight size={18} />
+                  </span>
+                </button>
+                <button className="brut-btn bg-surface text-text-primary px-8 py-3.5 text-base font-bold">
+                  了解更多
                 </button>
               </div>
             </div>
-          ))}
+          </div>
         </div>
 
-        <div className="text-center py-12 flex flex-col items-center gap-6">
-          <h2 className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-200 via-white to-purple-200 opacity-90 leading-tight">
-            数字AI助理，帮您成就新的增长
+        {/* ── 功能卡片 ── */}
+        <div className="mb-20 animate-fade-up delay-2">
+          <div className="flex items-center gap-3 mb-8">
+            <h2 className="text-2xl font-black text-text-primary">核心能力</h2>
+            <span className="brut-tag bg-accent text-white">6 个模块</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={index}
+                  className={`animate-fade-up delay-${Math.min(index + 1, 6)} group brut-card p-6 cursor-pointer`}
+                >
+                  <div className={`w-12 h-12 rounded-xl ${feature.bg} border-2 border-border flex items-center justify-center mb-5 shadow-[2px_2px_0px_#1A1A1A] group-hover:shadow-[3px_3px_0px_#1A1A1A] transition-shadow`}>
+                    <Icon size={22} className="text-text-primary" />
+                  </div>
+
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="text-lg font-black text-text-primary leading-tight">
+                      {feature.title}
+                    </h3>
+                    <span className={`brut-tag ${feature.tagBg} shrink-0 ml-2`}>{feature.tag}</span>
+                  </div>
+
+                  <p className="text-sm text-text-secondary leading-relaxed mb-5 font-medium">
+                    {feature.description}
+                  </p>
+
+                  <button className={`brut-btn ${feature.bg} text-text-primary px-4 py-2 text-sm w-full`}>
+                    <span className="flex items-center justify-center gap-2">
+                      {feature.action}
+                      <ArrowRight size={14} />
+                    </span>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── CTA 横幅 ── */}
+        <div className="brut-card bg-[#FFD93D] p-10 text-center mb-8 animate-fade-up delay-4">
+          <div className="flex justify-center gap-2 mb-5">
+            <span className="brut-tag bg-accent text-white">限时免费</span>
+            <span className="brut-tag bg-[#4ECDC4] text-white">即刻开始</span>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-black text-text-primary mb-3">
+            种下创意，收获增长
           </h2>
+          <p className="text-text-secondary font-medium mb-8">加入数千名营销创作者的行列</p>
           <button
-            className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white text-lg rounded-full font-bold transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105"
+            className="brut-btn bg-text-primary text-white px-10 py-4 text-lg"
             onClick={() => setIsAuthOpen(true)}
           >
-            立即体验
+            立即体验 →
           </button>
         </div>
+
       </div>
 
       <Login
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
-        onSuccess={() => {
-          setIsAuthOpen(false);
-          setIsOnboardingOpen(true);
-        }}
+        onSuccess={() => { setIsAuthOpen(false); setIsOnboardingOpen(true); }}
       />
-
       <OnboardingModal isOpen={isOnboardingOpen} onComplete={() => router.push("/dashboard")} />
     </main>
   );
 }
-

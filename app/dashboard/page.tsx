@@ -1,7 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { FolderUp, Plus, Sparkles, Video, Wand2, Zap, type LucideIcon } from "lucide-react";
+import {
+  FolderUp,
+  Plus,
+  Sparkles,
+  Video,
+  Wand2,
+  Zap,
+  ArrowRight,
+  type LucideIcon,
+} from "lucide-react";
 import { demoProjects, formatProjectTime } from "@/lib/demoProjects";
 
 type StatItem = {
@@ -9,190 +18,130 @@ type StatItem = {
   label: string;
   value: string;
   trend: string;
-  trendClass: string;
-  iconClassName?: string;
-  iconWrapClassName?: string;
+  positive: boolean;
+  bg: string;
 };
 
 const STATS: StatItem[] = [
-  {
-    icon: Video,
-    label: "本周创作",
-    value: "12",
-    trend: "+20%",
-    trendClass: "text-green-400",
-    iconClassName: "text-purple-300",
-    iconWrapClassName: "bg-purple-500/10 border-purple-500/20",
-  },
-  {
-    icon: FolderUp,
-    label: "资产容量",
-    value: "2.4 GB",
-    trend: "75% used",
-    trendClass: "text-gray-400",
-    iconClassName: "text-emerald-300",
-    iconWrapClassName: "bg-emerald-500/10 border-emerald-500/20",
-  },
-  {
-    icon: Sparkles,
-    label: "获得积分",
-    value: "1,250",
-    trend: "+150",
-    trendClass: "text-green-400",
-    iconClassName: "text-amber-300",
-    iconWrapClassName: "bg-amber-500/10 border-amber-500/20",
-  },
-  {
-    icon: Zap,
-    label: "算力消耗",
-    value: "45",
-    trend: "-15%",
-    trendClass: "text-red-400",
-    iconClassName: "text-blue-300",
-  },
+  { icon: Video,    label: "本周创作", value: "12",     trend: "+20%", positive: true,  bg: "bg-[#FFD93D]" },
+  { icon: FolderUp, label: "资产容量", value: "2.4 GB", trend: "75%",  positive: false, bg: "bg-[#4ECDC4]" },
+  { icon: Sparkles, label: "获得积分", value: "1,250",  trend: "+150", positive: true,  bg: "bg-[#FFB3C6]" },
+  { icon: Zap,      label: "算力消耗", value: "45",     trend: "-15%", positive: false, bg: "bg-[#74B9FF]" },
 ];
 
 export default function DashboardHomePage() {
   const recentProjects = demoProjects.slice(0, 8);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between gap-6">
+    <div className="space-y-7 animate-fade-in">
+      {/* ── 欢迎区 ── */}
+      <div className="flex items-start justify-between gap-6 animate-fade-up">
         <div>
-          <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
-            <h1 className="text-2xl font-bold text-white">欢迎回来，Anna</h1>
-            <div className="text-sm font-semibold text-gray-400">今天准备创作什么内容？</div>
-          </div>
+          <h1 className="text-2xl font-black text-text-primary tracking-tight mb-1">
+            欢迎回来，Anna 👋
+          </h1>
+          <p className="text-text-secondary font-medium">今天准备创作什么内容？</p>
         </div>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard/ideas"
-            className="inline-flex items-center gap-2 px-4 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-gray-200 text-sm font-bold transition-colors"
-          >
-            <Sparkles size={16} />
-            打开收藏的灵感
+          <Link href="/dashboard/ideas" className="brut-btn bg-[#FFD93D] text-text-primary px-4 py-2 text-sm inline-flex items-center gap-2">
+            <Sparkles size={14} /> 收藏的灵感
           </Link>
-          <Link
-            href="/dashboard/assets/hot"
-            className="inline-flex items-center gap-2 px-4 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-gray-200 text-sm font-bold transition-colors"
-          >
-            <FolderUp size={16} />
-            打开资产
+          <Link href="/dashboard/assets/hot" className="brut-btn bg-surface text-text-primary px-4 py-2 text-sm inline-flex items-center gap-2">
+            <FolderUp size={14} /> 打开资产
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* ── 统计卡片 ── */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-fade-up delay-1">
         {STATS.map((stat, i) => (
-          <div key={i} className="p-6 bg-[#0F1115] border border-white/5 rounded-2xl">
-            <div className="flex items-stretch gap-4">
-              <div
-                className={`shrink-0 w-16 h-16 rounded-2xl border flex items-center justify-center ${
-                  stat.iconWrapClassName ?? "bg-white/5 border-white/10"
-                }`}
-              >
-                <stat.icon size={32} className={stat.iconClassName ?? "text-blue-300"} />
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="text-gray-400 text-sm mb-2">
-                  <span>{stat.label}</span>
-                </div>
-                <div className="flex items-end justify-between">
-                  <div className="text-3xl font-bold text-white flex items-end gap-2">
-                    <span>{stat.value}</span>
-                  </div>
-                  <span className={`text-sm ${stat.trendClass}`}>{stat.trend}</span>
-                </div>
+          <div key={i} className={`delay-${i + 1} brut-card p-5`}>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-bold text-text-secondary">{stat.label}</span>
+              <div className={`w-9 h-9 rounded-xl ${stat.bg} border-2 border-border flex items-center justify-center shadow-[2px_2px_0px_#1A1A1A]`}>
+                <stat.icon size={16} className="text-text-primary" />
               </div>
             </div>
+            <div className="text-3xl font-black text-text-primary tabular-nums">
+              {stat.value}
+            </div>
+            <span className={`text-xs font-bold mt-1 inline-block ${stat.positive ? "text-[#6BCB77]" : "text-text-muted"}`}>
+              {stat.trend}
+            </span>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* ── 快捷入口 ── */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-fade-up delay-2">
         {[
-          {
-            icon: Plus,
-            title: "新建项目",
-            desc: "进入项目列表并快速创建",
-            href: "/dashboard/project",
-          },
-          {
-            icon: FolderUp,
-            title: "添加素材",
-            desc: "上传/收藏你的创作素材",
-            href: "/dashboard/assets",
-          },
-          {
-            icon: Video,
-            title: "AI 视频工场",
-            desc: "一键生成短视频",
-            href: "/dashboard/project?create=video",
-          },
-          {
-            icon: Wand2,
-            title: "AI创作工具",
-            desc: "写文案、处理图片",
-            href: "/dashboard/tools",
-          },
-        ].map((item) => (
+          { icon: Plus,     title: "新建项目",    desc: "进入项目列表并快速创建", href: "/dashboard/project",              bg: "bg-[#FF6B6B]",  textColor: "text-white" },
+          { icon: FolderUp, title: "添加素材",    desc: "上传/收藏你的创作素材",  href: "/dashboard/assets",               bg: "bg-[#4ECDC4]",  textColor: "text-white" },
+          { icon: Video,    title: "AI 视频工场", desc: "一键生成短视频",         href: "/dashboard/project?create=video", bg: "bg-[#C77DFF]",  textColor: "text-white" },
+          { icon: Wand2,    title: "AI创作工具",  desc: "写文案、处理图片",       href: "/dashboard/tools",                bg: "bg-[#FFD93D]",  textColor: "text-black" },
+        ].map((item, i) => (
           <Link
             key={item.title}
             href={item.href}
-            className="flex items-stretch gap-4 p-6 rounded-2xl bg-[#0F1115] border border-white/5 hover:bg-white/5 hover:border-white/10 transition-colors"
+            className={`delay-${i + 1} group brut-card ${item.bg} flex items-center gap-4 p-5`}
           >
-            <div className="shrink-0 w-16 h-16 rounded-2xl border bg-white/5 border-white/10 flex items-center justify-center">
-              <item.icon size={32} className="text-blue-300" />
-            </div>
+            <item.icon size={22} className={item.textColor} />
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-bold text-white truncate">{item.title}</div>
-              <div className="text-xs text-gray-400 truncate">{item.desc}</div>
+              <div className={`text-sm font-black ${item.textColor} truncate`}>{item.title}</div>
+              <div className={`text-xs truncate mt-0.5 ${item.textColor} opacity-70 font-medium`}>{item.desc}</div>
             </div>
+            <ArrowRight size={16} className={`${item.textColor} shrink-0 transition-transform duration-150 group-hover:translate-x-0.5`} />
           </Link>
         ))}
       </div>
 
-      <div className="bg-[#0F1115] border border-white/5 rounded-2xl p-6">
+      {/* ── 最近项目 ── */}
+      <div className="brut-card p-6 animate-fade-up delay-3">
         <div className="flex items-center justify-between mb-5">
-          <div>
-            <div className="text-lg font-bold text-white">最近项目</div>
-            <div className="mt-1 text-sm text-gray-400">继续你上次的创作，或查看生成进度</div>
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-black text-text-primary">最近项目</h2>
+            <span className="brut-tag bg-[#6BCB77] text-white">
+              {demoProjects.slice(0, 8).length} 个
+            </span>
           </div>
-          <Link href="/dashboard/project" className="text-sm font-bold text-blue-300 hover:text-blue-200 transition-colors">
-            查看全部
+          <Link href="/dashboard/project" className="brut-btn bg-surface text-text-primary px-4 py-1.5 text-sm inline-flex items-center gap-1.5">
+            查看全部 <ArrowRight size={13} />
           </Link>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {recentProjects.map((project) => (
+          {recentProjects.map((project, i) => (
             <Link
               key={project.id}
               href="/dashboard/project"
-              className="group relative rounded-2xl border border-white/5 overflow-hidden bg-white/5 hover:border-white/10 transition-colors"
+              className={`animate-fade-up delay-${Math.min(i + 1, 6)} group brut-card overflow-hidden p-0`}
             >
-              <div className="relative w-full aspect-[16/10]">
+              <div className="relative w-full aspect-16/10 overflow-hidden">
                 <img
                   src={project.cover}
                   alt={project.name}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-400 group-hover:scale-[1.04]"
                   onError={(e) => {
                     e.currentTarget.src =
                       "https://images.unsplash.com/photo-1516117172878-fd2c41f4a759?auto=format&fit=crop&w=1200&q=80";
                   }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />
                 {project.statusText ? (
-                  <div className="absolute left-3 top-3 px-3 h-8 rounded-full bg-black/35 border border-white/10 backdrop-blur-md flex items-center text-xs font-bold text-white">
-                    {project.statusText}
+                  <div className="absolute left-3 top-3">
+                    <span className="brut-tag bg-[#FFD93D] text-black">{project.statusText}</span>
                   </div>
                 ) : null}
               </div>
 
               <div className="p-4">
-                <div className="text-white font-bold leading-snug line-clamp-2">{project.name}</div>
-                <div className="mt-2 text-xs text-gray-400">更新于 {formatProjectTime(project.updatedAt)}</div>
+                <div className="text-sm font-bold text-text-primary leading-snug line-clamp-2">
+                  {project.name}
+                </div>
+                <div className="mt-2 text-xs text-text-muted font-medium">
+                  更新于 {formatProjectTime(project.updatedAt)}
+                </div>
               </div>
             </Link>
           ))}
