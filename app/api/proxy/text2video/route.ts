@@ -10,9 +10,11 @@ export async function POST(req: NextRequest) {
     let inputImage: Blob | null = null;
     let modelName = "veo-3.1-fast-generate-preview";
 
+    // Veo API 只支持 4, 6, 8 秒，图生视频只支持 8 秒
+    const ALLOWED_DURATIONS = [4, 6, 8] as const;
     const config: GenerateVideosConfig = {
       numberOfVideos: 1,
-      durationSeconds: 5,
+      durationSeconds: 8, // 默认 8 秒
       resolution: "720p",
       aspectRatio: "16:9",
     };
@@ -25,10 +27,17 @@ export async function POST(req: NextRequest) {
       if (model) modelName = model;
 
       const durationStr = formData.get("duration") as string;
+      console.log("📥 Backend received duration (multipart):", { durationStr, type: typeof durationStr });
       if (durationStr) {
         const parsed = parseInt(durationStr, 10);
-        if (!isNaN(parsed) && parsed >= 4 && parsed <= 8) {
+        console.log("📥 Backend parsed duration:", { parsed, isNaN: isNaN(parsed) });
+        // Veo API 只支持 4, 6, 8 秒
+        const validDurations = [4, 6, 8];
+        if (!isNaN(parsed) && validDurations.includes(parsed)) {
           config.durationSeconds = parsed;
+          console.log("✅ Backend set durationSeconds:", config.durationSeconds);
+        } else {
+          console.log("⚠️ Backend duration validation failed, using default:", config.durationSeconds);
         }
       }
 
@@ -52,13 +61,20 @@ export async function POST(req: NextRequest) {
       apiKey = json.api_key || "";
       if (json.model) modelName = json.model;
 
+      console.log("📥 Backend received duration (JSON):", { duration: json.duration, type: typeof json.duration });
       if (json.duration !== undefined) {
         const parsed =
           typeof json.duration === "number"
             ? json.duration
             : parseInt(String(json.duration), 10);
-        if (!isNaN(parsed) && parsed >= 4 && parsed <= 8) {
+        console.log("📥 Backend parsed duration:", { parsed, isNaN: isNaN(parsed) });
+        // Veo API 只支持 4, 6, 8 秒
+        const validDurations = [4, 6, 8];
+        if (!isNaN(parsed) && validDurations.includes(parsed)) {
           config.durationSeconds = parsed;
+          console.log("✅ Backend set durationSeconds:", config.durationSeconds);
+        } else {
+          console.log("⚠️ Backend duration validation failed, using default:", config.durationSeconds);
         }
       }
 
@@ -75,15 +91,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "API Key is required" }, { status: 401 });
     }
 
-    if (!config.durationSeconds || config.durationSeconds < 4 || config.durationSeconds > 8) {
-      return NextResponse.json(
-        {
-          error: "Invalid duration parameter",
-          message: `durationSeconds must be between 4-8, got: ${config.durationSeconds}`,
-        },
-        { status: 400 }
-      );
+    // 图生视频只支持 8 秒
+    if (inputImage) {
+      config.durationSeconds = 8;
+      console.log("📷 Image-to-video detected, forcing duration to 8 seconds");
     }
+
+    // Log the config being sent to API
+    console.log("🚀 Backend - Sending to Google API:", {
+      model: modelName,
+      config: {
+        numberOfVideos: config.numberOfVideos,
+        durationSeconds: config.durationSeconds,
+        aspectRatio: config.aspectRatio,
+        resolution: config.resolution,
+      },
+      hasInputImage: !!inputImage,
+    });
 
     const ai = new GoogleGenAI({ apiKey });
 

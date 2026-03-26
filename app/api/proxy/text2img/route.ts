@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { 
-  GoogleGenAI, 
-  GenerateImagesParameters, 
-  GenerateImagesConfig,
-  EditImageParameters,
-  SubjectReferenceImage 
+import {
+  GoogleGenAI,
+  GenerateImagesParameters,
+  GenerateImagesConfig
 } from "@google/genai";
 
 export async function POST(req: NextRequest) {
@@ -96,31 +94,59 @@ export async function POST(req: NextRequest) {
 
     // Check if we have an input image
     if (inputImage) {
-      // Image editing mode - use editImage API with reference image
+      // Image editing mode - use generateContent with Gemini image models
       const buffer = Buffer.from(await inputImage.arrayBuffer());
       const base64Image = buffer.toString("base64");
-      
-      // Use imagen-3.0-capability-001 for editing (as per official example)
-      const editModel = "imagen-3.0-capability-001";
-      
-      const subjectReferenceImage = new SubjectReferenceImage();
-      subjectReferenceImage.referenceImage = {
-        imageBytes: base64Image,
-        mimeType: inputImage.type || "image/jpeg"
-      };
-      subjectReferenceImage.referenceId = 1;
 
-      const editImageParams: EditImageParameters = {
+      // Use Gemini image model for editing (supports standard API Key)
+      const editModel = "gemini-2.5-flash-image";
+
+      const generateContentParams = {
         model: editModel,
-        prompt: prompt,
-        referenceImages: [subjectReferenceImage],
+        contents: [
+          { text: prompt },
+          {
+            inlineData: {
+              mimeType: inputImage.type || "image/jpeg",
+              data: base64Image,
+            },
+          },
+        ],
         config: {
-          numberOfImages: config.numberOfImages,
-        }
+          responseModalities: ["TEXT", "IMAGE"],
+        },
       };
 
-      console.log(`🎨 Using editImage API with model: ${editModel}`);
-      response = await ai.models.editImage(editImageParams);
+      console.log(`🎨 Using generateContent API with model: ${editModel}`);
+      const genResponse = await ai.models.generateContent(generateContentParams);
+
+      // Extract image from response
+      const parts = genResponse.candidates?.[0]?.content?.parts;
+      if (!parts || parts.length === 0) {
+        return NextResponse.json(
+          { error: '图片编辑完成但没有返回图片', raw_response: genResponse },
+          { status: 500 }
+        );
+      }
+
+      // Find the image part
+      const imagePart = parts.find((p: any) => p.inlineData);
+      if (!imagePart) {
+        return NextResponse.json(
+          { error: '响应中没有找到图片数据', raw_response: genResponse },
+          { status: 500 }
+        );
+      }
+
+      // Convert to the expected response format
+      response = {
+        generatedImages: [{
+          image: {
+            imageBytes: imagePart.inlineData!.data,
+            mimeType: imagePart.inlineData!.mimeType || "image/png",
+          },
+        }],
+      };
     } else {
       // Text-to-image mode - use generateImages API
       const generateImageParams: GenerateImagesParameters = {

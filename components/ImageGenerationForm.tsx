@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Plus, Loader2, Zap, SlidersHorizontal, ChevronDown } from "lucide-react";
+import { Plus, Loader2, Zap, SlidersHorizontal, AlertCircle, Info } from "lucide-react";
 
 export interface ImageGenerationParams {
   prompt: string;
@@ -40,6 +40,7 @@ export default function ImageGenerationForm({ isGenerating, onGenerate }: ImageG
   const [imageModel] = useState("imagen-4.0-generate-001");
   const [imageRatio] = useState("3:4");
   const [imageCount] = useState("4张");
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,25 +50,55 @@ export default function ImageGenerationForm({ isGenerating, onGenerate }: ImageG
     setInputImagePreview(URL.createObjectURL(file));
   };
 
-  const handleSubmit = () => {
-    onGenerate({
-      prompt,
-      name: "",
-      model: imageModel,
-      ratio: imageRatio,
-      count: imageCount,
-      inputImage,
-    });
+  const handleSubmit = async () => {
+    setErrorMessage("");
+    try {
+      await onGenerate({
+        prompt,
+        name: "",
+        model: imageModel,
+        ratio: imageRatio,
+        count: imageCount,
+        inputImage,
+      });
+    } catch (error: any) {
+      setErrorMessage(error.message || "图片生成失败，请重试");
+    }
   };
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Error Message Display */}
+      {errorMessage && (
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border-2 border-red-500/30">
+          <AlertCircle size={20} className="text-red-400 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <div className="text-sm font-bold text-red-400 mb-1">生成失败</div>
+            <div className="text-sm text-red-300/90 whitespace-pre-wrap">{errorMessage}</div>
+          </div>
+        </div>
+      )}
+
+      {/* Info Banner - Only show when generating */}
+      {isGenerating && (
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-purple-500/10 border-2 border-purple-500/30">
+          <Info size={20} className="text-purple-400 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <div className="text-sm font-bold text-purple-400 mb-1">图片生成中</div>
+            <div className="text-sm text-purple-300/90">
+              正在使用 Imagen 4.0 生成图片，通常需要 10-30 秒...
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-4">
+        {/* 上传参考图 */}
         <div
           onClick={() => !isGenerating && fileInputRef.current?.click()}
-          className={`h-[180px] rounded-2xl border-2 border-dashed ${
-            inputImagePreview ? "border-blue-500/50" : "border-white/10"
-          } bg-white/5 hover:bg-white/10 transition-colors flex flex-col items-center justify-center ${
+          className={`h-[180px] rounded-xl border-2 border-dashed ${
+            inputImagePreview ? "border-accent/50 bg-accent/5" : "border-border bg-surface"
+          } hover:bg-surface-hover transition-colors flex flex-col items-center justify-center ${
             isGenerating ? "cursor-not-allowed opacity-50" : "cursor-pointer"
           } overflow-hidden group relative`}
         >
@@ -82,10 +113,10 @@ export default function ImageGenerationForm({ isGenerating, onGenerate }: ImageG
             </>
           ) : (
             <>
-              <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Plus size={20} className="text-gray-200" />
+              <div className="w-10 h-10 rounded-xl bg-surface-hover border-2 border-border flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Plus size={20} className="text-text-secondary" />
               </div>
-              <div className="mt-3 text-sm font-semibold text-gray-200">添加参考图</div>
+              <div className="mt-3 text-sm font-bold text-text-secondary">添加参考图</div>
             </>
           )}
           <input
@@ -98,36 +129,34 @@ export default function ImageGenerationForm({ isGenerating, onGenerate }: ImageG
           />
         </div>
 
+        {/* 输入框 */}
         <textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="请输入你的创作需求或广告文案描述…"
           disabled={isGenerating}
-          className="h-[180px] w-full resize-none rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
+          className="h-[180px] w-full resize-none rounded-xl bg-surface border-2 border-border px-4 py-3 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors disabled:opacity-50"
         />
       </div>
 
       {/* Image Parameters */}
       <div className="flex flex-wrap items-center gap-3 text-sm">
         <div className="flex items-center gap-2">
-          <span className="text-gray-400">模型:</span>
-          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-gray-300">
+          <span className="text-text-secondary font-medium">模型:</span>
+          <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface border-2 border-border text-xs text-text-primary font-medium">
             {imageModel}
-            <ChevronDown size={12} className="text-gray-500" />
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-gray-400">比例:</span>
-          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-gray-300">
+          <span className="text-text-secondary font-medium">比例:</span>
+          <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface border-2 border-border text-xs text-text-primary font-medium">
             {imageRatio}
-            <ChevronDown size={12} className="text-gray-500" />
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-gray-400">数量:</span>
-          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-gray-300">
+          <span className="text-text-secondary font-medium">数量:</span>
+          <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface border-2 border-border text-xs text-text-primary font-medium">
             {imageCount}
-            <ChevronDown size={12} className="text-gray-500" />
           </div>
         </div>
       </div>
@@ -137,15 +166,15 @@ export default function ImageGenerationForm({ isGenerating, onGenerate }: ImageG
         <button
           type="button"
           disabled={isGenerating}
-          className="w-10 h-10 rounded-xl border border-white/10 hover:bg-white/5 transition-colors flex items-center justify-center disabled:opacity-50"
+          className="w-10 h-10 rounded-xl border-2 border-border hover:bg-surface-hover transition-colors flex items-center justify-center disabled:opacity-50"
         >
-          <SlidersHorizontal size={18} className="text-gray-400" />
+          <SlidersHorizontal size={18} className="text-text-secondary" />
         </button>
         <button
           type="button"
           onClick={handleSubmit}
           disabled={isGenerating || (!prompt.trim() && !inputImage)}
-          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+          className="brut-btn bg-accent text-white px-6 py-2.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {isGenerating ? (
             <>
@@ -154,7 +183,7 @@ export default function ImageGenerationForm({ isGenerating, onGenerate }: ImageG
             </>
           ) : (
             <>
-              <Zap size={18} className="fill-white" />
+              <Zap size={18} />
               生成
             </>
           )}

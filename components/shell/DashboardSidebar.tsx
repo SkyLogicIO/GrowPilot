@@ -39,8 +39,8 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   {
     icon: Folder, label: "我的项目", href: "/dashboard/project", color: "bg-[#74B9FF]",
     children: [
-      { icon: Video,     label: "AI 视频工场",  href: "/dashboard/project?create=video",  color: "bg-[#74B9FF]" },
-      { icon: ImageIcon, label: "AI 绘画工作室", href: "/dashboard/project?create=image",  color: "bg-[#FFB3C6]" },
+      { icon: Video,     label: "AI 视频工场",  href: "/dashboard/video-factory",  color: "bg-[#74B9FF]" },
+      { icon: ImageIcon, label: "AI 绘画工作室", href: "/dashboard/art-studio",  color: "bg-[#FFB3C6]" },
       { icon: Camera,    label: "数字人",        href: "/dashboard/project?create=avatar", color: "bg-[#4ECDC4]" },
     ],
   },

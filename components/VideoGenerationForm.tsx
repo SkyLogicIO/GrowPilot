@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Plus, Loader2, Zap, SlidersHorizontal, ChevronDown, AlertCircle, Info } from "lucide-react";
+import { Plus, Loader2, Zap, SlidersHorizontal, AlertCircle, Info } from "lucide-react";
 
 export interface VideoGenerationParams {
   prompt: string;
@@ -39,7 +39,7 @@ export default function VideoGenerationForm({ isGenerating, onGenerate }: VideoG
   const [inputImage, setInputImage] = useState<File | null>(null);
   const [inputImagePreview, setInputImagePreview] = useState<string>("");
   const [videoModel, setVideoModel] = useState<string>("veo-3.1-fast-generate-preview");
-  const [videoDuration, setVideoDuration] = useState<number>(5);
+  const [videoDuration, setVideoDuration] = useState<number>(8);
   const [videoResolution, setVideoResolution] = useState<string>("720p");
   const [videoAspectRatio, setVideoAspectRatio] = useState<string>("16:9");
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -73,10 +73,10 @@ export default function VideoGenerationForm({ isGenerating, onGenerate }: VideoG
     <div className="flex flex-col gap-4">
       {/* Error Message Display */}
       {errorMessage && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/30">
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border-2 border-red-500/30">
           <AlertCircle size={20} className="text-red-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <div className="text-sm font-semibold text-red-400 mb-1">生成失败</div>
+            <div className="text-sm font-bold text-red-400 mb-1">生成失败</div>
             <div className="text-sm text-red-300/90 whitespace-pre-wrap">{errorMessage}</div>
           </div>
         </div>
@@ -84,10 +84,10 @@ export default function VideoGenerationForm({ isGenerating, onGenerate }: VideoG
 
       {/* Info Banner - Only show when generating */}
       {isGenerating && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-500/10 border-2 border-blue-500/30">
           <Info size={20} className="text-blue-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <div className="text-sm font-semibold text-blue-400 mb-1">视频生成中</div>
+            <div className="text-sm font-bold text-blue-400 mb-1">视频生成中</div>
             <div className="text-sm text-blue-300/90">
               正在使用 {videoModel === "veo-3.1-fast-generate-preview" ? "Veo 3.1 Fast" : "Veo 3.1"} 生成 {videoDuration}秒 {videoResolution} {videoAspectRatio} 视频，
               通常需要 1-3 分钟，每 10 秒检查一次状态...
@@ -97,11 +97,12 @@ export default function VideoGenerationForm({ isGenerating, onGenerate }: VideoG
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-4">
+        {/* 上传参考图 */}
         <div
           onClick={() => !isGenerating && fileInputRef.current?.click()}
-          className={`h-[180px] rounded-2xl border-2 border-dashed ${
-            inputImagePreview ? "border-blue-500/50" : "border-white/10"
-          } bg-white/5 hover:bg-white/10 transition-colors flex flex-col items-center justify-center ${
+          className={`h-[180px] rounded-xl border-2 border-dashed ${
+            inputImagePreview ? "border-accent/50 bg-accent/5" : "border-border bg-surface"
+          } hover:bg-surface-hover transition-colors flex flex-col items-center justify-center ${
             isGenerating ? "cursor-not-allowed opacity-50" : "cursor-pointer"
           } overflow-hidden group relative`}
         >
@@ -116,10 +117,10 @@ export default function VideoGenerationForm({ isGenerating, onGenerate }: VideoG
             </>
           ) : (
             <>
-              <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Plus size={20} className="text-gray-200" />
+              <div className="w-10 h-10 rounded-xl bg-surface-hover border-2 border-border flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Plus size={20} className="text-text-secondary" />
               </div>
-              <div className="mt-3 text-sm font-semibold text-gray-200">添加参考图</div>
+              <div className="mt-3 text-sm font-bold text-text-secondary">添加参考图</div>
             </>
           )}
           <input
@@ -132,12 +133,13 @@ export default function VideoGenerationForm({ isGenerating, onGenerate }: VideoG
           />
         </div>
 
+        {/* 输入框 */}
         <textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="请输入你的视频创作需求或广告文案描述…"
           disabled={isGenerating}
-          className="h-[180px] w-full resize-none rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
+          className="h-[180px] w-full resize-none rounded-xl bg-surface border-2 border-border px-4 py-3 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors disabled:opacity-50"
         />
       </div>
 
@@ -145,12 +147,12 @@ export default function VideoGenerationForm({ isGenerating, onGenerate }: VideoG
       <div className="flex flex-wrap items-center gap-3 text-sm">
         {/* 视频模型选择 */}
         <div className="flex items-center gap-2">
-          <span className="text-gray-400">模型:</span>
-          <select 
-            value={videoModel} 
+          <span className="text-text-secondary font-medium">模型:</span>
+          <select
+            value={videoModel}
             onChange={(e) => setVideoModel(e.target.value)}
             disabled={isGenerating}
-            className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-200 text-xs focus:outline-none focus:border-blue-500 disabled:opacity-50"
+            className="px-3 py-1.5 rounded-lg bg-surface border-2 border-border text-text-primary text-xs focus:outline-none focus:border-accent disabled:opacity-50 cursor-pointer"
           >
             <option value="veo-3.1-fast-generate-preview">Veo 3.1 Fast</option>
             <option value="veo-3.1-generate-preview">Veo 3.1</option>
@@ -159,42 +161,40 @@ export default function VideoGenerationForm({ isGenerating, onGenerate }: VideoG
 
         {/* 视频时长 */}
         <div className="flex items-center gap-2">
-          <span className="text-gray-400">时长:</span>
-          <input 
-            type="number" 
-            min="4" 
-            max="8" 
-            value={videoDuration} 
-            onChange={(e) => setVideoDuration(Math.max(4, Math.min(8, parseInt(e.target.value) || 5)))}
-            disabled={isGenerating}
-            className="w-14 px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-200 text-xs text-center focus:outline-none focus:border-blue-500 disabled:opacity-50"
-          />
-          <span className="text-gray-500 text-xs">秒 (4-8)</span>
+          <span className="text-text-secondary font-medium">时长:</span>
+          <div className="flex gap-1">
+            {[4, 6, 8].map(d => (
+              <label key={d} className={`px-3 py-1.5 rounded-lg border-2 cursor-pointer transition-colors font-medium ${videoDuration === d ? "bg-accent border-accent text-white" : "bg-surface border-border text-text-secondary hover:bg-surface-hover"} ${isGenerating ? "opacity-50 cursor-not-allowed" : ""}`}>
+                <input type="radio" value={d} checked={videoDuration === d} onChange={() => setVideoDuration(d)} disabled={isGenerating} className="hidden" />
+                <span className="text-xs">{d}秒</span>
+              </label>
+            ))}
+          </div>
         </div>
 
         {/* 分辨率 */}
         <div className="flex items-center gap-2">
-          <span className="text-gray-400">分辨率:</span>
+          <span className="text-text-secondary font-medium">分辨率:</span>
           <div className="flex gap-1">
-            <label className={`px-3 py-1.5 rounded-lg border cursor-pointer transition-colors ${videoResolution === "720p" ? "bg-blue-600 border-blue-500 text-white" : "bg-white/5 border-white/10 text-gray-300 hover:bg-white/10"} ${isGenerating ? "opacity-50 cursor-not-allowed" : ""}`}>
+            <label className={`px-3 py-1.5 rounded-lg border-2 cursor-pointer transition-colors font-medium ${videoResolution === "720p" ? "bg-accent border-accent text-white" : "bg-surface border-border text-text-secondary hover:bg-surface-hover"} ${isGenerating ? "opacity-50 cursor-not-allowed" : ""}`}>
               <input type="radio" value="720p" checked={videoResolution === "720p"} onChange={(e) => setVideoResolution(e.target.value)} disabled={isGenerating} className="hidden" />
               <span className="text-xs">720P</span>
             </label>
-            <label className={`px-3 py-1.5 rounded-lg border cursor-pointer transition-colors ${videoResolution === "1080p" ? "bg-blue-600 border-blue-500 text-white" : "bg-white/5 border-white/10 text-gray-300 hover:bg-white/10"} ${isGenerating ? "opacity-50 cursor-not-allowed" : ""}`}>
+            <label className={`px-3 py-1.5 rounded-lg border-2 cursor-pointer transition-colors font-medium ${videoResolution === "1080p" ? "bg-accent border-accent text-white" : "bg-surface border-border text-text-secondary hover:bg-surface-hover"} ${isGenerating ? "opacity-50 cursor-not-allowed" : ""}`}>
               <input type="radio" value="1080p" checked={videoResolution === "1080p"} onChange={(e) => setVideoResolution(e.target.value)} disabled={isGenerating} className="hidden" />
               <span className="text-xs">1080P</span>
             </label>
           </div>
         </div>
 
-        {/* 比例 - Only 16:9 and 9:16 are supported by Veo API */}
+        {/* 比例 */}
         <div className="flex items-center gap-2">
-          <span className="text-gray-400">比例:</span>
+          <span className="text-text-secondary font-medium">比例:</span>
           <div className="flex gap-1">
             {["16:9", "9:16"].map(r => (
-              <label key={r} className={`px-3 py-1.5 rounded-lg border cursor-pointer transition-colors ${videoAspectRatio === r ? "bg-blue-600 border-blue-500 text-white" : "bg-white/5 border-white/10 text-gray-300 hover:bg-white/10"} ${isGenerating ? "opacity-50 cursor-not-allowed" : ""}`}>
+              <label key={r} className={`px-3 py-1.5 rounded-lg border-2 cursor-pointer transition-colors font-medium ${videoAspectRatio === r ? "bg-accent border-accent text-white" : "bg-surface border-border text-text-secondary hover:bg-surface-hover"} ${isGenerating ? "opacity-50 cursor-not-allowed" : ""}`}>
                 <input type="radio" value={r} checked={videoAspectRatio === r} onChange={(e) => setVideoAspectRatio(e.target.value)} disabled={isGenerating} className="hidden" />
-                <span className="text-xs">{r === "16:9" ? "横屏 16:9" : "竖屏 9:16"}</span>
+                <span className="text-xs">{r === "16:9" ? "横屏" : "竖屏"}</span>
               </label>
             ))}
           </div>
@@ -206,15 +206,15 @@ export default function VideoGenerationForm({ isGenerating, onGenerate }: VideoG
         <button
           type="button"
           disabled={isGenerating}
-          className="w-10 h-10 rounded-xl border border-white/10 hover:bg-white/5 transition-colors flex items-center justify-center disabled:opacity-50"
+          className="w-10 h-10 rounded-xl border-2 border-border hover:bg-surface-hover transition-colors flex items-center justify-center disabled:opacity-50"
         >
-          <SlidersHorizontal size={18} className="text-gray-400" />
+          <SlidersHorizontal size={18} className="text-text-secondary" />
         </button>
         <button
           type="button"
           onClick={handleSubmit}
           disabled={isGenerating || (!prompt.trim() && !inputImage)}
-          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+          className="brut-btn bg-accent text-white px-6 py-2.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {isGenerating ? (
             <>
@@ -223,7 +223,7 @@ export default function VideoGenerationForm({ isGenerating, onGenerate }: VideoG
             </>
           ) : (
             <>
-              <Zap size={18} className="fill-white" />
+              <Zap size={18} />
               生成
             </>
           )}

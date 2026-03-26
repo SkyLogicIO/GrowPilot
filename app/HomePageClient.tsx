@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Login from "../components/Login";
 import OnboardingModal from "../components/OnboardingModal";
+import ComingSoonModal from "../components/ComingSoonModal";
 import {
   Image as ImageIcon,
   Sprout,
@@ -19,6 +20,8 @@ export default function HomePageClient() {
   const router = useRouter();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+  const [comingSoonOpen, setComingSoonOpen] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState("");
 
   const features = [
     {
@@ -29,6 +32,7 @@ export default function HomePageClient() {
       bg: "bg-[#74B9FF]",
       tag: "视频",
       tagBg: "bg-[#C77DFF] text-white",
+      implemented: true,
     },
     {
       title: "AI 绘画工作室",
@@ -38,6 +42,7 @@ export default function HomePageClient() {
       bg: "bg-[#C77DFF]",
       tag: "绘图",
       tagBg: "bg-[#FFB3C6] text-black",
+      implemented: true,
     },
     {
       title: "AI 智能编辑",
@@ -47,6 +52,7 @@ export default function HomePageClient() {
       bg: "bg-[#4ECDC4]",
       tag: "编辑",
       tagBg: "bg-[#FFD93D] text-black",
+      implemented: false,
     },
     {
       title: "AI 模特换装",
@@ -56,6 +62,7 @@ export default function HomePageClient() {
       bg: "bg-[#FFD93D]",
       tag: "换装",
       tagBg: "bg-[#FF6B6B] text-white",
+      implemented: false,
     },
     {
       title: "AI 局部重绘",
@@ -65,6 +72,7 @@ export default function HomePageClient() {
       bg: "bg-[#FFB3C6]",
       tag: "重绘",
       tagBg: "bg-[#4ECDC4] text-white",
+      implemented: false,
     },
     {
       title: "AI 营销文案",
@@ -74,8 +82,18 @@ export default function HomePageClient() {
       bg: "bg-[#6BCB77]",
       tag: "文案",
       tagBg: "bg-[#74B9FF] text-white",
+      implemented: true,
     },
   ];
+
+  const handleFeatureClick = (feature: (typeof features)[0]) => {
+    if (!feature.implemented) {
+      setSelectedFeature(feature.title);
+      setComingSoonOpen(true);
+      return;
+    }
+    setIsAuthOpen(true);
+  };
 
   return (
     <main className="min-h-screen bg-background text-text-primary">
@@ -162,6 +180,7 @@ export default function HomePageClient() {
               return (
                 <div
                   key={index}
+                  onClick={() => handleFeatureClick(feature)}
                   className={`animate-fade-up delay-${Math.min(index + 1, 6)} group brut-card p-6 cursor-pointer`}
                 >
                   <div className={`w-12 h-12 rounded-xl ${feature.bg} border-2 border-border flex items-center justify-center mb-5 shadow-[2px_2px_0px_#1A1A1A] group-hover:shadow-[3px_3px_0px_#1A1A1A] transition-shadow`}>
@@ -181,7 +200,7 @@ export default function HomePageClient() {
 
                   <button className={`brut-btn ${feature.bg} text-text-primary px-4 py-2 text-sm w-full`}>
                     <span className="flex items-center justify-center gap-2">
-                      {feature.action}
+                      {feature.implemented ? feature.action : "敬请期待"}
                       <ArrowRight size={14} />
                     </span>
                   </button>
@@ -217,6 +236,11 @@ export default function HomePageClient() {
         onSuccess={() => { setIsAuthOpen(false); setIsOnboardingOpen(true); }}
       />
       <OnboardingModal isOpen={isOnboardingOpen} onComplete={() => router.push("/dashboard")} />
+      <ComingSoonModal
+        isOpen={comingSoonOpen}
+        onClose={() => setComingSoonOpen(false)}
+        featureName={selectedFeature}
+      />
     </main>
   );
 }

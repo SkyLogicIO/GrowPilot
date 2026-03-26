@@ -7,6 +7,7 @@ import { FileText, Image as ImageIcon, Mic, Video, Wand2 } from "lucide-react";
 import VoiceGenerate from "./VoiceGenerate";
 import FaceSwapModal from "@/components/FaceSwapModal";
 import ImageEditModal from "@/components/ImageEditModal";
+import BackgroundReplaceModal from "@/components/BackgroundReplaceModal";
 
 type TabKey = "write" | "image" | "ai_image" | "video" | "voice";
 
@@ -30,6 +31,7 @@ export default function ToolsPageClient() {
   const [activeTab, setActiveTab] = useState<TabKey>("write");
   const [showFaceSwap, setShowFaceSwap] = useState(false);
   const [showImageEdit, setShowImageEdit] = useState(false);
+  const [showBackgroundReplace, setShowBackgroundReplace] = useState(false);
 
   useEffect(() => {
     if (!tabFromUrl) return;
@@ -140,6 +142,9 @@ export default function ToolsPageClient() {
                     if (title === "换脸") {
                       setShowFaceSwap(true);
                     }
+                    if (title === "换背景") {
+                      setShowBackgroundReplace(true);
+                    }
                   }}
                   className="text-left rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors p-5"
                 >
@@ -173,6 +178,7 @@ export default function ToolsPageClient() {
 
       <FaceSwapModal open={showFaceSwap} onClose={() => setShowFaceSwap(false)} />
       <ImageEditModal open={showImageEdit} onClose={() => setShowImageEdit(false)} />
+      <BackgroundReplaceModal open={showBackgroundReplace} onClose={() => setShowBackgroundReplace(false)} />
     </div>
   );
 }

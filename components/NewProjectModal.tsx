@@ -14,6 +14,7 @@ import {
 import VideoGenerationForm, { VideoGenerationParams, VideoGenerationResult } from "./VideoGenerationForm";
 import ImageGenerationForm, { ImageGenerationParams, ImageGenerationResult } from "./ImageGenerationForm";
 import AvatarGenerationForm, { AvatarGenerationParams, AvatarGenerationResult } from "./AvatarGenerationForm";
+import { useGeneratedProjects } from "../lib/storage/useGeneratedProjects";
 
 export type ModeKey = "video" | "image" | "avatar" | "assistant";
 
@@ -32,6 +33,7 @@ const MODES: Array<{ key: ModeKey; label: string; icon: React.ComponentType<{ si
 
 export default function NewProjectModal({ defaultMode, openSignal, hideTriggerButton, onProjectCreated }: NewProjectModalProps) {
   const router = useRouter();
+  const { save: saveProject } = useGeneratedProjects();
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<ModeKey>("video");
   const [name, setName] = useState("");
@@ -209,7 +211,25 @@ export default function NewProjectModal({ defaultMode, openSignal, hideTriggerBu
           video_uri: data.video_uri
         }
       };
-      
+
+      // 持久化保存
+      saveProject({
+        name: name || "新生成视频",
+        mode: "video",
+        prompt: params.prompt,
+        resultUrl: fullUrl,
+        resultType: resultType as "video" | "image" | "text",
+        thumbnailUrl: resultType === "image" ? fullUrl : undefined,
+        metadata: {
+          model: data.model,
+          duration: data.duration,
+          resolution: data.resolution,
+          aspect_ratio: data.aspect_ratio,
+          size_mb: data.size_mb,
+          video_uri: data.video_uri
+        }
+      });
+
       setResultData(newProject);
       setStep("result");
       return newProject;
@@ -303,13 +323,26 @@ export default function NewProjectModal({ defaultMode, openSignal, hideTriggerBu
         statusText: "已完成",
         mode: "image",
         prompt: params.prompt,
-        attachments: [{ 
-          type: resultType, 
-          src: fullUrl, 
+        attachments: [{
+          type: resultType,
+          src: fullUrl,
           content: textContent,
-          name: "生成结果" 
+          name: "生成结果"
         }],
       };
+
+      // 持久化保存
+      saveProject({
+        name: name || "新生成图片",
+        mode: "image",
+        prompt: params.prompt,
+        resultUrl: fullUrl,
+        resultType: resultType as "video" | "image" | "text",
+        thumbnailUrl: resultType === "image" ? fullUrl : undefined,
+        metadata: {
+          model: params.model
+        }
+      });
 
       setResultData(newProject);
       setStep("result");

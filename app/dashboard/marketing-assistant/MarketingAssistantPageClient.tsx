@@ -16,11 +16,10 @@ import {
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
+import { getSystemPrompt, getPlaceholder, type ToolKey } from "../../../lib/prompts/marketing-prompts";
 
 // const GEMINI_MODEL = "gemini-2.5-flash-preview-05-20";
 const GEMINI_MODEL = "gemini-2.5-flash";
-
-type ToolKey = "chat" | "copy" | "script" | "ecom" | "ad";
 
 const TOOL_PRESETS: { key: ToolKey; label: string; icon: LucideIcon }[] = [
   { key: "chat", label: "智能问答", icon: Bot },
@@ -107,13 +106,7 @@ export default function MarketingAssistantPageClient() {
     return threads.filter((t) => t.title.toLowerCase().includes(q));
   }, [query, threads]);
 
-  const placeholder = useMemo(() => {
-    if (activeTool === "chat") return "发送消息输入 / 提问（例如：如何提升直播间留存率？）";
-    if (activeTool === "copy") return "发送消息输入 / 选择技能（例如：新品饮品的 3 条种草文案）";
-    if (activeTool === "script") return "发送消息输入 / 选择技能（例如：15 秒口播脚本，三段式结构）";
-    if (activeTool === "ecom") return "发送消息输入 / 选择技能（例如：提炼卖点、SKU 对比、详情页结构）";
-    return "发送消息输入 / 选择技能（例如：投放素材 10 条标题与 5 条主视觉文案）";
-  }, [activeTool]);
+  const placeholder = useMemo(() => getPlaceholder(activeTool), [activeTool]);
 
   const send = async () => {
     const text = draft.trim();
@@ -162,7 +155,7 @@ export default function MarketingAssistantPageClient() {
       const chat = ai.chats.create({
         model: GEMINI_MODEL,
         config: {
-          systemInstruction: "你是一个专业的AI营销助手，擅长内容创作与流量增长。",
+          systemInstruction: getSystemPrompt(activeTool),
           maxOutputTokens: 8192,
         },
         history,

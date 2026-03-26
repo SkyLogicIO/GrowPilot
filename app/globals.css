@@ -77,6 +77,14 @@ body {
   box-shadow: 2px 2px 0px var(--color-border);
 }
 
+/* 静态卡片：不响应 hover/active 动画，用于包含表单的卡片 */
+.brut-card-static {
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 4px 4px 0px var(--color-border);
+}
+
 .brut-btn {
   border: 2px solid var(--color-border);
   border-radius: 10px;
