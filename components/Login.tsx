@@ -31,13 +31,24 @@ export default function Login({ isOpen, onClose, onSuccess }: LoginProps) {
 
   if (!isOpen || !mounted) return null;
 
+  const handleLoginSuccess = () => {
+    const user = {
+      name: identifier || "用户",
+      email: identifier || "user@growpilot.com",
+    };
+    localStorage.setItem("access_token", "mock-token");
+    localStorage.setItem("growpilot_user", JSON.stringify(user));
+    window.dispatchEvent(new CustomEvent("growpilot:login", { detail: { user } }));
+    onSuccess();
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      onSuccess();
+      handleLoginSuccess();
     }, 1000);
   };
 
@@ -81,7 +92,7 @@ export default function Login({ isOpen, onClose, onSuccess }: LoginProps) {
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    onSuccess();
+                    handleLoginSuccess();
                   }}
                   className="text-blue-500 underline decoration-2 underline-offset-4 font-semibold hover:text-blue-400 transition-colors cursor-pointer"
                   style={{ color: "#3B82F6" }}

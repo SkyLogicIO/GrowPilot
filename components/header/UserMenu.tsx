@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
 import { HardDrive, Info, Lock, LogOut, Mail, User, Users, X, Zap } from "lucide-react";
 
 const STORAGE_KEY = "growpilot_user_profile";
@@ -126,7 +125,6 @@ interface UserMenuProps {
 }
 
 export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
@@ -220,9 +218,10 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
     setIsAboutOpen(false);
     try {
       window.localStorage.removeItem(STORAGE_KEY);
+      window.localStorage.removeItem("access_token");
+      window.localStorage.removeItem("growpilot_user");
     } catch {}
-    router.push("/");
-    router.refresh();
+    window.dispatchEvent(new CustomEvent("growpilot:logout"));
   };
 
   useEffect(() => {
@@ -316,7 +315,7 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
 
           <button
             type="button"
-            onClick={handleLogout}
+            onClick={() => setIsOpen(false)}
             className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left text-gray-200 hover:bg-white/5 transition-colors"
           >
             <div className="flex items-center gap-3">
@@ -328,7 +327,7 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
 
           <button
             type="button"
-            onClick={() => setIsOpen(false)}
+            onClick={handleLogout}
             className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left text-gray-200 hover:bg-white/5 transition-colors"
           >
             <div className="flex items-center gap-3">

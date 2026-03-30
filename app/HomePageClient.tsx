@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Login from "../components/Login";
-import OnboardingModal from "../components/OnboardingModal";
 import ComingSoonModal from "../components/ComingSoonModal";
 import {
   Image as ImageIcon,
@@ -16,12 +15,35 @@ import {
   PenLine,
 } from "lucide-react";
 
+// 已实现功能 → 对应子页面路由的映射
+const FEATURE_ROUTE_MAP: Record<string, string> = {
+  "AI 视频工场": "/dashboard/video-factory",
+  "AI 绘画工作室": "/dashboard/art-studio",
+  "AI 营销文案": "/dashboard/marketing-assistant",
+};
+
 export default function HomePageClient() {
   const router = useRouter();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState("");
+  const [isAuthed, setIsAuthed] = useState(false);
+
+  // 检查登录态 + 监听事件
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    setIsAuthed(Boolean(token));
+
+    const onLogin = () => setIsAuthed(true);
+    const onLogout = () => setIsAuthed(false);
+
+    window.addEventListener("growpilot:login", onLogin);
+    window.addEventListener("growpilot:logout", onLogout);
+    return () => {
+      window.removeEventListener("growpilot:login", onLogin);
+      window.removeEventListener("growpilot:logout", onLogout);
+    };
+  }, []);
 
   const features = [
     {
@@ -92,6 +114,21 @@ export default function HomePageClient() {
       setComingSoonOpen(true);
       return;
     }
+    // 已登录 → 跳对应子页面
+    if (isAuthed) {
+      const route = FEATURE_ROUTE_MAP[feature.title];
+      if (route) router.push(route);
+      return;
+    }
+    // 未登录 → 弹 Login
+    setIsAuthOpen(true);
+  };
+
+  const handleStartCreating = () => {
+    if (isAuthed) {
+      router.push("/dashboard");
+      return;
+    }
     setIsAuthOpen(true);
   };
 
@@ -111,7 +148,7 @@ export default function HomePageClient() {
           <div className="flex items-center gap-5">
             <span className="hidden md:block text-sm text-text-muted font-medium">AI Growth Engine</span>
             <button
-              onClick={() => setIsAuthOpen(true)}
+              onClick={handleStartCreating}
               className="brut-btn-pill bg-accent text-white px-6 py-2.5 text-sm"
             >
               <span className="flex items-center gap-2">
@@ -151,7 +188,7 @@ export default function HomePageClient() {
 
               <div className="flex items-center gap-4 flex-wrap">
                 <button
-                  onClick={() => setIsAuthOpen(true)}
+                  onClick={handleStartCreating}
                   className="brut-btn bg-accent text-white px-8 py-3.5 text-base"
                 >
                   <span className="flex items-center gap-2">
@@ -222,7 +259,7 @@ export default function HomePageClient() {
           <p className="text-text-secondary font-medium mb-8">加入数千名营销创作者的行列</p>
           <button
             className="brut-btn bg-text-primary text-white px-10 py-4 text-lg"
-            onClick={() => setIsAuthOpen(true)}
+            onClick={handleStartCreating}
           >
             立即体验 →
           </button>
@@ -233,9 +270,8 @@ export default function HomePageClient() {
       <Login
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
-        onSuccess={() => { setIsAuthOpen(false); setIsOnboardingOpen(true); }}
+        onSuccess={() => router.push("/dashboard")}
       />
-      <OnboardingModal isOpen={isOnboardingOpen} onComplete={() => router.push("/dashboard")} />
       <ComingSoonModal
         isOpen={comingSoonOpen}
         onClose={() => setComingSoonOpen(false)}
