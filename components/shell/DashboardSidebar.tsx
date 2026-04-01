@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Bot,
   Camera,
@@ -57,8 +58,24 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { icon: Wand2, label: "AI创作工具", href: "/dashboard/tools",               color: "bg-[#C77DFF]" },
 ];
 
+/** 判断 href 是否匹配当前路径（只比较 pathname，忽略 query） */
+function matchActive(pathname: string, href: string): boolean {
+  const itemPath = href.split("?")[0];
+  if (pathname === itemPath) return true;
+  // 首页精确匹配：/dashboard 不匹配 /dashboard/xxx
+  if (itemPath === "/dashboard") return false;
+  return pathname.startsWith(itemPath + "/");
+}
+
+/** 判断父级菜单是否应该高亮（自身或任一子项命中） */
+function isGroupActive(pathname: string, item: SidebarItem): boolean {
+  if (matchActive(pathname, item.href)) return true;
+  return item.children?.some((child) => matchActive(pathname, child.href)) ?? false;
+}
+
 export default function DashboardSidebar({ isOpen }: { isOpen: boolean }) {
   const [buildStamp, setBuildStamp] = useState("未知");
+  const pathname = usePathname();
 
   useEffect(() => {
     setBuildStamp(formatBuildStamp(process.env.NEXT_PUBLIC_BUILD_TIME));
@@ -90,36 +107,54 @@ export default function DashboardSidebar({ isOpen }: { isOpen: boolean }) {
 
       {/* Nav */}
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-        {SIDEBAR_ITEMS.map((item) => (
-          <div key={item.label}>
-            <Link
-              href={item.href}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-secondary hover:text-text-primary hover:bg-surface-hover font-bold text-sm transition-all duration-(--duration-fast) group"
-            >
-              <div className={`w-8 h-8 rounded-lg ${item.color} border-2 border-border flex items-center justify-center shadow-[2px_2px_0px_#1A1A1A] shrink-0`}>
-                <item.icon size={16} className="text-text-primary" />
-              </div>
-              {isOpen && <span>{item.label}</span>}
-            </Link>
+        {SIDEBAR_ITEMS.map((item) => {
+          const parentActive = isGroupActive(pathname, item);
+          return (
+            <div key={item.label}>
+              <Link
+                href={item.href}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all duration-(--duration-fast) group ${
+                  parentActive
+                    ? "bg-surface-hover text-text-primary"
+                    : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-lg ${item.color} border-2 border-border flex items-center justify-center shadow-[2px_2px_0px_#1A1A1A] shrink-0 transition-transform duration-(--duration-fast) ${
+                  parentActive ? "scale-110" : ""
+                }`}>
+                  <item.icon size={16} className="text-text-primary" />
+                </div>
+                {isOpen && <span>{item.label}</span>}
+              </Link>
 
-            {isOpen && item.children?.length ? (
-              <div className="ml-4 pl-4 border-l-2 border-border-light space-y-0.5 my-0.5">
-                {item.children.map((child) => (
-                  <Link
-                    key={`${item.label}_${child.label}`}
-                    href={child.href}
-                    className="flex items-center gap-2.5 px-2 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-hover font-medium text-sm transition-colors duration-(--duration-fast) group"
-                  >
-                    <div className={`w-6 h-6 rounded-md ${child.color} border border-border flex items-center justify-center shrink-0`}>
-                      <child.icon size={12} className="text-text-primary" />
-                    </div>
-                    <span>{child.label}</span>
-                  </Link>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        ))}
+              {isOpen && item.children?.length ? (
+                <div className="ml-4 pl-4 border-l-2 border-border-light space-y-0.5 my-0.5">
+                  {item.children.map((child) => {
+                    const childActive = matchActive(pathname, child.href);
+                    return (
+                      <Link
+                        key={`${item.label}_${child.label}`}
+                        href={child.href}
+                        className={`flex items-center gap-2.5 px-2 py-2 rounded-lg font-medium text-sm transition-colors duration-(--duration-fast) ${
+                          childActive
+                            ? "bg-accent/15 text-text-primary font-bold"
+                            : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
+                        }`}
+                      >
+                        <div className={`w-6 h-6 rounded-md ${child.color} border border-border flex items-center justify-center shrink-0 transition-all ${
+                          childActive ? "ring-2 ring-accent/50 scale-110" : ""
+                        }`}>
+                          <child.icon size={12} className="text-text-primary" />
+                        </div>
+                        <span>{child.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
       </nav>
     </aside>
   );

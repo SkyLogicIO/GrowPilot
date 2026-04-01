@@ -5,6 +5,7 @@ import { Image as ImageIcon, ArrowLeft, Clock, Download } from "lucide-react";
 import Link from "next/link";
 import ImageGenerationForm, { ImageGenerationParams, ImageGenerationResult } from "../../../components/ImageGenerationForm";
 import { useGeneratedProjects } from "../../../lib/storage/useGeneratedProjects";
+import { generateImage } from "../../../lib/ai";
 
 export default function ArtStudioPageClient() {
   const { projects, save: saveProject } = useGeneratedProjects();
@@ -18,50 +19,17 @@ export default function ArtStudioPageClient() {
     .slice(0, 10);
 
   const handleGenerate = async (params: ImageGenerationParams): Promise<ImageGenerationResult> => {
-    const apiKey = window.localStorage.getItem("gemini_api_key")?.trim();
-
-    if (!apiKey) {
-      throw new Error("请先设置 Gemini API Key");
-    }
-
     setIsGenerating(true);
 
     try {
-      const endpoint = "/api/proxy/text2img";
+      const genResult = await generateImage({
+        prompt: params.prompt,
+        model: params.model,
+        inputImage: params.inputImage || undefined,
+      });
 
-      let response;
-      if (params.inputImage) {
-        const formData = new FormData();
-        formData.append("prompt", params.prompt);
-        formData.append("model", params.model);
-        formData.append("api_key", apiKey);
-        formData.append("image", params.inputImage, params.inputImage.name);
-
-        response = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Accept": "application/json" },
-          body: formData,
-        });
-      } else {
-        response = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            prompt: params.prompt,
-            model: params.model,
-            api_key: apiKey,
-          }),
-        });
-      }
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "生成失败");
-      }
-
-      const fullUrl = data.image_url || "";
-      const resultType = data.type || "image";
+      const fullUrl = genResult.imageUrl;
+      const resultType = "image";
 
       const result: ImageGenerationResult = {
         id: Date.now(),

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { X, Sparkles, Upload, Wand2, Loader2, Download } from "lucide-react";
+import { editImage } from "@/lib/ai";
 
 type BackgroundReplaceModalProps = {
   open: boolean;
@@ -18,7 +19,6 @@ export default function BackgroundReplaceModal({ open, onClose }: BackgroundRepl
   const inputImageRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
-  // Reset state when opening
   useEffect(() => {
     if (open) {
       setPrompt("");
@@ -29,7 +29,6 @@ export default function BackgroundReplaceModal({ open, onClose }: BackgroundRepl
     }
   }, [open]);
 
-  // Close on outside click
   useEffect(() => {
     if (!open) return;
 
@@ -64,16 +63,8 @@ export default function BackgroundReplaceModal({ open, onClose }: BackgroundRepl
   };
 
   const handleGenerate = async () => {
-    if (!prompt) {
-      alert("请输入背景描述");
-      return;
-    }
-    if (!inputImage) {
-      alert("请上传图片");
-      return;
-    }
+    if (!prompt || !inputImage) return;
 
-    // 获取 API Key
     const apiKey = window.localStorage.getItem("gemini_api_key")?.trim();
     if (!apiKey) {
       alert("请先设置 Gemini API Key");
@@ -84,28 +75,8 @@ export default function BackgroundReplaceModal({ open, onClose }: BackgroundRepl
     setResultImage("");
 
     try {
-      const formData = new FormData();
-      formData.append("prompt", prompt);
-      formData.append("image", inputImage, inputImage.name);
-      formData.append("api_key", apiKey);
-
-      const response = await fetch("/api/proxy/text2img", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (!data.success || !data.image_url) {
-        throw new Error(data.error || "生成失败");
-      }
-
-      setResultImage(data.image_url);
+      const result = await editImage({ prompt, image: inputImage });
+      setResultImage(result.imageUrl);
     } catch (error: unknown) {
       console.error("Background replace failed:", error);
       const message = error instanceof Error ? error.message : "未知错误";
@@ -118,51 +89,53 @@ export default function BackgroundReplaceModal({ open, onClose }: BackgroundRepl
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center px-6" style={{ zIndex: 100000 }}>
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center px-6 pl-64" style={{ zIndex: 100000 }}>
       <div
         ref={rootRef}
-        className="w-full max-w-4xl rounded-2xl border border-white/10 bg-[#0F1115] shadow-2xl ring-1 ring-white/10 overflow-hidden flex flex-col max-h-[90vh]"
+        className="w-full max-w-4xl bg-surface border-2 border-border shadow-[6px_6px_0px_#1A1A1A] rounded-xl overflow-hidden flex flex-col max-h-[90vh] animate-fade-up"
       >
-        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between shrink-0">
+        {/* Header */}
+        <div className="px-6 py-4 border-b-2 border-border flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-green-500 to-teal-500 flex items-center justify-center">
-              <Wand2 size={20} className="text-white" />
+            <div className="w-10 h-10 rounded-xl bg-[#4ECDC4] border-2 border-border flex items-center justify-center shadow-[2px_2px_0px_#1A1A1A]">
+              <Wand2 size={20} className="text-text-primary" />
             </div>
             <div>
-              <div className="text-lg font-bold text-white">换背景</div>
-              <div className="text-xs text-gray-400">上传图片，描述新背景，一键替换</div>
+              <div className="text-lg font-black text-text-primary">换背景</div>
+              <div className="text-xs text-text-secondary">上传图片，描述新背景，一键替换</div>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
             disabled={isGenerating}
-            className="w-10 h-10 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors flex items-center justify-center"
+            className="w-10 h-10 rounded-xl bg-surface border-2 border-border shadow-[2px_2px_0px_#1A1A1A] hover:bg-surface-hover transition-colors flex items-center justify-center active:translate-y-0.5 active:shadow-[1px_1px_0px_#1A1A1A]"
           >
-            <X size={18} className="text-gray-200" />
+            <X size={18} className="text-text-secondary" />
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto custom-scrollbar">
+        {/* Body */}
+        <div className="p-6 overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Left Column: Inputs */}
+            {/* Left Column */}
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">上传图片</label>
+                <label className="block text-sm font-bold text-text-secondary mb-2">上传图片</label>
                 <div
                   onClick={() => !isGenerating && inputImageRef.current?.click()}
-                  className={`relative aspect-[4/3] rounded-2xl border-2 border-dashed ${
-                    inputImagePreview ? "border-blue-500/50" : "border-white/20"
-                  } bg-white/5 hover:bg-white/10 transition-colors flex flex-col items-center justify-center cursor-pointer overflow-hidden group`}
+                  className={`relative aspect-[4/3] rounded-xl border-2 border-dashed transition-colors flex flex-col items-center justify-center cursor-pointer overflow-hidden ${
+                    inputImagePreview ? "border-accent bg-accent/5" : "border-border bg-surface-hover hover:bg-surface"
+                  }`}
                 >
                   {inputImagePreview ? (
                     <img src={inputImagePreview} alt="Input" className="w-full h-full object-contain" />
                   ) : (
                     <>
-                      <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                        <Upload size={24} className="text-gray-300" />
+                      <div className="w-12 h-12 rounded-xl bg-surface border-2 border-border shadow-[2px_2px_0px_#1A1A1A] flex items-center justify-center mb-3">
+                        <Upload size={24} className="text-text-muted" />
                       </div>
-                      <span className="text-sm text-gray-400">点击上传图片</span>
+                      <span className="text-sm text-text-muted">点击上传图片</span>
                     </>
                   )}
                   <input
@@ -177,29 +150,29 @@ export default function BackgroundReplaceModal({ open, onClose }: BackgroundRepl
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">新背景描述</label>
+                <label className="block text-sm font-bold text-text-secondary mb-2">新背景描述</label>
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="描述你想要的背景，例如：蓝天白云下的草原、现代都市夜景、温馨的咖啡厅..."
-                  className="w-full h-28 bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 resize-none text-sm"
+                  className="w-full h-28 bg-surface-hover border-2 border-border rounded-xl p-3 text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent/40 resize-none text-sm"
                 />
               </div>
             </div>
 
-            {/* Right Column: Result */}
+            {/* Right Column */}
             <div className="space-y-6 flex flex-col">
-              <label className="block text-sm font-medium text-gray-300 mb-2">生成结果</label>
-              <div className="flex-1 rounded-2xl bg-black/20 border border-white/10 flex items-center justify-center relative overflow-hidden min-h-[300px]">
+              <label className="block text-sm font-bold text-text-secondary mb-2">生成结果</label>
+              <div className="flex-1 rounded-xl bg-surface-hover border-2 border-border flex items-center justify-center relative overflow-hidden min-h-[300px]">
                 {resultImage ? (
                   <img src={resultImage} alt="Result" className="w-full h-full object-contain" />
                 ) : isGenerating ? (
                   <div className="flex flex-col items-center gap-3">
-                    <Loader2 size={32} className="text-green-500 animate-spin" />
-                    <span className="text-gray-400 text-sm">正在生成新背景...</span>
+                    <Loader2 size={32} className="text-[#4ECDC4] animate-spin" />
+                    <span className="text-text-muted text-sm">正在生成新背景...</span>
                   </div>
                 ) : (
-                  <div className="text-gray-500 text-sm text-center px-4">
+                  <div className="text-text-muted text-sm text-center px-4">
                     上传图片并描述背景<br/>点击下方按钮开始生成
                   </div>
                 )}
@@ -211,7 +184,7 @@ export default function BackgroundReplaceModal({ open, onClose }: BackgroundRepl
                   download="background_replaced.png"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium transition-colors border border-white/10"
+                  className="brut-btn bg-surface text-text-primary flex items-center justify-center gap-2 w-full py-3 text-sm"
                 >
                   <Download size={18} />
                   下载结果
@@ -221,12 +194,13 @@ export default function BackgroundReplaceModal({ open, onClose }: BackgroundRepl
           </div>
         </div>
 
-        <div className="px-6 py-5 border-t border-white/10 flex justify-end gap-3 shrink-0 bg-[#0F1115]">
+        {/* Footer */}
+        <div className="px-6 py-5 border-t-2 border-border flex justify-end gap-3 shrink-0">
           <button
             type="button"
             onClick={onClose}
             disabled={isGenerating}
-            className="px-6 py-2.5 rounded-xl border border-white/10 hover:bg-white/5 text-gray-300 font-medium transition-colors"
+            className="brut-btn bg-surface text-text-secondary px-6 py-2.5"
           >
             取消
           </button>
@@ -234,7 +208,11 @@ export default function BackgroundReplaceModal({ open, onClose }: BackgroundRepl
             type="button"
             onClick={handleGenerate}
             disabled={isGenerating || !prompt || !inputImage}
-            className="px-8 py-2.5 rounded-xl bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 text-white font-bold shadow-lg shadow-green-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+            className={`brut-btn px-8 py-2.5 text-white flex items-center gap-2 ${
+              isGenerating || !prompt || !inputImage
+                ? "bg-text-muted cursor-not-allowed"
+                : "bg-[#4ECDC4]"
+            }`}
           >
             {isGenerating ? (
               <>

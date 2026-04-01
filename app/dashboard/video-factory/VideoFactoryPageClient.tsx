@@ -5,6 +5,7 @@ import { Video, ArrowLeft, Clock } from "lucide-react";
 import Link from "next/link";
 import VideoGenerationForm, { VideoGenerationParams, VideoGenerationResult } from "../../../components/VideoGenerationForm";
 import { useGeneratedProjects } from "../../../lib/storage/useGeneratedProjects";
+import { generateVideo } from "../../../lib/ai";
 
 export default function VideoFactoryPageClient() {
   const { projects, save: saveProject } = useGeneratedProjects();
@@ -16,44 +17,20 @@ export default function VideoFactoryPageClient() {
   const videoProjects = projects.filter((p) => p.mode === "video").slice(0, 10);
 
   const handleGenerate = async (params: VideoGenerationParams): Promise<VideoGenerationResult> => {
-    const apiKey = window.localStorage.getItem("gemini_api_key")?.trim();
-    if (!apiKey) throw new Error("请先设置 Gemini API Key");
     setIsGenerating(true);
     const modelDisplayName = params.model === "veo-3.1-fast-generate-preview" ? "Veo 3.1 Fast" : "Veo 3.1";
 
     try {
-      const endpoint = "/api/proxy/text2video";
-      let response;
-      if (params.inputImage) {
-        const formData = new FormData();
-        formData.append("prompt", params.prompt);
-        formData.append("model", params.model);
-        formData.append("api_key", apiKey);
-        formData.append("duration", String(params.duration));
-        formData.append("resolution", params.resolution);
-        formData.append("aspect_ratio", params.aspectRatio);
-        formData.append("image", params.inputImage, params.inputImage.name);
-        response = await fetch(endpoint, { method: "POST", headers: { Accept: "application/json" }, body: formData });
-      } else {
-        response = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            prompt: params.prompt,
-            model: params.model,
-            api_key: apiKey,
-            duration: params.duration,
-            resolution: params.resolution,
-            aspect_ratio: params.aspectRatio,
-          }),
-        });
-      }
-      const data = await response.json();
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || data.message || "HTTP " + response.status);
-      }
-      const fullUrl = data.video_url || data.image_url || "";
-      const resultType = data.type || (data.video_url ? "video" : "image");
+      const genResult = await generateVideo({
+        prompt: params.prompt,
+        model: params.model,
+        duration: params.duration,
+        resolution: params.resolution,
+        aspectRatio: params.aspectRatio,
+        inputImage: params.inputImage || undefined,
+      });
+      const fullUrl = genResult.videoUrl;
+      const resultType = "video";
       const result: VideoGenerationResult = {
         id: Date.now(),
         name: "新生成视频",
@@ -76,7 +53,7 @@ export default function VideoFactoryPageClient() {
         prompt: params.prompt,
         resultUrl: fullUrl,
         resultType: resultType as "video" | "image" | "text",
-        metadata: { model: data.model, duration: data.duration, resolution: data.resolution, aspect_ratio: data.aspect_ratio },
+        metadata: { model: genResult.model, duration: genResult.duration, resolution: genResult.resolution, aspect_ratio: genResult.aspectRatio },
       });
       setResultData(result);
       setStep("result");

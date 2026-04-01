@@ -61,62 +61,13 @@ const buildDemoTransactions = (): Transaction[] => {
   const now = Date.now();
   const day = 24 * 60 * 60 * 1000;
   return [
-    {
-      id: `tx_${now}_1`,
-      at: new Date(now - 1 * day).toISOString(),
-      type: "充值",
-      amount: 500,
-      title: "积分充值",
-      detail: "充值套餐：500 积分",
-    },
-    {
-      id: `tx_${now}_2`,
-      at: new Date(now - 6 * day).toISOString(),
-      type: "扣款",
-      amount: -130,
-      title: "存储空间月度扣费",
-      detail: "按占用空间扣费",
-    },
-    {
-      id: `tx_${now}_3`,
-      at: new Date(now - 8 * day).toISOString(),
-      type: "扣款",
-      amount: -20,
-      title: "会员下载",
-      detail: "下载素材消耗积分",
-    },
-    {
-      id: `tx_${now}_4`,
-      at: new Date(now - 12 * day).toISOString(),
-      type: "充值",
-      amount: 1000,
-      title: "积分充值",
-      detail: "充值套餐：1000 积分",
-    },
-    {
-      id: `tx_${now}_5`,
-      at: new Date(now - 16 * day).toISOString(),
-      type: "扣款",
-      amount: -45,
-      title: "使用模型",
-      detail: "调用模型消耗积分",
-    },
-    {
-      id: `tx_${now}_6`,
-      at: new Date(now - 20 * day).toISOString(),
-      type: "扣款",
-      amount: -15,
-      title: "一键同款",
-      detail: "生成任务消耗积分",
-    },
-    {
-      id: `tx_${now}_7`,
-      at: new Date(now - 24 * day).toISOString(),
-      type: "充值",
-      amount: 300,
-      title: "积分充值",
-      detail: "充值套餐：300 积分",
-    },
+    { id: `tx_${now}_1`, at: new Date(now - 1 * day).toISOString(), type: "充值", amount: 500, title: "积分充值", detail: "充值套餐：500 积分" },
+    { id: `tx_${now}_2`, at: new Date(now - 6 * day).toISOString(), type: "扣款", amount: -130, title: "存储空间月度扣费", detail: "按占用空间扣费" },
+    { id: `tx_${now}_3`, at: new Date(now - 8 * day).toISOString(), type: "扣款", amount: -20, title: "会员下载", detail: "下载素材消耗积分" },
+    { id: `tx_${now}_4`, at: new Date(now - 12 * day).toISOString(), type: "充值", amount: 1000, title: "积分充值", detail: "充值套餐：1000 积分" },
+    { id: `tx_${now}_5`, at: new Date(now - 16 * day).toISOString(), type: "扣款", amount: -45, title: "使用模型", detail: "调用模型消耗积分" },
+    { id: `tx_${now}_6`, at: new Date(now - 20 * day).toISOString(), type: "扣款", amount: -15, title: "一键同款", detail: "生成任务消耗积分" },
+    { id: `tx_${now}_7`, at: new Date(now - 24 * day).toISOString(), type: "充值", amount: 300, title: "积分充值", detail: "充值套餐：300 积分" },
   ];
 };
 
@@ -187,11 +138,7 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
     ) {
       window.localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({
-          ...saved,
-          ...next,
-          updatedAt: new Date().toISOString(),
-        })
+        JSON.stringify({ ...saved, ...next, updatedAt: new Date().toISOString() })
       );
     }
   }, [mounted, isProfileOpen]);
@@ -226,7 +173,6 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
 
   useEffect(() => {
     if (!isOpen) return;
-
     const onPointerDown = (event: PointerEvent) => {
       const el = ref.current;
       if (!el) return;
@@ -235,352 +181,308 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
       if (el.contains(target)) return;
       setIsOpen(false);
     };
-
     window.addEventListener("pointerdown", onPointerDown);
     return () => window.removeEventListener("pointerdown", onPointerDown);
   }, [isOpen]);
 
   return (
-    <div className="flex items-center gap-3 pl-6 border-l border-white/10 relative" ref={ref}>
+    <div className="flex items-center gap-3 pl-6 border-l-2 border-border relative" ref={ref}>
       <div className="text-right hidden md:block">
-        <div className="text-sm font-medium text-white">{profile.name}</div>
-        <div className="text-xs text-gray-500">{profile.membership}</div>
+        <div className="text-sm font-bold text-text-primary">{profile.name}</div>
+        <div className="text-xs text-text-muted">{profile.membership}</div>
       </div>
 
       <button
         type="button"
         onClick={() => setIsOpen((v) => !v)}
-        className="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center border border-white/10 hover:border-white/20 hover:bg-gray-600 transition-colors"
+        className="w-9 h-9 rounded-lg bg-[#FF6B6B] border-2 border-border shadow-[2px_2px_0px_#1A1A1A] flex items-center justify-center hover:bg-accent-hover transition-colors active:translate-y-0.5 active:shadow-[1px_1px_0px_#1A1A1A]"
       >
-        <User size={18} className="text-gray-200" />
+        <User size={16} className="text-white" />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-12 w-64 rounded-2xl border border-white/10 bg-[#0F1115] shadow-2xl ring-1 ring-white/10 overflow-hidden">
+        <div className="absolute right-0 top-12 w-64 bg-surface border-2 border-border shadow-[4px_4px_0px_#1A1A1A] rounded-xl overflow-hidden">
           <button
             type="button"
-            onClick={() => {
-              setIsOpen(false);
-              setIsProfileOpen(true);
-            }}
-            className="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-200 hover:bg-white/5 transition-colors"
+            onClick={() => { setIsOpen(false); setIsProfileOpen(true); }}
+            className="w-full flex items-center gap-3 px-4 py-3 text-left text-text-secondary hover:bg-surface-hover transition-colors text-sm font-bold"
           >
-            <User size={18} className="text-gray-300" />
+            <User size={16} className="text-text-muted" />
             <span>我的资料</span>
           </button>
 
           <button
             type="button"
-            onClick={() => {
-              setIsOpen(false);
-              onOpenCreateTeam?.();
-            }}
-            className="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-200 hover:bg-white/5 transition-colors"
+            onClick={() => { setIsOpen(false); onOpenCreateTeam?.(); }}
+            className="w-full flex items-center gap-3 px-4 py-3 text-left text-text-secondary hover:bg-surface-hover transition-colors text-sm font-bold"
           >
-            <Users size={18} className="text-gray-300" />
+            <Users size={16} className="text-text-muted" />
             <span>创建团队</span>
           </button>
 
           <button
             type="button"
             onClick={() => setIsOpen(false)}
-            className="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-200 hover:bg-white/5 transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-3 text-left text-text-secondary hover:bg-surface-hover transition-colors text-sm font-bold"
           >
-            <Mail size={18} className="text-gray-300" />
+            <Mail size={16} className="text-text-muted" />
             <span>联系我们</span>
           </button>
 
           <button
             type="button"
-            onClick={() => {
-              setIsOpen(false);
-              setIsAboutOpen(true);
-            }}
-            className="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-200 hover:bg-white/5 transition-colors"
+            onClick={() => { setIsOpen(false); setIsAboutOpen(true); }}
+            className="w-full flex items-center gap-3 px-4 py-3 text-left text-text-secondary hover:bg-surface-hover transition-colors text-sm font-bold"
           >
-            <Info size={18} className="text-gray-300" />
+            <Info size={16} className="text-text-muted" />
             <span>关于我们</span>
           </button>
 
           <button
             type="button"
             onClick={() => setIsOpen(false)}
-            className="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-200 hover:bg-white/5 transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-3 text-left text-text-secondary hover:bg-surface-hover transition-colors text-sm font-bold"
           >
-            <Lock size={18} className="text-gray-300" />
+            <Lock size={16} className="text-text-muted" />
             <span>修改密码</span>
           </button>
 
-          <div className="h-px bg-white/10" />
+          <div className="h-px bg-border" />
 
           <button
             type="button"
             onClick={() => setIsOpen(false)}
-            className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left text-gray-200 hover:bg-white/5 transition-colors"
+            className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left text-text-secondary hover:bg-surface-hover transition-colors text-sm font-bold"
           >
             <div className="flex items-center gap-3">
-              <Lock size={18} className="text-gray-300" />
+              <Lock size={16} className="text-text-muted" />
               <span>锁定屏幕</span>
             </div>
-            <span className="text-xs text-gray-500">⌥ L</span>
+            <span className="text-xs text-text-muted">⌥ L</span>
           </button>
 
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left text-gray-200 hover:bg-white/5 transition-colors"
+            className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left text-error hover:bg-error/10 transition-colors text-sm font-bold"
           >
             <div className="flex items-center gap-3">
-              <LogOut size={18} className="text-gray-300" />
+              <LogOut size={16} />
               <span>退出登录</span>
             </div>
-            <span className="text-xs text-gray-500">⌥ Q</span>
+            <span className="text-xs text-text-muted">⌥ Q</span>
           </button>
         </div>
       )}
 
-      {mounted && isProfileOpen
-        ? createPortal(
-            <div
-              className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-              style={{ zIndex: 99999, position: "fixed", top: 0, left: 0, right: 0, bottom: 0 }}
-              onMouseDown={(e) => {
-                if (e.target === e.currentTarget) setIsProfileOpen(false);
-              }}
-            >
-              <div className="w-full max-w-xl bg-[#0F1115] rounded-2xl border border-white/10 shadow-2xl overflow-hidden ring-1 ring-white/10">
-                <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
-                  <div className="min-w-0">
-                    <div className="text-lg font-extrabold text-white">我的资料</div>
-                    <div className="mt-1 text-sm text-gray-400 truncate">{profile.name} · {profile.membership}</div>
-                    <div className="mt-1 text-xs text-gray-500 truncate">ID：{profile.userId}</div>
+      {mounted && isProfileOpen ? createPortal(
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm"
+          style={{ zIndex: 99999, position: "fixed", top: 0, left: 0, right: 0, bottom: 0 }}
+          onMouseDown={(e) => { if (e.target === e.currentTarget) setIsProfileOpen(false); }}
+        >
+          <div className="w-full max-w-xl bg-surface border-2 border-border shadow-[6px_6px_0px_#1A1A1A] rounded-xl overflow-hidden animate-fade-up">
+            <div className="px-6 py-5 border-b-2 border-border flex items-center justify-between">
+              <div className="min-w-0">
+                <div className="text-lg font-black text-text-primary">我的资料</div>
+                <div className="mt-1 text-sm text-text-secondary truncate">{profile.name} · {profile.membership}</div>
+                <div className="mt-1 text-xs text-text-muted truncate">ID：{profile.userId}</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsProfileOpen(false)}
+                className="w-10 h-10 rounded-xl bg-surface-hover border-2 border-border shadow-[2px_2px_0px_#1A1A1A] hover:bg-surface-hover flex items-center justify-center active:translate-y-0.5 active:shadow-[1px_1px_0px_#1A1A1A] transition-all"
+                aria-label="关闭"
+              >
+                <X size={18} className="text-text-secondary" />
+              </button>
+            </div>
+
+            <div className="px-6 py-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="brut-card-static p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-xs font-bold text-text-secondary">积分</div>
+                    <button type="button" className="brut-tag bg-[#FFD93D]/20 text-text-primary">充值</button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsProfileOpen(false)}
-                    className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors flex items-center justify-center"
-                    aria-label="关闭"
-                  >
-                    <X size={18} className="text-gray-200" />
-                  </button>
-                </div>
-
-                <div className="px-6 py-5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="text-xs text-gray-400">积分</div>
-                        <button
-                          type="button"
-                          className="h-8 px-3 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-200 text-xs font-semibold hover:bg-blue-600/25 transition-colors"
-                        >
-                          充值
-                        </button>
-                      </div>
-                      <div className="mt-2 flex items-center gap-2">
-                        <Zap size={18} className="text-blue-300" />
-                        <div className="text-2xl font-extrabold text-white">{profile.points}</div>
-                      </div>
-                    </div>
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="text-xs text-gray-400">存储空间</div>
-                        <button
-                          type="button"
-                          className="h-8 px-3 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-200 text-xs font-semibold hover:bg-blue-600/25 transition-colors"
-                        >
-                          充值
-                        </button>
-                      </div>
-                      <div className="mt-2 flex items-center gap-2">
-                        <HardDrive size={18} className="text-gray-300" />
-                        <div className="text-base font-extrabold text-white">
-                          {Number(profile.storageUsedGb).toFixed(1)}GB / {profile.storageTotalGb}GB
-                        </div>
-                      </div>
-                      <div className="mt-1 text-xs text-gray-400">
-                        每月按占用空间扣积分（{profile.storageRatePointsPerGb} 积分/GB）：{Math.ceil(profile.storageUsedGb) * profile.storageRatePointsPerGb} 积分/月
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-5 rounded-xl border border-white/10 bg-white/5 p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="text-sm font-bold text-white">充值与消耗记录</div>
-                      <div className="text-xs text-gray-400">共 {profile.transactions.length} 条</div>
-                    </div>
-
-                    <div className="mt-3 rounded-xl border border-white/10 overflow-hidden">
-                      <div className="grid grid-cols-[128px_64px_88px_minmax(0,1fr)] gap-3 px-3 py-2 bg-black/30 text-xs text-gray-400">
-                        <div>时间</div>
-                        <div>类型</div>
-                        <div className="text-right">积分</div>
-                        <div>详情</div>
-                      </div>
-
-                      {(() => {
-                        const pageSize = 6;
-                        const totalPages = Math.max(1, Math.ceil(profile.transactions.length / pageSize));
-                        const currentPage = Math.min(Math.max(1, txPage), totalPages);
-                        const start = (currentPage - 1) * pageSize;
-                        const rows = profile.transactions.slice(start, start + pageSize);
-
-                        return (
-                          <div className="divide-y divide-white/10">
-                            {rows.map((tx) => {
-                              const amount = Number(tx.amount) || 0;
-                              const isIn = amount > 0;
-                              return (
-                                <div
-                                  key={tx.id}
-                                  className="grid grid-cols-[128px_64px_88px_minmax(0,1fr)] gap-3 px-3 py-2 text-sm"
-                                >
-                                  <div className="text-gray-300">{formatDateTime(tx.at)}</div>
-                                  <div className={isIn ? "text-emerald-300" : "text-rose-300"}>
-                                    {tx.type || (isIn ? "充值" : "扣款")}
-                                  </div>
-                                  <div className={isIn ? "text-emerald-200 text-right font-semibold" : "text-rose-200 text-right font-semibold"}>
-                                    {isIn ? `+${amount}` : `${amount}`}
-                                  </div>
-                                  <div className="text-gray-200 truncate">
-                                    <span className="font-semibold text-white/90">{tx.title || "-"}</span>
-                                    {tx.detail ? <span className="text-gray-400"> · {tx.detail}</span> : null}
-                                  </div>
-                                </div>
-                              );
-                            })}
-
-                            {rows.length === 0 ? (
-                              <div className="px-3 py-6 text-sm text-gray-400 text-center">暂无记录</div>
-                            ) : null}
-                          </div>
-                        );
-                      })()}
-                    </div>
-
-                    {(() => {
-                      const pageSize = 6;
-                      const totalPages = Math.max(1, Math.ceil(profile.transactions.length / pageSize));
-                      const currentPage = Math.min(Math.max(1, txPage), totalPages);
-                      const canPrev = currentPage > 1;
-                      const canNext = currentPage < totalPages;
-
-                      return (
-                        <div className="mt-3 flex items-center justify-between gap-3">
-                          <div className="text-xs text-gray-400">
-                            第 {currentPage} / {totalPages} 页
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              disabled={!canPrev}
-                              onClick={() => setTxPage((p) => Math.max(1, p - 1))}
-                              className="h-9 px-4 rounded-full bg-white/5 border border-white/10 text-gray-200 text-sm font-semibold hover:bg-white/10 transition-colors disabled:opacity-40 disabled:hover:bg-white/5"
-                            >
-                              上一页
-                            </button>
-                            <button
-                              type="button"
-                              disabled={!canNext}
-                              onClick={() => setTxPage((p) => p + 1)}
-                              className="h-9 px-4 rounded-full bg-white/5 border border-white/10 text-gray-200 text-sm font-semibold hover:bg-white/10 transition-colors disabled:opacity-40 disabled:hover:bg-white/5"
-                            >
-                              下一页
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })()}
+                  <div className="mt-2 flex items-center gap-2">
+                    <Zap size={18} className="text-[#FFD93D]" />
+                    <div className="text-2xl font-black text-text-primary">{profile.points}</div>
                   </div>
                 </div>
-
-                <div className="px-6 py-5 border-t border-white/10 flex justify-between items-center gap-4">
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      value={geminiKey}
-                      onChange={handleKeyChange}
-                      placeholder="输入 Gemini API Key"
-                      className="w-full h-11 px-4 rounded-full bg-white/5 border border-white/10 text-white placeholder:text-gray-500 text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                    />
+                <div className="brut-card-static p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-xs font-bold text-text-secondary">存储空间</div>
+                    <button type="button" className="brut-tag bg-[#4ECDC4]/20 text-text-primary">充值</button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsProfileOpen(false)}
-                    className="h-11 px-6 rounded-full bg-white/5 border border-white/10 text-gray-200 hover:bg-white/10 transition-colors font-semibold shrink-0"
-                  >
-                    确定
-                  </button>
+                  <div className="mt-2 flex items-center gap-2">
+                    <HardDrive size={18} className="text-text-muted" />
+                    <div className="text-base font-black text-text-primary">
+                      {Number(profile.storageUsedGb).toFixed(1)}GB / {profile.storageTotalGb}GB
+                    </div>
+                  </div>
+                  <div className="mt-1 text-xs text-text-muted">
+                    每月按占用空间扣积分（{profile.storageRatePointsPerGb} 积分/GB）：{Math.ceil(profile.storageUsedGb) * profile.storageRatePointsPerGb} 积分/月
+                  </div>
                 </div>
               </div>
-            </div>,
-            document.body
-          )
-        : null}
 
-      {mounted && isAboutOpen
-        ? createPortal(
-            <div
-              className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-              style={{ zIndex: 99999, position: "fixed", top: 0, left: 0, right: 0, bottom: 0 }}
-              onMouseDown={(e) => {
-                if (e.target === e.currentTarget) setIsAboutOpen(false);
-              }}
-            >
-              <div className="w-full max-w-xl bg-[#0F1115] rounded-2xl border border-white/10 shadow-2xl overflow-hidden ring-1 ring-white/10">
-                <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
-                  <div className="min-w-0">
-                    <div className="text-lg font-extrabold text-white">关于我们</div>
-                    <div className="mt-1 text-sm text-gray-400 truncate">GrowPilot · 让数字 AI 成就增长</div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsAboutOpen(false)}
-                    className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors flex items-center justify-center"
-                    aria-label="关闭"
-                  >
-                    <X size={18} className="text-gray-200" />
-                  </button>
+              <div className="mt-5 brut-card-static p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-sm font-black text-text-primary">充值与消耗记录</div>
+                  <div className="text-xs text-text-muted">共 {profile.transactions.length} 条</div>
                 </div>
 
-                <div className="px-6 py-5 space-y-4">
-                  <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-gray-300 leading-relaxed">
-                    GrowPilot 面向内容与增长团队，提供从灵感发现、模型与素材复用到产出管理的一体化工作流。
+                <div className="mt-3 rounded-lg border-2 border-border overflow-y-auto h-[252px]">
+                  <div className="grid grid-cols-[128px_64px_88px_minmax(0,1fr)] gap-3 px-3 py-2 bg-surface-hover text-xs font-bold text-text-muted">
+                    <div>时间</div>
+                    <div>类型</div>
+                    <div className="text-right">积分</div>
+                    <div>详情</div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                      <div className="text-xs text-gray-400">当前版本</div>
-                      <div className="mt-1 text-sm font-semibold text-white">
-                        {process.env.NEXT_PUBLIC_APP_VERSION ?? "2.0.0"}
+                  {(() => {
+                    const pageSize = 6;
+                    const totalPages = Math.max(1, Math.ceil(profile.transactions.length / pageSize));
+                    const currentPage = Math.min(Math.max(1, txPage), totalPages);
+                    const start = (currentPage - 1) * pageSize;
+                    const rows = profile.transactions.slice(start, start + pageSize);
+                    return (
+                      <div className="divide-y divide-border-light">
+                        {rows.map((tx) => {
+                          const amount = Number(tx.amount) || 0;
+                          const isIn = amount > 0;
+                          return (
+                            <div key={tx.id} className="grid grid-cols-[128px_64px_88px_minmax(0,1fr)] gap-3 px-3 py-2 text-sm">
+                              <div className="text-text-secondary">{formatDateTime(tx.at)}</div>
+                              <div className={isIn ? "text-[#6BCB77] font-bold" : "text-error font-bold"}>
+                                {tx.type || (isIn ? "充值" : "扣款")}
+                              </div>
+                              <div className={isIn ? "text-[#6BCB77] text-right font-bold" : "text-error text-right font-bold"}>
+                                {isIn ? `+${amount}` : `${amount}`}
+                              </div>
+                              <div className="text-text-secondary truncate">
+                                <span className="font-bold text-text-primary">{tx.title || "-"}</span>
+                                {tx.detail ? <span className="text-text-muted"> · {tx.detail}</span> : null}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        {rows.length === 0 ? (
+                          <div className="px-3 py-6 text-sm text-text-muted text-center">暂无记录</div>
+                        ) : null}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {(() => {
+                  const pageSize = 6;
+                  const totalPages = Math.max(1, Math.ceil(profile.transactions.length / pageSize));
+                  const currentPage = Math.min(Math.max(1, txPage), totalPages);
+                  const canPrev = currentPage > 1;
+                  const canNext = currentPage < totalPages;
+                  return (
+                    <div className="mt-3 flex items-center justify-between gap-3">
+                      <div className="text-xs text-text-muted">第 {currentPage} / {totalPages} 页</div>
+                      <div className="flex items-center gap-2">
+                        <button type="button" disabled={!canPrev} onClick={() => setTxPage((p) => Math.max(1, p - 1))}
+                          className="brut-btn bg-surface text-text-secondary text-sm px-4 h-9 disabled:opacity-40 disabled:cursor-not-allowed">
+                          上一页
+                        </button>
+                        <button type="button" disabled={!canNext} onClick={() => setTxPage((p) => p + 1)}
+                          className="brut-btn bg-surface text-text-secondary text-sm px-4 h-9 disabled:opacity-40 disabled:cursor-not-allowed">
+                          下一页
+                        </button>
                       </div>
                     </div>
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                      <div className="text-xs text-gray-400">联系邮箱</div>
-                      <div className="mt-1 text-sm font-semibold text-white break-all">support@growpilot.ai</div>
-                    </div>
-                  </div>
+                  );
+                })()}
+              </div>
+            </div>
 
-                  <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
-                    <div className="text-gray-400">提示</div>
-                    <div className="mt-1 text-gray-200">按 ESC 可关闭弹窗。</div>
+            <div className="px-6 py-5 border-t-2 border-border flex justify-between items-center gap-4">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={geminiKey}
+                  onChange={handleKeyChange}
+                  placeholder="输入 Gemini API Key"
+                  className="w-full h-11 px-4 rounded-lg bg-surface-hover border-2 border-border text-text-primary placeholder:text-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 transition-colors"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsProfileOpen(false)}
+                className="brut-btn bg-accent text-white px-6 h-11 text-sm shrink-0"
+              >
+                确定
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      ) : null}
+
+      {mounted && isAboutOpen ? createPortal(
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm"
+          style={{ zIndex: 99999, position: "fixed", top: 0, left: 0, right: 0, bottom: 0 }}
+          onMouseDown={(e) => { if (e.target === e.currentTarget) setIsAboutOpen(false); }}
+        >
+          <div className="w-full max-w-xl bg-surface border-2 border-border shadow-[6px_6px_0px_#1A1A1A] rounded-xl overflow-hidden animate-fade-up">
+            <div className="px-6 py-5 border-b-2 border-border flex items-center justify-between">
+              <div className="min-w-0">
+                <div className="text-lg font-black text-text-primary">关于我们</div>
+                <div className="mt-1 text-sm text-text-secondary truncate">GrowPilot · 让数字 AI 成就增长</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAboutOpen(false)}
+                className="w-10 h-10 rounded-xl bg-surface-hover border-2 border-border shadow-[2px_2px_0px_#1A1A1A] hover:bg-surface-hover flex items-center justify-center active:translate-y-0.5 active:shadow-[1px_1px_0px_#1A1A1A] transition-all"
+                aria-label="关闭"
+              >
+                <X size={18} className="text-text-secondary" />
+              </button>
+            </div>
+
+            <div className="px-6 py-5 space-y-4">
+              <div className="brut-card-static p-4 text-sm text-text-secondary leading-relaxed">
+                GrowPilot 面向内容与增长团队，提供从灵感发现、模型与素材复用到产出管理的一体化工作流。
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="brut-card-static p-4">
+                  <div className="text-xs font-bold text-text-secondary">当前版本</div>
+                  <div className="mt-1 text-sm font-black text-text-primary">
+                    {process.env.NEXT_PUBLIC_APP_VERSION ?? "2.0.0"}
                   </div>
                 </div>
-
-                <div className="px-6 py-5 border-t border-white/10 flex items-center justify-end">
-                  <button
-                    type="button"
-                    onClick={() => setIsAboutOpen(false)}
-                    className="h-11 px-6 rounded-full bg-blue-600 hover:bg-blue-500 text-white transition-colors font-semibold"
-                  >
-                    确定
-                  </button>
+                <div className="brut-card-static p-4">
+                  <div className="text-xs font-bold text-text-secondary">联系邮箱</div>
+                  <div className="mt-1 text-sm font-bold text-text-primary break-all">support@growpilot.ai</div>
                 </div>
               </div>
-            </div>,
-            document.body
-          )
-        : null}
+
+              <div className="brut-card-static p-4 text-sm">
+                <div className="font-bold text-text-secondary">提示</div>
+                <div className="mt-1 text-text-secondary">按 ESC 可关闭弹窗。</div>
+              </div>
+            </div>
+
+            <div className="px-6 py-5 border-t-2 border-border flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => setIsAboutOpen(false)}
+                className="brut-btn bg-accent text-white px-6 h-11 text-sm"
+              >
+                确定
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      ) : null}
     </div>
   );
 }

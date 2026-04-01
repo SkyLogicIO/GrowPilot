@@ -176,12 +176,12 @@ export default function VoiceGenerate() {
   return (
     <div className="mt-6">
       <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-6">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <div className="brut-card-static p-6">
           <VoiceCategoryTabs tabs={CATEGORY_TABS} activeKey={category} onChange={onChangeCategory} />
 
           <VoiceFilters groups={FILTER_GROUPS} filters={filters} onChange={setFilterValue} />
 
-          <div className="mt-6 text-sm text-gray-400">此场景我们推荐以下发音人：</div>
+          <div className="mt-6 text-sm font-bold text-text-secondary">此场景我们推荐以下发音人：</div>
 
           <VoiceGrid voices={voices} selectedId={selectedVoice?.id ?? ""} onSelect={setSelectedId} />
         </div>

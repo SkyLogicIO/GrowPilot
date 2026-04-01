@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Rubik } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const rubik = Rubik({
-  subsets: ["latin"],
-  weight: ["400", "500", "700", "900"],
+const rubik = localFont({
+  src: "../public/fonts/RubikVariable.ttf",
+  weight: "400 900",
   display: "swap",
   variable: "--font-body",
 });

@@ -31,15 +31,15 @@ export default function VoiceControlPanel({
   onChange,
 }: VoiceControlPanelProps) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+    <div className="brut-card-static p-6">
       <div className="flex items-center justify-between">
-        <div className="text-white font-bold text-lg">{selectedVoice?.name ?? "-"}</div>
+        <div className="text-text-primary font-black text-lg">{selectedVoice?.name ?? "-"}</div>
         <div className="flex items-center gap-2">
           {(selectedVoice?.tags ?? []).slice(0, 2).map((t) => (
             <span
               key={t}
-              className={`h-6 px-2 rounded-md text-xs font-semibold ${
-                t.includes("男") ? "bg-blue-600/20 text-blue-200" : "bg-emerald-600/20 text-emerald-200"
+              className={`brut-tag ${
+                t.includes("男") ? "bg-[#74B9FF]/20 text-text-primary" : "bg-[#FFB3C6]/20 text-text-primary"
               }`}
             >
               {t}
@@ -50,27 +50,27 @@ export default function VoiceControlPanel({
 
       <div className="mt-4 flex items-center gap-5">
         {["标准", "情感", "助理"].map((opt) => (
-          <label key={opt} className="flex items-center gap-2 text-sm text-gray-200">
+          <label key={opt} className="flex items-center gap-2 text-sm font-bold text-text-secondary cursor-pointer">
             <input
               type="radio"
               name="voice_style"
               checked={style === opt}
               onChange={() => onStyle(opt)}
-              className="accent-blue-500"
+              className="accent-accent"
             />
             <span>{opt}</span>
           </label>
         ))}
       </div>
 
-      <div className="mt-4 rounded-2xl border border-white/10 bg-[#0B0D10]/40 p-4">
+      <div className="mt-4 rounded-xl border-2 border-border bg-surface-hover p-4">
         <textarea
           value={safeText}
           onChange={(e: ChangeEvent<HTMLTextAreaElement>) => onText(e.target.value)}
-          className="w-full h-[210px] resize-none bg-transparent text-white placeholder:text-gray-500 outline-none"
+          className="w-full h-[210px] resize-none bg-transparent text-text-primary placeholder:text-text-muted outline-none"
           placeholder="请输入要合成的语音文本"
         />
-        <div className="mt-2 text-right text-xs text-gray-400">{safeText.length}/250</div>
+        <div className="mt-2 text-right text-xs text-text-muted">{safeText.length}/250</div>
       </div>
 
       <div className="mt-6 space-y-5">
@@ -94,11 +94,11 @@ export default function VoiceControlPanel({
           ] as const
         ).map((row) => (
           <div key={row.key} className="flex items-center gap-4">
-            <div className="w-14 text-sm text-gray-300">{row.label}</div>
+            <div className="w-14 text-sm font-bold text-text-secondary">{row.label}</div>
             <button
               type="button"
               onClick={() => onDecrement(row.key)}
-              className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-white"
+              className="w-9 h-9 rounded-lg bg-surface border-2 border-border hover:bg-surface-hover transition-colors text-text-primary font-bold"
             >
               -
             </button>
@@ -108,23 +108,23 @@ export default function VoiceControlPanel({
               max={10}
               value={row.value}
               onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(row.key, Number(e.target.value))}
-              className="flex-1"
+              className="flex-1 accent-accent"
             />
             <button
               type="button"
               onClick={() => onIncrement(row.key)}
-              className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-white"
+              className="w-9 h-9 rounded-lg bg-surface border-2 border-border hover:bg-surface-hover transition-colors text-text-primary font-bold"
             >
               +
             </button>
-            <div className="w-10 text-right text-sm text-gray-300">{row.value}</div>
+            <div className="w-10 text-right text-sm font-bold text-text-secondary">{row.value}</div>
           </div>
         ))}
       </div>
 
       <button
         type="button"
-        className="mt-6 w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-500 transition-colors text-white font-bold shadow-lg shadow-blue-500/20"
+        className="mt-6 w-full h-12 brut-btn bg-accent text-white"
       >
         立即合成
       </button>

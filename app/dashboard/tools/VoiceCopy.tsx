@@ -101,7 +101,7 @@ const DEMO_ITEMS: DemoItemBase[] = [
     id: "demo_2",
     title: "课程开场白（多语言）",
     updatedAt: "2025-12-17T15:40:00.000Z",
-    seedText: "Hello, welcome to today’s lesson. Let’s get started.",
+    seedText: "Hello, welcome to today's lesson. Let's get started.",
   },
   {
     id: "demo_3",
@@ -179,12 +179,12 @@ export default function VoiceCopy() {
   return (
     <div className="mt-6">
       <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-6">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-          <div className="text-white font-bold text-lg">语音复制</div>
-          <div className="mt-1 text-sm text-gray-400">上传音频并输入文本，生成新的语音文件（示例流程）。</div>
+        <div className="brut-card-static p-6">
+          <div className="text-text-primary font-black text-lg">语音复制</div>
+          <div className="mt-1 text-sm text-text-secondary">上传音频并输入文本，生成新的语音文件（示例流程）。</div>
 
-          <div className="mt-5 rounded-2xl border border-white/10 bg-[#0B0D10]/40 p-4">
-            <div className="text-sm text-gray-300 font-semibold">历史 Demo 音频</div>
+          <div className="mt-5 rounded-xl border-2 border-border bg-surface-hover p-4">
+            <div className="text-sm font-bold text-text-secondary">历史 Demo 音频</div>
             <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
               {demoFiles.map((item) => {
                 const selected = audioFile?.name === item.file.name;
@@ -193,18 +193,20 @@ export default function VoiceCopy() {
                     key={item.id}
                     type="button"
                     onClick={() => setAudioFile(item.file)}
-                    className={`text-left rounded-2xl border p-4 transition-colors ${
-                      selected ? "border-blue-500 bg-white/10" : "border-white/10 bg-white/5 hover:bg-white/10"
+                    className={`text-left rounded-xl border-2 p-4 transition-all ${
+                      selected
+                        ? "border-accent bg-accent/10 ring-2 ring-accent/30"
+                        : "border-border bg-surface hover:bg-surface-hover"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="text-white font-semibold truncate">{item.title}</div>
-                        <div className="mt-1 text-xs text-gray-400">{formatTime(item.updatedAt)}</div>
+                        <div className="text-text-primary font-bold truncate">{item.title}</div>
+                        <div className="mt-1 text-xs text-text-muted">{formatTime(item.updatedAt)}</div>
                       </div>
                       <div
-                        className={`shrink-0 h-8 px-3 rounded-xl text-xs font-bold flex items-center justify-center ${
-                          selected ? "bg-blue-600 text-white" : "bg-white/10 text-gray-200"
+                        className={`shrink-0 h-8 px-3 rounded-lg text-xs font-bold flex items-center justify-center border-2 ${
+                          selected ? "bg-accent text-white border-accent" : "bg-surface text-text-secondary border-border"
                         }`}
                       >
                         {selected ? "已选择" : "选择"}
@@ -219,66 +221,66 @@ export default function VoiceCopy() {
             </div>
           </div>
 
-          <div className="mt-5 rounded-2xl border border-white/10 bg-[#0B0D10]/40 p-4">
-            <div className="text-sm text-gray-300 font-semibold">上传音频</div>
+          <div className="mt-5 rounded-xl border-2 border-border bg-surface-hover p-4">
+            <div className="text-sm font-bold text-text-secondary">上传音频</div>
             <div className="mt-3 flex items-center gap-3">
               <input
                 type="file"
                 accept="audio/*"
                 onChange={onPickFile}
-                className="block w-full text-sm text-gray-300 file:mr-4 file:rounded-xl file:border-0 file:bg-white/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-white/15"
+                className="block w-full text-sm text-text-secondary file:mr-4 file:rounded-lg file:border-2 file:border-border file:bg-surface file:px-4 file:py-2 file:text-sm file:font-bold file:text-text-primary hover:file:bg-surface-hover"
               />
             </div>
             {audioFile && (
-              <div className="mt-3 text-sm text-gray-400">
-                已选择：<span className="text-gray-200">{audioFile.name}</span>
+              <div className="mt-3 text-sm text-text-secondary">
+                已选择：<span className="text-text-primary font-bold">{audioFile.name}</span>
               </div>
             )}
           </div>
 
-          <div className="mt-5 rounded-2xl border border-white/10 bg-[#0B0D10]/40 p-4">
-            <div className="text-sm text-gray-300 font-semibold">输入文字</div>
+          <div className="mt-5 rounded-xl border-2 border-border bg-surface-hover p-4">
+            <div className="text-sm font-bold text-text-secondary">输入文字</div>
             <textarea
               value={safeText}
               onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setText(e.target.value)}
-              className="mt-3 w-full h-[180px] resize-none bg-transparent text-white placeholder:text-gray-500 outline-none"
+              className="mt-3 w-full h-[180px] resize-none bg-transparent text-text-primary placeholder:text-text-muted outline-none"
               placeholder="请输入需要合成的文本"
             />
-            <div className="mt-2 text-right text-xs text-gray-400">{safeText.length}/250</div>
+            <div className="mt-2 text-right text-xs text-text-muted">{safeText.length}/250</div>
           </div>
 
           <button
             type="button"
             onClick={onSynthesize}
-            className={`mt-6 w-full h-12 rounded-xl transition-colors text-white font-bold shadow-lg shadow-blue-500/20 ${
-              audioFile && safeText.trim() ? "bg-blue-600 hover:bg-blue-500" : "bg-blue-600/40 cursor-not-allowed"
+            className={`mt-6 w-full h-12 brut-btn text-white ${
+              audioFile && safeText.trim() ? "bg-accent" : "bg-text-muted cursor-not-allowed"
             }`}
           >
             立即合成
           </button>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-          <div className="text-white font-bold text-lg">合成结果</div>
-          <div className="mt-1 text-sm text-gray-400">生成完成后可试听与下载。</div>
+        <div className="brut-card-static p-6">
+          <div className="text-text-primary font-black text-lg">合成结果</div>
+          <div className="mt-1 text-sm text-text-secondary">生成完成后可试听与下载。</div>
 
-          <div className="mt-5 rounded-2xl border border-white/10 bg-[#0B0D10]/40 p-4">
+          <div className="mt-5 rounded-xl border-2 border-border bg-surface-hover p-4">
             {outputUrl ? (
               <div>
                 <audio controls src={outputUrl} className="w-full" />
                 <div className="mt-4 flex items-center justify-between gap-3">
-                  <div className="text-sm text-gray-300 truncate">{outputName}</div>
+                  <div className="text-sm text-text-secondary truncate">{outputName}</div>
                   <a
                     href={outputUrl}
                     download={outputName}
-                    className="shrink-0 h-10 px-5 rounded-xl bg-white/10 hover:bg-white/15 transition-colors text-sm font-bold text-white flex items-center justify-center"
+                    className="shrink-0 h-10 px-5 brut-btn bg-surface text-text-primary text-sm"
                   >
                     下载
                   </a>
                 </div>
               </div>
             ) : (
-              <div className="text-sm text-gray-400">请先上传音频并点击“立即合成”。</div>
+              <div className="text-sm text-text-muted">请先上传音频并点击"立即合成"。</div>
             )}
           </div>
         </div>
