@@ -139,7 +139,7 @@ export default function MarketingAssistantPageClient() {
           .filter((m) => m.id !== "m1" && m.id !== "m2")
           .slice(-50)
           .map((m) => ({
-            role: m.role === "assistant" ? "model" : "user",
+            role: (m.role === "assistant" ? "model" : "user") as "user" | "model",
             content: m.content,
           })),
         { role: "user" as const, content: text },
