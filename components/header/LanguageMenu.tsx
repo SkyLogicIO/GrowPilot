@@ -29,14 +29,14 @@ export default function LanguageMenu() {
       <button
         type="button"
         onClick={() => setIsOpen((v) => !v)}
-        className="h-10 px-3 rounded-xl bg-white/5 border border-white/10 text-gray-200 hover:bg-white/10 transition-colors flex items-center gap-2"
+        className="h-10 px-3 rounded-xl bg-surface-hover border-2 border-border text-text-primary hover:bg-[#f0efea] transition-colors flex items-center gap-2 shadow-[2px_2px_0px_#1A1A1A] active:translate-y-0.5 active:shadow-[1px_1px_0px_#1A1A1A]"
       >
-        <Globe size={18} className="text-gray-300" />
-        <span className="text-sm font-semibold">{activeLang}</span>
+        <Globe size={18} className="text-text-secondary" />
+        <span className="text-sm font-bold">{activeLang}</span>
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-12 w-44 rounded-2xl border border-white/10 bg-[#0F1115] shadow-2xl ring-1 ring-white/10 overflow-hidden">
+        <div className="absolute right-0 top-12 w-44 rounded-xl border-2 border-border bg-surface shadow-[4px_4px_0px_#1A1A1A] overflow-hidden">
           {["中文", "英文", "西文"].map((lang) => (
             <button
               key={lang}
@@ -45,8 +45,8 @@ export default function LanguageMenu() {
                 setActiveLang(lang);
                 setIsOpen(false);
               }}
-              className={`w-full px-4 py-3 text-left text-sm font-semibold transition-colors ${
-                activeLang === lang ? "text-white bg-white/10" : "text-gray-200 hover:bg-white/5"
+              className={`w-full px-4 py-3 text-left text-sm font-bold transition-colors border-b-2 border-border-light last:border-b-0 ${
+                activeLang === lang ? "bg-accent/15 text-text-primary" : "text-text-secondary hover:bg-surface-hover"
               }`}
             >
               {lang}

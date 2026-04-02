@@ -4,17 +4,17 @@ export default function CoinsVipButton() {
   return (
     <button
       type="button"
-      className="h-10 px-4 rounded-full bg-white/5 border border-white/10 text-gray-200 hover:bg-white/10 transition-colors flex items-center gap-3"
+      className="h-10 px-4 rounded-full bg-surface-hover border-2 border-border text-text-primary hover:bg-[#f0efea] transition-colors flex items-center gap-3 shadow-[2px_2px_0px_#1A1A1A] active:translate-y-0.5 active:shadow-[1px_1px_0px_#1A1A1A]"
     >
       <div className="flex items-center gap-2">
-        <Zap size={18} className="text-blue-300" />
-        <span className="text-sm font-semibold text-blue-200">20</span>
-        <span className="text-sm font-medium text-gray-200">充值</span>
+        <Zap size={18} className="text-[#FFD93D]" />
+        <span className="text-sm font-bold text-text-primary">20</span>
+        <span className="text-sm font-bold text-text-secondary">充值</span>
       </div>
-      <span className="w-px h-5 bg-white/10" />
+      <span className="w-px h-5 bg-border" />
       <div className="flex items-center gap-2">
-        <Diamond size={18} className="text-yellow-300" />
-        <span className="text-sm font-semibold">会员特惠53折</span>
+        <Diamond size={18} className="text-[#C77DFF]" />
+        <span className="text-sm font-bold text-text-primary">会员特惠53折</span>
       </div>
     </button>
   );

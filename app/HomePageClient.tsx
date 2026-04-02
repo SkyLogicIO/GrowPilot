@@ -146,7 +146,7 @@ export default function HomePageClient() {
           </div>
 
           <div className="flex items-center gap-5">
-            <span className="hidden md:block text-sm text-text-muted font-medium">AI Growth Engine</span>
+            <span className="hidden md:block text-sm text-text-secondary font-medium">AI Growth Engine</span>
             <button
               onClick={handleStartCreating}
               className="brut-btn-pill bg-accent text-white px-6 py-2.5 text-sm"
@@ -181,7 +181,7 @@ export default function HomePageClient() {
                 </span>
               </h1>
 
-              <p className="text-text-secondary text-lg leading-relaxed mb-10 max-w-lg font-medium">
+              <p className="text-text-primary text-lg leading-relaxed mb-10 max-w-lg font-medium opacity-80">
                 AI 生图、生视频、智能编辑、模特换装、营销文案，
                 一站式 AI 视觉营销工具集，为电商与设计团队而生。
               </p>
@@ -196,7 +196,11 @@ export default function HomePageClient() {
                     <ArrowRight size={18} />
                   </span>
                 </button>
-                <button className="brut-btn bg-surface text-text-primary px-8 py-3.5 text-base font-bold">
+                <button
+                  type="button"
+                  onClick={handleStartCreating}
+                  className="brut-btn bg-surface text-text-primary px-8 py-3.5 text-base font-bold"
+                >
                   了解更多
                 </button>
               </div>
@@ -235,7 +239,11 @@ export default function HomePageClient() {
                     {feature.description}
                   </p>
 
-                  <button className={`brut-btn ${feature.bg} text-text-primary px-4 py-2 text-sm w-full`}>
+                  <button
+                    type="button"
+                    onClick={() => handleFeatureClick(feature)}
+                    className={`brut-btn ${feature.bg} text-text-primary px-4 py-2 text-sm w-full`}
+                  >
                     <span className="flex items-center justify-center gap-2">
                       {feature.implemented ? feature.action : "敬请期待"}
                       <ArrowRight size={14} />

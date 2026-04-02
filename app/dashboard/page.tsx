@@ -4,14 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   FolderUp,
-  Plus,
   Sparkles,
   Video,
-  Wand2,
   Zap,
   ArrowRight,
-  type LucideIcon,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { demoProjects, formatProjectTime } from "@/lib/demoProjects";
 import useGeneratedProjects from "@/lib/storage/useGeneratedProjects";
 import type { GeneratedProject } from "@/lib/storage";
@@ -109,6 +107,7 @@ export default function DashboardHomePage() {
     return demoProjects.slice(0, 8).map(demoToDisplayProject);
   }, [projects]);
 
+
   return (
     <div className="space-y-7 animate-fade-in">
       {/* ── 欢迎区 ── */}
@@ -152,31 +151,8 @@ export default function DashboardHomePage() {
         ))}
       </div>
 
-      {/* ── 快捷入口 ── */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-fade-up delay-2">
-        {[
-          { icon: Plus,     title: "新建项目",    desc: "进入项目列表并快速创建", href: "/dashboard/project",              bg: "bg-[#FF6B6B]",  textColor: "text-white" },
-          { icon: FolderUp, title: "添加素材",    desc: "上传/收藏你的创作素材",  href: "/dashboard/assets",               bg: "bg-[#4ECDC4]",  textColor: "text-white" },
-          { icon: Video,    title: "AI 视频工场", desc: "一键生成短视频",         href: "/dashboard/project?create=video", bg: "bg-[#C77DFF]",  textColor: "text-white" },
-          { icon: Wand2,    title: "AI创作工具",  desc: "写文案、处理图片",       href: "/dashboard/tools",                bg: "bg-[#FFD93D]",  textColor: "text-black" },
-        ].map((item, i) => (
-          <Link
-            key={item.title}
-            href={item.href}
-            className={`delay-${i + 1} group brut-card ${item.bg} flex items-center gap-4 p-5`}
-          >
-            <item.icon size={22} className={item.textColor} />
-            <div className="flex-1 min-w-0">
-              <div className={`text-sm font-black ${item.textColor} truncate`}>{item.title}</div>
-              <div className={`text-xs truncate mt-0.5 ${item.textColor} opacity-70 font-medium`}>{item.desc}</div>
-            </div>
-            <ArrowRight size={16} className={`${item.textColor} shrink-0 transition-transform duration-150 group-hover:translate-x-0.5`} />
-          </Link>
-        ))}
-      </div>
-
       {/* ── 最近项目 ── */}
-      <div className="brut-card p-6 animate-fade-up delay-3">
+      <div className="brut-card p-6 animate-fade-up delay-2">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-black text-text-primary">最近项目</h2>
@@ -237,6 +213,7 @@ export default function DashboardHomePage() {
           ))}
         </div>
       </div>
+
     </div>
   );
 }

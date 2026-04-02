@@ -6,25 +6,21 @@ import {
   Clapperboard,
   FileText,
   Megaphone,
-  Paperclip,
-  Plus,
   RefreshCcw,
-  Search,
   Send,
   ShoppingBag,
   Sparkles,
+  Image,
+  ChevronDown,
+  Plus,
+  Search,
   Loader2,
   type LucideIcon,
 } from "lucide-react";
-import { chat } from "@/lib/api/gemini";
-import type { ChatMessage, ChatResponse } from "@/lib/api/gemini";
-import {
-  getSystemPrompt,
-  getPlaceholder,
-  type ToolKey,
-} from "../../../lib/prompts/marketing-prompts";
 
-const TOOL_PRESETS: { key: ToolKey; label: string; icon: LucideIcon }[] = [
+// ─── 常量 ─────────────────────────────────────────────────────────────────────
+
+const TOOL_PRESETS: { key: string; label: string; icon: LucideIcon }[] = [
   { key: "chat", label: "智能问答", icon: Bot },
   { key: "copy", label: "产生文案", icon: FileText },
   { key: "script", label: "拍摄脚本", icon: Clapperboard },
@@ -40,31 +36,27 @@ const RECOMMENDED_SETS = [
   ["私域社群话术", "活动促销文案", "门店同城引流", "达人合作邀约"],
 ];
 
-const buildInitialThreads = (): { id: string; title: string }[] => [
-  { id: "t1", title: "同城门店：一周短视频选题" },
-  { id: "t2", title: "直播带货：开场与逼单话术" },
-  { id: "t3", title: "小红书：种草笔记标题优化" },
-  { id: "t4", title: "投放：素材拆解与改写" },
+const INITIAL_THREADS = [
+  { id: "t1", title: "智能体使用示例-亚马逊" },
+  { id: "t2", title: "智能体使用示例-淘宝" },
+  { id: "t3", title: "未命名" },
+  { id: "t4", title: "未命名" },
 ];
 
-const buildInitialMessages = (): {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-}[] => [
+const INITIAL_MESSAGES: { id: string; role: "user" | "assistant"; content: string }[] = [
   {
     id: "m1",
     role: "assistant",
-    content:
-      "我可以作为 AI营销助手，帮你把常用的内容与增长任务变成可复用的模板。你可以在上方选择一个类型开始。",
+    content: "我可以作为 AI电商智能体，帮你把常用的电商运营任务变成可复用的模板。你可以在上方选择一个类型开始。",
   },
   {
     id: "m2",
     role: "assistant",
-    content:
-      "你也可以直接选择右侧推荐工具：我会按你当前目标，给出结构化产出（标题/脚本/卖点/话术等）。",
+    content: "你也可以直接选择右侧推荐工具：我会按你当前目标，给出结构化产出（标题/脚本/卖点/话术等）。",
   },
 ];
+
+// ─── 聊天气泡 ───────────────────────────────────────────────────────────────────
 
 function RoleBubble({
   role,
@@ -89,11 +81,12 @@ function RoleBubble({
   );
 }
 
-export default function MarketingAssistantPageClient() {
-  const threads = useMemo(() => buildInitialThreads(), []);
-  const [activeThreadId, setActiveThreadId] = useState(threads[0]?.id ?? "t1");
-  const [activeTool, setActiveTool] = useState<ToolKey>("chat");
-  const [messages, setMessages] = useState(() => buildInitialMessages());
+// ─── 主组件 ───────────────────────────────────────────────────────────────────
+
+export default function EcomAgentPageClient() {
+  const [activeThreadId, setActiveThreadId] = useState("t1");
+  const [activeTool, setActiveTool] = useState("chat");
+  const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [draft, setDraft] = useState("");
   const [query, setQuery] = useState("");
   const [recommendIndex, setRecommendIndex] = useState(0);
@@ -106,11 +99,8 @@ export default function MarketingAssistantPageClient() {
 
   const filteredThreads = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return threads;
-    return threads.filter((t) => t.title.toLowerCase().includes(q));
-  }, [query, threads]);
-
-  const placeholder = useMemo(() => getPlaceholder(activeTool), [activeTool]);
+    return q ? INITIAL_THREADS.filter((t) => t.title.toLowerCase().includes(q)) : INITIAL_THREADS;
+  }, [query]);
 
   const send = async () => {
     const text = draft.trim();
@@ -121,59 +111,23 @@ export default function MarketingAssistantPageClient() {
     const aiMsgId = `a_${now}`;
     isSendingRef.current = true;
 
-    // Optimistic update
     setMessages((prev) => [
       ...prev,
-      { id: `u_${now}`, role: "user", content: text },
-      {
-        id: aiMsgId,
-        role: "assistant",
-        content: "思考中...",
-      },
+      { id: `u_${now}`, role: "user" as const, content: text },
+      { id: aiMsgId, role: "assistant" as const, content: "思考中..." },
     ]);
 
-    try {
-      // 构建对话历史（排除初始欢迎消息，手动追加当前用户消息）
-      const history: ChatMessage[] = [
-        ...messages
-          .filter((m) => m.id !== "m1" && m.id !== "m2")
-          .slice(-50)
-          .map((m) => ({
-            role: m.role === "assistant" ? "model" : "user",
-            content: m.content,
-          })),
-        { role: "user" as const, content: text },
-      ];
-
-      const response: ChatResponse = await chat({
-        messages: history,
-        system_instruction: getSystemPrompt(activeTool),
-        max_tokens: 8192,
-      });
-
+    // TODO: 对接后端 API
+    setTimeout(() => {
       setMessages((prev) =>
         prev.map((m) =>
           m.id === aiMsgId
-            ? { ...m, content: response.content }
+            ? { ...m, content: `[${activeTool}] 功能开发中，即将对接后端 API。` }
             : m,
         ),
       );
-    } catch (error: unknown) {
-      let errMsg =
-        error instanceof Error ? error.message : "请求失败";
-      if (errMsg.includes("401") || errMsg.includes("登录已过期")) {
-        errMsg = "登录已过期，请重新登录";
-      }
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === aiMsgId
-            ? { ...m, content: `请求失败: ${errMsg}` }
-            : m,
-        ),
-      );
-    } finally {
       isSendingRef.current = false;
-    }
+    }, 1500);
   };
 
   return (
@@ -188,7 +142,7 @@ export default function MarketingAssistantPageClient() {
               </div>
               <div className="min-w-0">
                 <div className="text-sm font-black text-text-primary truncate">
-                  AI营销助手
+                  电商智能体
                 </div>
                 <div className="text-xs text-text-muted truncate">
                   内容创作 · 流量增长
@@ -198,11 +152,7 @@ export default function MarketingAssistantPageClient() {
 
             <button
               type="button"
-              onClick={() => {
-                const now = Date.now();
-                const id = `t_${now}`;
-                setActiveThreadId(id);
-              }}
+              onClick={() => setActiveThreadId(`t_${Date.now()}`)}
               className="mt-5 w-full h-10 rounded-xl bg-surface border-2 border-border text-sm font-bold text-text-primary hover:bg-surface-hover transition-colors flex items-center justify-center gap-2 shadow-[2px_2px_0px_#1A1A1A] active:translate-y-0.5 active:shadow-[1px_1px_0px_#1A1A1A]"
             >
               <Plus size={16} />
@@ -238,9 +188,7 @@ export default function MarketingAssistantPageClient() {
                         : "bg-transparent border-transparent text-text-secondary hover:bg-surface hover:border-border"
                     }`}
                   >
-                    <div className="text-sm truncate">
-                      {t.title}
-                    </div>
+                    <div className="text-sm truncate">{t.title}</div>
                   </button>
                 );
               })}
@@ -256,7 +204,7 @@ export default function MarketingAssistantPageClient() {
               <div className="min-w-0 flex flex-col gap-4">
                 <div>
                   <div className="text-lg font-black text-text-primary">
-                    AI营销助手
+                    电商智能体
                   </div>
                   <div className="mt-1 text-sm text-text-secondary">
                     一站式对话式创作：文案、脚本、电商、投放素材
@@ -264,22 +212,21 @@ export default function MarketingAssistantPageClient() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  {TOOL_PRESETS.map((t) => {
-                    const active = t.key === activeTool;
-                    const Icon = t.icon;
+                  {TOOL_PRESETS.map(({ key, label, icon: Icon }) => {
+                    const active = key === activeTool;
                     return (
                       <button
-                        key={t.key}
+                        key={key}
                         type="button"
-                        onClick={() => setActiveTool(t.key)}
-                        className={`h-10 px-4 rounded-xl border-2 transition-colors flex items-center gap-2 ${
+                        onClick={() => setActiveTool(key)}
+                        className={`h-10 px-4 rounded-xl border-2 transition-colors flex items-center gap-2 font-bold ${
                           active
                             ? "bg-accent border-border text-white shadow-[2px_2px_0px_#1A1A1A]"
                             : "bg-surface border-border text-text-secondary hover:bg-surface-hover"
-                        } font-bold`}
+                        }`}
                       >
                         <Icon size={16} />
-                        <span className="text-sm">{t.label}</span>
+                        <span className="text-sm">{label}</span>
                       </button>
                     );
                   })}
@@ -313,11 +260,7 @@ export default function MarketingAssistantPageClient() {
                     <button
                       key={title}
                       type="button"
-                      onClick={() =>
-                        setDraft((prev) =>
-                          prev.trim() ? prev : `${title}：`,
-                        )
-                      }
+                      onClick={() => setDraft((prev) => (prev.trim() ? prev : `${title}：`))}
                       className="h-9 px-3 rounded-lg bg-surface border-2 border-border hover:bg-surface-hover transition-colors text-sm font-bold text-text-secondary"
                     >
                       {title}
@@ -342,39 +285,88 @@ export default function MarketingAssistantPageClient() {
           {/* 输入区域 */}
           <div className="px-6 py-4 border-t-2 border-border bg-surface">
             <div className="rounded-xl border-2 border-border bg-surface-hover overflow-hidden shadow-[3px_3px_0px_#1A1A1A]">
-              <div className="px-4 py-3">
-                <textarea
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  placeholder={placeholder}
-                  disabled={isSendingRef.current}
-                  className="w-full min-h-[64px] max-h-[500px] resize-y bg-transparent outline-none text-sm text-text-primary placeholder:text-text-muted disabled:opacity-50"
-                />
-              </div>
-              <div className="px-4 pb-3 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
+              <div className="px-4 pt-4">
+                {/* 上行：图片图标 + 输入框 */}
+                <div className="flex items-start gap-3 mb-3">
                   <button
                     type="button"
-                    disabled={isSendingRef.current}
-                    className="w-10 h-10 rounded-xl bg-surface border-2 border-border hover:bg-surface-hover transition-colors flex items-center justify-center disabled:opacity-50"
+                    className="shrink-0 w-11 h-11 rounded-xl bg-surface border-2 border-border flex items-center justify-center hover:bg-surface-hover transition-colors"
                   >
-                    <Paperclip size={18} className="text-text-secondary" />
+                    <Image size={20} className="text-text-secondary" />
                   </button>
+                  <textarea
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        send();
+                      }
+                    }}
+                    placeholder="询问您的问题"
+                    disabled={isSendingRef.current}
+                    rows={2}
+                    className="flex-1 bg-transparent resize-none outline-none text-sm text-text-primary placeholder:text-text-muted leading-relaxed pt-1 disabled:opacity-50"
+                  />
                 </div>
 
-                <button
-                  type="button"
-                  onClick={send}
-                  disabled={isSendingRef.current || !draft.trim()}
-                  className="h-10 px-5 rounded-xl bg-accent border-2 border-border text-white font-bold transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-[3px_3px_0px_#1A1A1A] hover:shadow-[4px_4px_0px_#1A1A1A] active:translate-y-0.5 active:shadow-[1px_1px_0px_#1A1A1A]"
-                >
-                  {isSendingRef.current ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <Send size={16} />
-                  )}
-                  发送
-                </button>
+                {/* 下行：选择器 + 操作区 */}
+                <div className="flex items-center justify-between gap-2 flex-wrap pb-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      type="button"
+                      className="flex items-center gap-1.5 px-3 h-8 rounded-lg bg-surface border-2 border-border text-xs font-bold text-text-secondary hover:bg-surface-hover transition-colors"
+                    >
+                      <Bot size={12} />
+                      <span>电商智能体</span>
+                      <ChevronDown size={11} className="text-text-muted" />
+                    </button>
+                    <button
+                      type="button"
+                      className="flex items-center gap-1.5 px-3 h-8 rounded-lg bg-surface border-2 border-border text-xs font-bold text-text-secondary hover:bg-surface-hover transition-colors"
+                    >
+                      <span className="font-black text-accent text-xs">a</span>
+                      <span>亚马逊</span>
+                      <ChevronDown size={11} className="text-text-muted" />
+                    </button>
+                    <button
+                      type="button"
+                      className="flex items-center gap-1.5 px-3 h-8 rounded-lg bg-surface border-2 border-border text-xs font-bold text-text-secondary hover:bg-surface-hover transition-colors"
+                    >
+                      <span className="text-sm">🇬🇧</span>
+                      <span>英文</span>
+                      <ChevronDown size={11} className="text-text-muted" />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      className="flex items-center gap-1 px-3 h-8 rounded-lg bg-surface border-2 border-border text-xs font-bold text-text-secondary hover:bg-surface-hover transition-colors"
+                    >
+                      模板库 <span className="text-text-muted">&rsaquo;</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="flex items-center gap-1 px-3 h-8 rounded-lg bg-surface border-2 border-border text-xs font-bold text-text-secondary hover:bg-surface-hover transition-colors"
+                    >
+                      自定义模板
+                      <RefreshCcw size={11} className="text-text-muted ml-0.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={send}
+                      disabled={isSendingRef.current || !draft.trim()}
+                      className="w-9 h-9 rounded-xl bg-purple border-2 border-border flex items-center justify-center transition-all hover:bg-purple/90 disabled:opacity-50 disabled:cursor-not-allowed shadow-[2px_2px_0px_#1A1A1A] active:translate-y-0.5 active:shadow-[1px_1px_0px_#1A1A1A]"
+                    >
+                      {isSendingRef.current ? (
+                        <Loader2 size={15} className="text-white animate-spin" />
+                      ) : (
+                        <Send size={15} className="text-white" />
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -37,7 +37,7 @@ export default function ImageGenerationForm({ isGenerating, onGenerate }: ImageG
   const [prompt, setPrompt] = useState("");
   const [inputImage, setInputImage] = useState<File | null>(null);
   const [inputImagePreview, setInputImagePreview] = useState<string>("");
-  const [imageModel] = useState("imagen-4.0-generate-001");
+  const [imageModel] = useState("auto");
   const [imageRatio] = useState("3:4");
   const [imageCount] = useState("4张");
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -70,23 +70,23 @@ export default function ImageGenerationForm({ isGenerating, onGenerate }: ImageG
     <div className="flex flex-col gap-4">
       {/* Error Message Display */}
       {errorMessage && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border-2 border-red-500/30">
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border-2 border-border">
           <AlertCircle size={20} className="text-red-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
             <div className="text-sm font-bold text-red-400 mb-1">生成失败</div>
-            <div className="text-sm text-red-300/90 whitespace-pre-wrap">{errorMessage}</div>
+            <div className="text-sm text-text-secondary whitespace-pre-wrap">{errorMessage}</div>
           </div>
         </div>
       )}
 
       {/* Info Banner - Only show when generating */}
       {isGenerating && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-purple-500/10 border-2 border-purple-500/30">
-          <Info size={20} className="text-purple-400 flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-accent/10 border-2 border-border">
+          <Info size={20} className="text-accent flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <div className="text-sm font-bold text-purple-400 mb-1">图片生成中</div>
-            <div className="text-sm text-purple-300/90">
-              正在使用 Imagen 4.0 生成图片，通常需要 10-30 秒...
+            <div className="text-sm font-bold text-text-secondary mb-1">图片生成中</div>
+            <div className="text-sm text-text-secondary">
+              正在生成图片，请稍候...
             </div>
           </div>
         </div>

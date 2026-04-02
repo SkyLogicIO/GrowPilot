@@ -38,7 +38,7 @@ export default function VideoGenerationForm({ isGenerating, onGenerate }: VideoG
   const [prompt, setPrompt] = useState("");
   const [inputImage, setInputImage] = useState<File | null>(null);
   const [inputImagePreview, setInputImagePreview] = useState<string>("");
-  const [videoModel, setVideoModel] = useState<string>("veo-3.1-fast-generate-preview");
+  const [videoModel, setVideoModel] = useState<string>("modelscope");
   const [videoDuration, setVideoDuration] = useState<number>(8);
   const [videoResolution, setVideoResolution] = useState<string>("720p");
   const [videoAspectRatio, setVideoAspectRatio] = useState<string>("16:9");
@@ -73,24 +73,24 @@ export default function VideoGenerationForm({ isGenerating, onGenerate }: VideoG
     <div className="flex flex-col gap-4">
       {/* Error Message Display */}
       {errorMessage && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border-2 border-red-500/30">
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border-2 border-border">
           <AlertCircle size={20} className="text-red-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
             <div className="text-sm font-bold text-red-400 mb-1">生成失败</div>
-            <div className="text-sm text-red-300/90 whitespace-pre-wrap">{errorMessage}</div>
+            <div className="text-sm text-text-secondary whitespace-pre-wrap">{errorMessage}</div>
           </div>
         </div>
       )}
 
       {/* Info Banner - Only show when generating */}
       {isGenerating && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-500/10 border-2 border-blue-500/30">
-          <Info size={20} className="text-blue-400 flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-accent/10 border-2 border-border">
+          <Info size={20} className="text-accent flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <div className="text-sm font-bold text-blue-400 mb-1">视频生成中</div>
-            <div className="text-sm text-blue-300/90">
-              正在使用 {videoModel === "veo-3.1-fast-generate-preview" ? "Veo 3.1 Fast" : "Veo 3.1"} 生成 {videoDuration}秒 {videoResolution} {videoAspectRatio} 视频，
-              通常需要 1-3 分钟，每 10 秒检查一次状态...
+            <div className="text-sm font-bold text-text-secondary mb-1">视频生成中</div>
+            <div className="text-sm text-text-secondary">
+              正在生成 {videoDuration}秒 {videoResolution} {videoAspectRatio} 视频，
+              通常需要 1-3 分钟，每 5 秒自动刷新状态...
             </div>
           </div>
         </div>
@@ -154,8 +154,8 @@ export default function VideoGenerationForm({ isGenerating, onGenerate }: VideoG
             disabled={isGenerating}
             className="px-3 py-1.5 rounded-lg bg-surface border-2 border-border text-text-primary text-xs focus:outline-none focus:border-accent disabled:opacity-50 cursor-pointer"
           >
-            <option value="veo-3.1-fast-generate-preview">Veo 3.1 Fast</option>
-            <option value="veo-3.1-generate-preview">Veo 3.1</option>
+            <option value="modelscope">ModelScope</option>
+            <option value="cogvideo">CogVideo</option>
           </select>
         </div>
 
