@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { HardDrive, Info, Lock, LogOut, Mail, User, Users, X, Zap } from "lucide-react";
+import { clearAuthData } from "@/lib/api/client";
 
 const STORAGE_KEY = "growpilot_user_profile";
 
@@ -92,19 +93,11 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
     transactions: [],
     onboarding: null,
   });
-  const [geminiKey, setGeminiKey] = useState("");
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
-    setGeminiKey(window.localStorage.getItem("gemini_api_key") || "");
   }, []);
-
-  const handleKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.trim();
-    setGeminiKey(val);
-    window.localStorage.setItem("gemini_api_key", val);
-  };
 
   useEffect(() => {
     if (!mounted) return;
@@ -165,8 +158,7 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
     setIsAboutOpen(false);
     try {
       window.localStorage.removeItem(STORAGE_KEY);
-      window.localStorage.removeItem("access_token");
-      window.localStorage.removeItem("growpilot_user");
+      clearAuthData();
     } catch {}
     window.dispatchEvent(new CustomEvent("growpilot:logout"));
   };
@@ -401,16 +393,7 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
               </div>
             </div>
 
-            <div className="px-6 py-5 border-t-2 border-border flex justify-between items-center gap-4">
-              <div className="flex-1">
-                <input
-                  type="text"
-                  value={geminiKey}
-                  onChange={handleKeyChange}
-                  placeholder="输入 Gemini API Key"
-                  className="w-full h-11 px-4 rounded-lg bg-surface-hover border-2 border-border text-text-primary placeholder:text-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 transition-colors"
-                />
-              </div>
+            <div className="px-6 py-5 border-t-2 border-border flex justify-end">
               <button
                 type="button"
                 onClick={() => setIsProfileOpen(false)}

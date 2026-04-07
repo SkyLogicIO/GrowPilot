@@ -121,8 +121,27 @@ export const MARKETING_PROMPTS: Record<ToolKey, string> = {
 /**
  * 获取指定工具的 System Prompt
  */
+const MEDIA_INSTRUCTION = `
+
+【图片生成能力】
+当用户需求涉及视觉内容时（如广告主视觉、产品场景图、海报设计等），
+请在回复末尾用以下格式标注需要生成的图片：
+[IMAGE: 图片的英文描述，越详细越好，包括风格、构图、色调等]
+一次最多生成 2 张图片。示例：[IMAGE: A minimalist product poster showing a wireless earbud on a clean white background, soft studio lighting, professional commercial photography style]
+
+【视频生成能力】
+当用户需求涉及视频内容时（如产品宣传视频、短视频素材、动态展示等），
+请在回复末尾用以下格式标注需要生成的视频：
+[VIDEO: 视频的英文描述，详细描述画面内容、风格、运动轨迹等]
+每次最多生成 1 个视频。视频生成需要较长时间，仅在用户明确需要时使用。
+示例：[VIDEO: A product showcase video of wireless earbuds rotating slowly on a minimalist white surface, soft studio lighting, smooth camera orbit, 16:9 aspect ratio, commercial style]`;
+
 export function getSystemPrompt(toolKey: ToolKey): string {
-  return MARKETING_PROMPTS[toolKey] || MARKETING_PROMPTS.chat;
+  const base = MARKETING_PROMPTS[toolKey] || MARKETING_PROMPTS.chat;
+  if (toolKey === "ad" || toolKey === "ecom") {
+    return base + MEDIA_INSTRUCTION;
+  }
+  return base;
 }
 
 /**

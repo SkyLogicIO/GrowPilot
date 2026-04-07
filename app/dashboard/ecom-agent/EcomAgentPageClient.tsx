@@ -1,78 +1,71 @@
 "use client";
 
-import { useMemo, useState, useRef, type ReactNode } from "react";
 import {
-  Bot,
-  Clapperboard,
-  FileText,
-  Megaphone,
-  RefreshCcw,
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+  type ReactNode,
+} from "react";
+import {
   Send,
-  ShoppingBag,
-  Sparkles,
-  Image,
-  ChevronDown,
   Plus,
-  Search,
+  ChevronDown,
   Loader2,
-  type LucideIcon,
+  Trash2,
+  MessageSquare,
+  Play,
+  ImageIcon,
 } from "lucide-react";
+import {
+  chatWithGemini,
+  generateVideo,
+  generateImage,
+  type MediaItem,
+} from "@/lib/ai";
+import {
+  getSystemPrompt,
+  getPlaceholder,
+} from "@/lib/prompts/marketing-prompts";
+import { agentChatStream } from "@/lib/api/agents";
+import {
+  loadThreads,
+  saveThread,
+  deleteThread,
+  generateThreadId,
+  type EcomChatThread,
+  type EcomChatMessage,
+} from "@/lib/storage/ecom-chat";
+import { useMediaStore } from "@/hooks/useMediaStore";
+import MediaGallery from "./MediaGallery";
 
-// ─── 常量 ─────────────────────────────────────────────────────────────────────
+// ─── 常量 ─────────────────────────────────────────────────────────────
 
-const TOOL_PRESETS: { key: string; label: string; icon: LucideIcon }[] = [
-  { key: "chat", label: "智能问答", icon: Bot },
-  { key: "copy", label: "产生文案", icon: FileText },
-  { key: "script", label: "拍摄脚本", icon: Clapperboard },
-  { key: "ecom", label: "电商卖点", icon: ShoppingBag },
-  { key: "ad", label: "创作素材", icon: Megaphone },
-];
+const WELCOME_MSG: EcomChatMessage = {
+  id: "welcome",
+  role: "assistant",
+  content: "你好，我是电商智能体。直接输入你的需求即可开始，支持文案创作、卖点分析、图片生成等。",
+  timestamp: 0,
+};
 
-const RECOMMENDED_SETS = [
-  ["直播话术生成", "带货脚本生成", "短视频拍摄脚本", "爆款脚本仿写"],
-  ["小红书标题优化", "朋友圈种草文案", "评论区引导话术", "直播间开场白"],
-  ["产品卖点提炼", "竞品对比表", "投放素材拆解", "落地页结构建议"],
-  ["短视频选题库", "15 秒口播模板", "剧情反转脚本", "直播间复盘清单"],
-  ["私域社群话术", "活动促销文案", "门店同城引流", "达人合作邀约"],
-];
+// ─── 子组件 ───────────────────────────────────────────────────────────
 
-const INITIAL_THREADS = [
-  { id: "t1", title: "智能体使用示例-亚马逊" },
-  { id: "t2", title: "智能体使用示例-淘宝" },
-  { id: "t3", title: "未命名" },
-  { id: "t4", title: "未命名" },
-];
-
-const INITIAL_MESSAGES: { id: string; role: "user" | "assistant"; content: string }[] = [
-  {
-    id: "m1",
-    role: "assistant",
-    content: "我可以作为 AI电商智能体，帮你把常用的电商运营任务变成可复用的模板。你可以在上方选择一个类型开始。",
-  },
-  {
-    id: "m2",
-    role: "assistant",
-    content: "你也可以直接选择右侧推荐工具：我会按你当前目标，给出结构化产出（标题/脚本/卖点/话术等）。",
-  },
-];
-
-// ─── 聊天气泡 ───────────────────────────────────────────────────────────────────
-
-function RoleBubble({
+function ChatBubble({
   role,
   children,
 }: {
   role: "user" | "assistant";
   children: ReactNode;
 }) {
-  const isAssistant = role === "assistant";
+  const isUser = role === "user";
   return (
-    <div className={`flex ${isAssistant ? "justify-start" : "justify-end"}`}>
+    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[820px] rounded-2xl border-2 px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
-          isAssistant
-            ? "bg-surface border-border text-text-primary"
-            : "bg-accent/15 border-accent/40 text-text-primary"
+        className={`max-w-[260px] rounded-xl px-3 py-2.5 text-[13px] leading-relaxed whitespace-pre-wrap break-words ${
+          isUser
+            ? "bg-accent/15 border border-accent/20 text-text-primary"
+            : "bg-white/[0.03] border border-white/[0.06] text-text-primary"
         }`}
       >
         {children}
@@ -81,296 +74,639 @@ function RoleBubble({
   );
 }
 
-// ─── 主组件 ───────────────────────────────────────────────────────────────────
-
-export default function EcomAgentPageClient() {
-  const [activeThreadId, setActiveThreadId] = useState("t1");
-  const [activeTool, setActiveTool] = useState("chat");
-  const [messages, setMessages] = useState(INITIAL_MESSAGES);
-  const [draft, setDraft] = useState("");
-  const [query, setQuery] = useState("");
-  const [recommendIndex, setRecommendIndex] = useState(0);
-  const isSendingRef = useRef(false);
-
-  const recommendedTools = useMemo(
-    () => RECOMMENDED_SETS[recommendIndex % RECOMMENDED_SETS.length],
-    [recommendIndex],
+function MediaRefTag({ count }: { count: number }) {
+  return (
+    <div className="mt-1.5 pt-1.5 border-t border-white/[0.06]">
+      <div className="flex items-center gap-1.5 px-1.5 py-1 rounded-md bg-accent/8">
+        <ImageIcon size={11} className="text-accent shrink-0" />
+        <span className="text-[11px] text-accent font-bold">
+          已在工作区生成 {count} 项素材
+        </span>
+      </div>
+    </div>
   );
+}
 
-  const filteredThreads = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return q ? INITIAL_THREADS.filter((t) => t.title.toLowerCase().includes(q)) : INITIAL_THREADS;
-  }, [query]);
+function GenerateVideoButton({
+  onClick,
+  disabled,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="mt-1.5 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-accent/10 border border-accent/20 text-accent text-[11px] font-bold hover:bg-accent/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+    >
+      <Play size={11} className="fill-current" />
+      生成视频
+    </button>
+  );
+}
 
-  const send = async () => {
-    const text = draft.trim();
-    if (!text || isSendingRef.current) return;
+function ThreadSelector({
+  threads,
+  activeId,
+  onSelect,
+  onNew,
+  onDelete,
+}: {
+  threads: EcomChatThread[];
+  activeId: string;
+  onSelect: (id: string) => void;
+  onNew: () => void;
+  onDelete: (id: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-    setDraft("");
-    const now = Date.now();
-    const aiMsgId = `a_${now}`;
-    isSendingRef.current = true;
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: PointerEvent) => {
+      if (!dropdownRef.current?.contains(e.target as Node)) setIsOpen(false);
+    };
+    window.addEventListener("pointerdown", handler);
+    return () => window.removeEventListener("pointerdown", handler);
+  }, [isOpen]);
 
-    setMessages((prev) => [
-      ...prev,
-      { id: `u_${now}`, role: "user" as const, content: text },
-      { id: aiMsgId, role: "assistant" as const, content: "思考中..." },
-    ]);
-
-    // TODO: 对接后端 API
-    setTimeout(() => {
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === aiMsgId
-            ? { ...m, content: `[${activeTool}] 功能开发中，即将对接后端 API。` }
-            : m,
-        ),
-      );
-      isSendingRef.current = false;
-    }, 1500);
-  };
+  const activeThread = threads.find((t) => t.id === activeId);
 
   return (
-    <div className="brut-card-static overflow-hidden">
-      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] min-h-[720px]">
-        {/* ── 左侧边栏 ── */}
-        <div className="border-r-2 border-border bg-surface-hover">
-          <div className="p-5">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-accent border-2 border-border flex items-center justify-center shadow-[2px_2px_0px_#1A1A1A]">
-                <Bot size={18} className="text-white" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-sm font-black text-text-primary truncate">
-                  电商智能体
-                </div>
-                <div className="text-xs text-text-muted truncate">
-                  内容创作 · 流量增长
-                </div>
-              </div>
-            </div>
+    <div className="relative" ref={dropdownRef}>
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => setIsOpen((v) => !v)}
+          className="flex-1 min-w-0 flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition-colors"
+        >
+          <MessageSquare size={14} className="text-text-muted shrink-0" />
+          <span className="text-xs font-bold text-text-secondary truncate">
+            {activeThread?.title || "选择对话"}
+          </span>
+          <ChevronDown
+            size={12}
+            className={`text-text-muted shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          />
+        </button>
+        <button
+          type="button"
+          onClick={onNew}
+          className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/[0.06] flex items-center justify-center hover:bg-white/[0.06] transition-colors shrink-0"
+          title="新对话"
+        >
+          <Plus size={14} className="text-text-muted" />
+        </button>
+      </div>
 
-            <button
-              type="button"
-              onClick={() => setActiveThreadId(`t_${Date.now()}`)}
-              className="mt-5 w-full h-10 rounded-xl bg-surface border-2 border-border text-sm font-bold text-text-primary hover:bg-surface-hover transition-colors flex items-center justify-center gap-2 shadow-[2px_2px_0px_#1A1A1A] active:translate-y-0.5 active:shadow-[1px_1px_0px_#1A1A1A]"
-            >
-              <Plus size={16} />
-              新对话
-            </button>
+      {isOpen && (
+        <div className="absolute top-full left-0 right-8 mt-1 z-50 bg-stone-900 border border-white/[0.08] rounded-xl shadow-xl shadow-black/40 overflow-hidden min-w-[220px] max-h-[240px] flex flex-col">
+          <div className="flex-1 overflow-y-auto py-1">
+            {threads.length === 0 && (
+              <div className="px-3 py-3 text-xs text-text-muted text-center">
+                暂无对话
+              </div>
+            )}
+            {threads.map((t) => (
+              <div
+                key={t.id}
+                className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors group ${
+                  t.id === activeId ? "bg-accent/10" : "hover:bg-white/[0.04]"
+                }`}
+                onClick={() => {
+                  onSelect(t.id);
+                  setIsOpen(false);
+                }}
+              >
+                <span className="text-xs text-text-secondary truncate flex-1">
+                  {t.title}
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(t.id);
+                  }}
+                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-white/[0.08] transition-all shrink-0"
+                >
+                  <Trash2 size={12} className="text-text-muted" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
-            <div className="mt-4 h-10 rounded-xl bg-surface border-2 border-border flex items-center px-3 gap-2">
-              <Search size={16} className="text-text-muted" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="搜索历史对话"
-                className="w-full bg-transparent outline-none text-sm text-text-primary placeholder:text-text-muted"
+// ─── 消息渲染器 ───────────────────────────────────────────────────────
+
+function MessageRenderer({
+  message,
+  isLatest,
+  currentMedia,
+  onGenerateVideo,
+}: {
+  message: EcomChatMessage;
+  isLatest: boolean;
+  currentMedia: MediaItem[];
+  onGenerateVideo: (scriptText: string, messageId: string) => void;
+}) {
+  const hasVideoRef = (message.mediaRefs ?? []).some((id) =>
+    currentMedia.some((m) => m.id === id && m.type === "video"),
+  );
+
+  // 仅最新一条助手消息显示视频按钮（且未关联视频、非欢迎语）
+  const showVideoBtn =
+    isLatest &&
+    message.role === "assistant" &&
+    !hasVideoRef &&
+    message.id !== "welcome";
+
+  const imageCount = (message.mediaRefs ?? []).filter((id) =>
+    currentMedia.some((m) => m.id === id && m.type === "image"),
+  ).length;
+
+  return (
+    <ChatBubble role={message.role}>
+      {message.content}
+      {imageCount > 0 && <MediaRefTag count={imageCount} />}
+      {showVideoBtn && (
+        <GenerateVideoButton
+          onClick={() => onGenerateVideo(message.content, message.id)}
+        />
+      )}
+    </ChatBubble>
+  );
+}
+
+// ─── 主组件 ───────────────────────────────────────────────────────────
+
+export default function EcomAgentPageClient() {
+  const [threads, setThreads] = useState<EcomChatThread[]>([]);
+  const [activeThreadId, setActiveThreadId] = useState("");
+  const [draft, setDraft] = useState("");
+  const [isSending, setIsSending] = useState(false);
+
+  const mediaStore = useMediaStore();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // 派生状态
+  const activeThread = useMemo(
+    () => threads.find((t) => t.id === activeThreadId),
+    [threads, activeThreadId],
+  );
+  const messages = useMemo(
+    () => activeThread?.messages ?? [],
+    [activeThread],
+  );
+  const placeholder = useMemo(() => getPlaceholder("ecom"), []);
+  const currentMedia = useMemo(
+    () => mediaStore.getMedia(activeThreadId),
+    [mediaStore, activeThreadId],
+  );
+
+  // 初始化
+  useEffect(() => {
+    const loaded = loadThreads();
+    if (loaded.length === 0) {
+      const id = generateThreadId();
+      const thread: EcomChatThread = {
+        id,
+        title: "新对话",
+        messages: [{ ...WELCOME_MSG, timestamp: Date.now() }],
+        activeTool: "ecom",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      saveThread(thread);
+      setThreads([thread]);
+      setActiveThreadId(id);
+    } else {
+      setThreads(loaded);
+      setActiveThreadId(loaded[0].id);
+    }
+  }, []);
+
+  // 自动滚动
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // ── 线程操作 ──
+
+  const handleNewThread = useCallback(() => {
+    const id = generateThreadId();
+    const thread: EcomChatThread = {
+      id,
+      title: "新对话",
+      messages: [{ ...WELCOME_MSG, timestamp: Date.now() }],
+      activeTool: "ecom",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+    saveThread(thread);
+    setThreads((prev) => [thread, ...prev]);
+    setActiveThreadId(id);
+  }, []);
+
+  const handleDeleteThread = useCallback(
+    (id: string) => {
+      deleteThread(id);
+      mediaStore.clearThread(id);
+      setThreads((prev) => {
+        const next = prev.filter((t) => t.id !== id);
+        if (id === activeThreadId && next.length > 0) {
+          setActiveThreadId(next[0].id);
+        } else if (next.length === 0) {
+          handleNewThread();
+        }
+        return next;
+      });
+    },
+    [activeThreadId, handleNewThread, mediaStore],
+  );
+
+  // ── 发送消息（Agent API + 图片/视频生成） ──
+
+  const send = useCallback(async () => {
+    const text = draft.trim();
+    if (!text || isSending) return;
+
+    setDraft("");
+    setIsSending(true);
+
+    const now = Date.now();
+    const userMsg: EcomChatMessage = {
+      id: `u_${now}`,
+      role: "user",
+      content: text,
+      timestamp: now,
+    };
+    const aiMsg: EcomChatMessage = {
+      id: `a_${now}`,
+      role: "assistant",
+      content: "分析中...",
+      timestamp: now,
+    };
+
+    const isFirstUserMsg =
+      activeThread &&
+      activeThread.messages.filter((m) => m.role === "user").length === 0;
+    const newTitle = isFirstUserMsg
+      ? text.slice(0, 30)
+      : activeThread?.title ?? "新对话";
+
+    setThreads((prev) =>
+      prev.map((t) =>
+        t.id === activeThreadId
+          ? {
+              ...t,
+              title: newTitle,
+              messages: [...t.messages, userMsg, aiMsg],
+              updatedAt: now,
+            }
+          : t,
+      ),
+    );
+
+    try {
+      let finalText = "";
+      const imageDescriptions: string[] = [];
+      const videoDescriptions: string[] = [];
+
+      // ── 调用后端营销助手 Agent（流式） ──
+      try {
+        const stream = agentChatStream("marketing-assistant", {
+          product_info: text,
+        });
+
+        for await (const event of stream) {
+          if (event.type === "complete" && event.result) {
+            finalText = event.result;
+          } else if (event.type === "step_complete" && event.result) {
+            // 逐步展示中间结果
+            setThreads((prev) => {
+              const updated = prev.map((t) =>
+                t.id === activeThreadId
+                  ? {
+                      ...t,
+                      messages: t.messages.map((m) =>
+                        m.id === `a_${now}`
+                          ? { ...m, content: event.result || "分析中...", timestamp: Date.now() }
+                          : m,
+                      ),
+                    updatedAt: Date.now(),
+                  }
+                  : t,
+              );
+              const current = updated.find((t) => t.id === activeThreadId);
+              if (current) saveThread(current);
+              return updated;
+            });
+          } else if (event.type === "error") {
+            throw new Error(event.error || "Agent 执行失败");
+          }
+        }
+      } catch (agentError: unknown) {
+        // Agent API 失败，fallback 到普通 Gemini 对话
+        console.warn("Agent API failed, falling back to Gemini:", agentError);
+
+        const history = [
+          ...(activeThread?.messages ?? [])
+            .filter((m) => m.id !== "welcome" && m.content !== "分析中..." && !m.content.startsWith("请求失败:"))
+            .slice(-50)
+            .map((m) => ({
+              role: (m.role === "assistant" ? "model" : "user") as "user" | "model",
+              content: m.content,
+            })),
+          { role: "user" as const, content: text },
+        ];
+
+        const reply = await chatWithGemini({
+          messages: history,
+          systemInstruction: getSystemPrompt("ecom"),
+          maxOutputTokens: 8192,
+        });
+        finalText = reply;
+      }
+
+      // ── 解析 [IMAGE:...] 和 [VIDEO:...] 标签 ──
+      const imageRegex = /\[IMAGE:\s*([^\]]+)\]/g;
+      const videoRegex = /\[VIDEO:\s*([^\]]+)\]/g;
+      let imgMatch: RegExpExecArray | null;
+      let vidMatch: RegExpExecArray | null;
+
+      while ((imgMatch = imageRegex.exec(finalText)) !== null) {
+        imageDescriptions.push(imgMatch[1].trim());
+      }
+      while ((vidMatch = videoRegex.exec(finalText)) !== null) {
+        videoDescriptions.push(vidMatch[1].trim());
+      }
+
+      // 清除标签，构建展示文本
+      let cleanText = finalText
+        .replace(imageRegex, "")
+        .replace(videoRegex, "")
+        .trim();
+
+      const mediaIds: string[] = [];
+
+      // ── 生成图片 ──
+      if (imageDescriptions.length > 0) {
+        const descs = imageDescriptions.slice(0, 2);
+        const imgs: MediaItem[] = [];
+
+        for (let i = 0; i < descs.length; i++) {
+          try {
+            const result = await generateImage({
+              prompt: descs[i],
+              numberOfImages: 1,
+              aspectRatio: "1:1",
+            });
+            const item: MediaItem = {
+              id: `media_${now}_img_${i}`,
+              type: "image",
+              dataUrl: result.imageUrl,
+              prompt: descs[i],
+              createdAt: Date.now(),
+            };
+            imgs.push(item);
+            mediaIds.push(item.id);
+          } catch (err) {
+            console.warn(`图片生成失败 (${descs[i]}):`, err);
+          }
+        }
+
+        if (imgs.length > 0) {
+          mediaStore.addMedia(activeThreadId, imgs);
+          cleanText += `\n\n[已在工作区生成 ${imgs.length} 张图片]`;
+        }
+      }
+
+      // ── 生成视频（异步，不阻塞文本回复） ──
+      if (videoDescriptions.length > 0) {
+        const videoDesc = videoDescriptions[0];
+        const videoId = `media_${now}_video`;
+
+        mediaStore.addVideo(activeThreadId, {
+          id: videoId,
+          type: "video",
+          dataUrl: "",
+          prompt: videoDesc,
+          createdAt: now,
+          status: "提交生成请求...",
+        });
+        mediaIds.push(videoId);
+        cleanText += `\n\n[视频生成中，请稍候...]`;
+
+        // 更新消息文本
+        updateAiMessage(cleanText, mediaIds);
+
+        // 异步生成视频（fire-and-forget）
+        (async () => {
+          try {
+            const videoResult = await generateVideo({
+              prompt: videoDesc,
+              duration: 8,
+              aspectRatio: "16:9",
+              resolution: "720p",
+              onProgress: (status) => {
+                mediaStore.updateVideo(activeThreadId, videoId, { status });
+              },
+            });
+            mediaStore.updateVideo(activeThreadId, videoId, {
+              dataUrl: videoResult.videoUrl,
+              status: "已完成",
+            });
+          } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : "生成失败";
+            mediaStore.updateVideo(activeThreadId, videoId, {
+              status: `失败: ${msg}`,
+            });
+          }
+        })();
+      } else {
+        updateAiMessage(cleanText, mediaIds);
+      }
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : "请求失败";
+      setThreads((prev) =>
+        prev.map((t) =>
+          t.id === activeThreadId
+            ? {
+                ...t,
+                messages: t.messages.map((m) =>
+                  m.id === `a_${now}` ? { ...m, content: `请求失败: ${errMsg}` } : m,
+                ),
+              }
+            : t,
+        ),
+      );
+    } finally {
+      setIsSending(false);
+    }
+
+    // 更新助手消息内容的辅助函数
+    function updateAiMessage(content: string, mediaIds: string[]) {
+      setThreads((prev) => {
+        const updated = prev.map((t) =>
+          t.id === activeThreadId
+            ? {
+                ...t,
+                messages: t.messages.map((m) =>
+                  m.id === `a_${now}`
+                    ? { ...m, content, mediaRefs: mediaIds.length > 0 ? mediaIds : undefined, timestamp: Date.now() }
+                    : m,
+                ),
+                updatedAt: Date.now(),
+              }
+            : t,
+        );
+        const current = updated.find((t) => t.id === activeThreadId);
+        if (current) saveThread(current);
+        return updated;
+      });
+    }
+  }, [draft, isSending, activeThread, activeThreadId, mediaStore]);
+
+  // ── 视频生成 ──
+
+  const handleGenerateVideo = useCallback(
+    async (scriptText: string, messageId: string) => {
+      const videoId = `media_${Date.now()}_video`;
+
+      // 添加占位
+      mediaStore.addVideo(activeThreadId, {
+        id: videoId,
+        type: "video",
+        dataUrl: "",
+        prompt: scriptText,
+        createdAt: Date.now(),
+        status: "提交生成请求...",
+      });
+
+      // 消息关联视频
+      setThreads((prev) =>
+        prev.map((t) =>
+          t.id === activeThreadId
+            ? {
+                ...t,
+                messages: t.messages.map((m) =>
+                  m.id === messageId
+                    ? { ...m, mediaRefs: [...(m.mediaRefs ?? []), videoId] }
+                    : m,
+                ),
+              }
+            : t,
+        ),
+      );
+
+      try {
+        // 清理 prompt：移除末尾的素材引用标记
+        const cleanPrompt = scriptText.replace(/\n*\[已在工作区.*?\]\s*/g, "").trim();
+
+        const videoResult = await generateVideo({
+          prompt: cleanPrompt,
+          duration: 8,
+          aspectRatio: "16:9",
+          resolution: "720p",
+          onProgress: (status) => {
+            mediaStore.updateVideo(activeThreadId, videoId, { status });
+          },
+        });
+
+        mediaStore.updateVideo(activeThreadId, videoId, {
+          dataUrl: videoResult.videoUrl,
+          status: "已完成",
+        });
+      } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : "生成失败";
+        mediaStore.updateVideo(activeThreadId, videoId, {
+          status: `失败: ${msg}`,
+        });
+      }
+    },
+    [activeThreadId, mediaStore],
+  );
+
+  // ── 渲染 ──
+
+  return (
+    <div className="h-[calc(100vh-140px)] flex rounded-2xl overflow-hidden bg-white/[0.02] border border-white/[0.06]">
+      {/* ── 左侧对话面板 ── */}
+      <div className="w-full lg:w-[300px] lg:min-w-[300px] flex flex-col lg:border-r border-white/[0.06]">
+        {/* 线程选择器 */}
+        <div className="px-3 py-2 border-b border-white/[0.06]">
+          <ThreadSelector
+            threads={threads}
+            activeId={activeThreadId}
+            onSelect={setActiveThreadId}
+            onNew={handleNewThread}
+            onDelete={handleDeleteThread}
+          />
+        </div>
+
+        {/* 消息列表 */}
+        <div className="flex-1 overflow-y-auto px-3 py-3">
+          <div className="space-y-2.5">
+            {messages.map((m, idx) => (
+              <MessageRenderer
+                key={m.id}
+                message={m}
+                isLatest={idx === messages.length - 1}
+                currentMedia={currentMedia}
+                onGenerateVideo={handleGenerateVideo}
               />
-            </div>
-          </div>
-
-          <div className="px-3 pb-4">
-            <div className="px-2 text-xs font-bold text-text-muted uppercase tracking-wider">
-              历史对话
-            </div>
-            <div className="mt-2 space-y-1">
-              {filteredThreads.map((t) => {
-                const active = t.id === activeThreadId;
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setActiveThreadId(t.id)}
-                    className={`w-full text-left px-3 py-2 rounded-xl border-2 transition-colors ${
-                      active
-                        ? "bg-accent/15 border-accent/40 text-text-primary font-bold"
-                        : "bg-transparent border-transparent text-text-secondary hover:bg-surface hover:border-border"
-                    }`}
-                  >
-                    <div className="text-sm truncate">{t.title}</div>
-                  </button>
-                );
-              })}
-            </div>
+            ))}
+            <div ref={messagesEndRef} />
           </div>
         </div>
 
-        {/* ── 右侧主区域 ── */}
-        <div className="flex flex-col">
-          {/* 顶部工具栏 */}
-          <div className="px-6 py-5 border-b-2 border-border">
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div className="min-w-0 flex flex-col gap-4">
-                <div>
-                  <div className="text-lg font-black text-text-primary">
-                    电商智能体
-                  </div>
-                  <div className="mt-1 text-sm text-text-secondary">
-                    一站式对话式创作：文案、脚本、电商、投放素材
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  {TOOL_PRESETS.map(({ key, label, icon: Icon }) => {
-                    const active = key === activeTool;
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => setActiveTool(key)}
-                        className={`h-10 px-4 rounded-xl border-2 transition-colors flex items-center gap-2 font-bold ${
-                          active
-                            ? "bg-accent border-border text-white shadow-[2px_2px_0px_#1A1A1A]"
-                            : "bg-surface border-border text-text-secondary hover:bg-surface-hover"
-                        }`}
-                      >
-                        <Icon size={16} />
-                        <span className="text-sm">{label}</span>
-                      </button>
-                    );
-                  })}
-
-                  <div className="hidden md:flex items-center gap-2 text-xs text-text-muted ml-2">
-                    <Sparkles size={14} className="text-accent" />
-                    <span>支持多模态与结构化输出</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 推荐工具 */}
-              <div className="w-full md:w-[360px] rounded-xl bg-surface-hover border-2 border-border p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 text-sm font-bold text-text-primary">
-                    <Sparkles size={16} className="text-accent" />
-                    推荐工具
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setRecommendIndex((v) => v + 1)}
-                    className="h-8 px-3 rounded-lg bg-surface border-2 border-border hover:bg-surface-hover transition-colors flex items-center gap-2 font-bold text-text-secondary"
-                  >
-                    <RefreshCcw size={14} />
-                    <span className="text-xs">换一换</span>
-                  </button>
-                </div>
-
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {recommendedTools.map((title) => (
-                    <button
-                      key={title}
-                      type="button"
-                      onClick={() => setDraft((prev) => (prev.trim() ? prev : `${title}：`))}
-                      className="h-9 px-3 rounded-lg bg-surface border-2 border-border hover:bg-surface-hover transition-colors text-sm font-bold text-text-secondary"
-                    >
-                      {title}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 消息区域 */}
-          <div className="flex-1 px-6 py-5 overflow-y-auto">
-            <div className="space-y-3">
-              {messages.map((m) => (
-                <RoleBubble key={m.id} role={m.role}>
-                  {m.content}
-                </RoleBubble>
-              ))}
-            </div>
-          </div>
-
-          {/* 输入区域 */}
-          <div className="px-6 py-4 border-t-2 border-border bg-surface">
-            <div className="rounded-xl border-2 border-border bg-surface-hover overflow-hidden shadow-[3px_3px_0px_#1A1A1A]">
-              <div className="px-4 pt-4">
-                {/* 上行：图片图标 + 输入框 */}
-                <div className="flex items-start gap-3 mb-3">
-                  <button
-                    type="button"
-                    className="shrink-0 w-11 h-11 rounded-xl bg-surface border-2 border-border flex items-center justify-center hover:bg-surface-hover transition-colors"
-                  >
-                    <Image size={20} className="text-text-secondary" />
-                  </button>
-                  <textarea
-                    value={draft}
-                    onChange={(e) => setDraft(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        send();
-                      }
-                    }}
-                    placeholder="询问您的问题"
-                    disabled={isSendingRef.current}
-                    rows={2}
-                    className="flex-1 bg-transparent resize-none outline-none text-sm text-text-primary placeholder:text-text-muted leading-relaxed pt-1 disabled:opacity-50"
-                  />
-                </div>
-
-                {/* 下行：选择器 + 操作区 */}
-                <div className="flex items-center justify-between gap-2 flex-wrap pb-3">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <button
-                      type="button"
-                      className="flex items-center gap-1.5 px-3 h-8 rounded-lg bg-surface border-2 border-border text-xs font-bold text-text-secondary hover:bg-surface-hover transition-colors"
-                    >
-                      <Bot size={12} />
-                      <span>电商智能体</span>
-                      <ChevronDown size={11} className="text-text-muted" />
-                    </button>
-                    <button
-                      type="button"
-                      className="flex items-center gap-1.5 px-3 h-8 rounded-lg bg-surface border-2 border-border text-xs font-bold text-text-secondary hover:bg-surface-hover transition-colors"
-                    >
-                      <span className="font-black text-accent text-xs">a</span>
-                      <span>亚马逊</span>
-                      <ChevronDown size={11} className="text-text-muted" />
-                    </button>
-                    <button
-                      type="button"
-                      className="flex items-center gap-1.5 px-3 h-8 rounded-lg bg-surface border-2 border-border text-xs font-bold text-text-secondary hover:bg-surface-hover transition-colors"
-                    >
-                      <span className="text-sm">🇬🇧</span>
-                      <span>英文</span>
-                      <ChevronDown size={11} className="text-text-muted" />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      className="flex items-center gap-1 px-3 h-8 rounded-lg bg-surface border-2 border-border text-xs font-bold text-text-secondary hover:bg-surface-hover transition-colors"
-                    >
-                      模板库 <span className="text-text-muted">&rsaquo;</span>
-                    </button>
-                    <button
-                      type="button"
-                      className="flex items-center gap-1 px-3 h-8 rounded-lg bg-surface border-2 border-border text-xs font-bold text-text-secondary hover:bg-surface-hover transition-colors"
-                    >
-                      自定义模板
-                      <RefreshCcw size={11} className="text-text-muted ml-0.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={send}
-                      disabled={isSendingRef.current || !draft.trim()}
-                      className="w-9 h-9 rounded-xl bg-purple border-2 border-border flex items-center justify-center transition-all hover:bg-purple/90 disabled:opacity-50 disabled:cursor-not-allowed shadow-[2px_2px_0px_#1A1A1A] active:translate-y-0.5 active:shadow-[1px_1px_0px_#1A1A1A]"
-                    >
-                      {isSendingRef.current ? (
-                        <Loader2 size={15} className="text-white animate-spin" />
-                      ) : (
-                        <Send size={15} className="text-white" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
+        {/* 输入区域 */}
+        <div className="px-3 py-3 border-t border-white/[0.06]">
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl overflow-hidden">
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  send();
+                }
+              }}
+              placeholder={placeholder}
+              disabled={isSending}
+              rows={2}
+              className="w-full bg-transparent resize-none outline-none text-[13px] text-text-primary placeholder:text-text-muted px-3 pt-2.5 pb-1 disabled:opacity-50"
+            />
+            <div className="flex items-center justify-end px-2 pb-2">
+              <button
+                type="button"
+                onClick={send}
+                disabled={isSending || !draft.trim()}
+                className="w-8 h-8 rounded-lg bg-accent/15 border border-accent/20 text-accent flex items-center justify-center transition-all hover:bg-accent/25 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {isSending ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <Send size={14} />
+                )}
+              </button>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* ── 右侧工作区 ── */}
+      <div className="hidden lg:flex flex-1 flex-col min-w-0">
+        <MediaGallery
+          items={currentMedia}
+          onRemove={(mediaId) => mediaStore.removeMedia(activeThreadId, mediaId)}
+        />
       </div>
     </div>
   );

@@ -50,13 +50,22 @@ export interface TextToImageRequest {
   model_name: string;
 }
 
+/** 图生图 */
+export interface ImageToImageRequest {
+  image_url: string;
+  prompt: string;
+  negative_prompt?: string;
+  seed?: number;
+  model_name: string;
+}
+
 /** 文生视频 */
 export interface TextToVideoRequest {
   prompt: string;
   negative_prompt?: string;
-  width: number;
-  height: number;
-  steps: number;
+  width?: number;
+  height?: number;
+  steps?: number;
   fps: number;
   duration: number;
   model_name: string;
@@ -65,8 +74,7 @@ export interface TextToVideoRequest {
 /** 图生视频 */
 export interface ImageToVideoRequest {
   image_url: string;
-  motion_bucket_id?: number;
-  steps: number;
+  prompt?: string;
   fps: number;
   duration: number;
   model_name: string;
@@ -78,10 +86,11 @@ export interface InpaintRequest {
   mask_url: string;
   prompt: string;
   negative_prompt?: string;
-  width: number;
-  height: number;
-  steps: number;
-  cfg_scale: number;
+  denoising_strength?: number;
+  width?: number;
+  height?: number;
+  steps?: number;
+  cfg_scale?: number;
   seed?: number;
   model_name: string;
 }
@@ -91,7 +100,7 @@ export interface FrameToVideoRequest {
   start_frame_url: string;
   end_frame_url: string;
   prompt: string;
-  steps: number;
+  steps?: number;
   fps: number;
   duration: number;
   model_name: string;
@@ -102,9 +111,23 @@ export interface FrameToVideoRequest {
 /** 任务状态 */
 export type TaskStatus = "pending" | "processing" | "completed" | "failed" | "cancelled";
 
-/** 任务响应（创建 & 查询共用） */
-export interface TaskInfo {
+/** 任务创建响应（后端返回 task_id） */
+export interface TaskCreatedInfo {
   task_id: string;
+  status: TaskStatus;
+  model_name?: string;
+  result_url?: string;
+  created_at: string;
+  latency_ms?: number;
+  duration?: number;
+  fps?: number;
+}
+
+/** 任务查询响应（后端返回 id） */
+export interface TaskDetailInfo {
+  id: number;
+  task_type?: string;
+  model_name?: string;
   status: TaskStatus;
   progress: number; // 0-100
   result_url?: string;

@@ -8,7 +8,6 @@ import {
   Bot,
   Camera,
   ChevronDown,
-  ChevronRight,
   Folder,
   FolderUp,
   Image as ImageIcon,
@@ -48,7 +47,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { icon: LayoutDashboard, label: "首页",     href: "/dashboard",                 color: "bg-[#FFD93D]" },
   { icon: Sparkles,         label: "电商智能体", href: "/dashboard/ecom-agent",      color: "bg-[#FF6B6B]" },
   {
-    icon: Folder, label: "我的项目", href: "/dashboard/project", color: "bg-[#74B9FF]",
+    icon: Folder, label: "我的项目", href: "/dashboard/project", color: "bg-[#74B9FF]", hidden: true,
     children: [
       { icon: Video,     label: "AI 视频工场",  href: "/dashboard/video-factory",  color: "bg-[#74B9FF]" },
       { icon: ImageIcon, label: "AI 绘画工作室", href: "/dashboard/art-studio",  color: "bg-[#FFB3C6]" },
@@ -90,7 +89,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
       { icon: ArrowLeftRight,  label: "场景替换",    href: "/dashboard/model/scene-swap",     color: "bg-[#4ECDC4]", disabled: true },
     ],
   },
-  { icon: Bot,   label: "AI营销助手", href: "/dashboard/marketing-assistant", color: "bg-[#FF6B6B]" },
+  { icon: Bot,   label: "AI营销助手", href: "/dashboard/marketing-assistant", color: "bg-[#FF6B6B]", hidden: true },
   { icon: Wand2, label: "AI创作工具", href: "/dashboard/tools",               color: "bg-[#C77DFF]" },
 ];
 
@@ -136,22 +135,22 @@ export default function DashboardSidebar({ isOpen }: { isOpen: boolean }) {
 
   return (
     <aside
-      className={`fixed left-0 top-0 h-screen bg-surface border-r-2 border-border transition-all duration-(--duration-medium) z-30 flex flex-col ${
+      className={`fixed left-0 top-0 h-screen bg-stone-950 border-r border-white/[0.06] transition-all duration-(--duration-medium) z-30 flex flex-col ${
         isOpen ? "w-64" : "w-20"
       }`}
     >
       {/* Logo */}
-      <div className="p-5 border-b-2 border-border relative group">
+      <div className="p-5 border-b border-white/[0.06] relative group">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl bg-accent border-2 border-border flex items-center justify-center shadow-[3px_3px_0px_#1A1A1A] shrink-0">
-            <Sprout size={20} className="text-white" />
+          <div className="w-10 h-10 rounded-xl bg-accent/15 border border-amber-500/20 flex items-center justify-center shrink-0">
+            <Sprout size={20} className="text-accent" />
           </div>
           {isOpen && (
             <span className="text-lg font-black text-text-primary tracking-tight">GrowPilot</span>
           )}
         </div>
 
-        <div className="pointer-events-none absolute left-5 top-[66px] w-[230px] bg-surface border-2 border-border shadow-[4px_4px_0px_#1A1A1A] rounded-xl px-4 py-3 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-150 z-50">
+        <div className="pointer-events-none absolute left-5 top-[66px] w-[230px] bg-stone-900 border border-white/[0.08] rounded-xl px-4 py-3 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-150 z-50 shadow-xl shadow-black/40">
           <div className="text-sm font-black text-text-primary">GrowPilot v1.5.11</div>
           <div className="mt-1 text-xs text-text-secondary font-medium">Build: {buildStamp}</div>
           <div className="mt-1 text-xs text-text-muted">© 2025 后起智能</div>
@@ -167,17 +166,17 @@ export default function DashboardSidebar({ isOpen }: { isOpen: boolean }) {
           const isExpanded = expandedItems.has(item.label);
           const parentClasses = `flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all duration-(--duration-fast) group ${
             parentActive
-              ? "bg-surface-hover text-text-primary"
-              : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
+              ? "bg-accent/10 text-text-primary"
+              : "text-text-secondary hover:text-text-primary hover:bg-white/[0.04]"
           }`;
 
           // 有子菜单的一级项：点击切换折叠
           const parentContent = (
             <>
-              <div className={`w-8 h-8 rounded-lg ${item.color} border-2 border-border flex items-center justify-center shrink-0 transition-transform duration-(--duration-fast) ${
-                parentActive ? "scale-110" : ""
-              } ${hasChildren ? "shadow-[2px_2px_0px_#1A1A1A]" : ""}`}>
-                <item.icon size={16} className="text-text-primary" />
+              <div className={`w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.06] flex items-center justify-center shrink-0 transition-all duration-(--duration-fast) ${
+                parentActive ? "bg-accent/15 border-amber-500/20" : ""
+              }`}>
+                <item.icon size={16} className={parentActive ? "text-accent" : "text-text-muted"} />
               </div>
               {isOpen && <span className="flex-1">{item.label}</span>}
               {isOpen && hasChildren && (
@@ -209,7 +208,7 @@ export default function DashboardSidebar({ isOpen }: { isOpen: boolean }) {
               )}
 
               {isOpen && hasChildren && isExpanded ? (
-                <div className="ml-4 pl-4 border-l-2 border-border-light space-y-0.5 my-0.5">
+                <div className="ml-4 pl-4 border-l border-white/[0.06] space-y-0.5 my-0.5">
                   {item.children!.filter((c) => !c.hidden).map((child) => {
                     const childActive = matchActive(pathname, child.href);
                     if (child.disabled) {
@@ -218,12 +217,12 @@ export default function DashboardSidebar({ isOpen }: { isOpen: boolean }) {
                           key={`${item.label}_${child.label}`}
                           className="flex items-center gap-2.5 px-2 py-2 rounded-lg font-medium text-sm opacity-40 cursor-not-allowed text-text-muted"
                         >
-                          <div className={`w-6 h-6 rounded-md ${child.color} border border-border flex items-center justify-center shrink-0 opacity-60`}>
-                            <child.icon size={12} className="text-text-primary" />
+                          <div className={`w-6 h-6 rounded-md bg-white/[0.03] border border-white/[0.06] flex items-center justify-center shrink-0`}>
+                            <child.icon size={12} className="text-text-muted" />
                           </div>
                           <span>{child.label}</span>
                           {child.badge && (
-                            <span className="ml-auto text-[0.6rem] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-gradient-to-r from-[#FF6B6B] to-[#FFB3C6] text-white">
+                            <span className="ml-auto text-[0.6rem] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-accent/15 text-accent">
                               {child.badge}
                             </span>
                           )}
@@ -236,18 +235,18 @@ export default function DashboardSidebar({ isOpen }: { isOpen: boolean }) {
                         href={child.href}
                         className={`flex items-center gap-2.5 px-2 py-2 rounded-lg font-medium text-sm transition-colors duration-(--duration-fast) ${
                           childActive
-                            ? "bg-accent/15 text-text-primary font-bold"
-                            : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
+                            ? "bg-accent/10 text-text-primary font-bold"
+                            : "text-text-secondary hover:text-text-primary hover:bg-white/[0.04]"
                         }`}
                       >
-                        <div className={`w-6 h-6 rounded-md ${child.color} border border-border flex items-center justify-center shrink-0 transition-all ${
-                          childActive ? "ring-2 ring-accent/50 scale-110" : ""
+                        <div className={`w-6 h-6 rounded-md bg-white/[0.05] border border-white/[0.06] flex items-center justify-center shrink-0 transition-all ${
+                          childActive ? "bg-accent/15 border-amber-500/20" : ""
                         }`}>
-                          <child.icon size={12} className="text-text-primary" />
+                          <child.icon size={12} className={childActive ? "text-accent" : "text-text-muted"} />
                         </div>
                         <span>{child.label}</span>
                         {child.badge && (
-                          <span className="ml-auto text-[0.6rem] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-gradient-to-r from-[#FF6B6B] to-[#FFB3C6] text-white">
+                          <span className="ml-auto text-[0.6rem] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-accent/15 text-accent">
                             {child.badge}
                           </span>
                         )}

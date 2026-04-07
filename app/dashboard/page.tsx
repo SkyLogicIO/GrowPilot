@@ -1,112 +1,22 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  FolderUp,
-  Sparkles,
-  Video,
-  Zap,
-  ArrowRight,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import { demoProjects, formatProjectTime } from "@/lib/demoProjects";
-import useGeneratedProjects from "@/lib/storage/useGeneratedProjects";
-import type { GeneratedProject } from "@/lib/storage";
-
-type StatItem = {
-  icon: LucideIcon;
-  label: string;
-  value: string;
-  trend: string;
-  positive: boolean;
-  bg: string;
-};
-
-type DisplayProject = {
-  id: string;
-  name: string;
-  cover: string;
-  updatedAt: string;
-  statusText?: string;
-  resultType?: string;
-};
-
-function isThisWeek(iso: string): boolean {
-  const now = new Date();
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return false;
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - now.getDay());
-  startOfWeek.setHours(0, 0, 0, 0);
-  return d >= startOfWeek;
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-const DEFAULT_COVER =
-  "https://images.unsplash.com/photo-1516117172878-fd2c41f4a759?auto=format&fit=crop&w=1200&q=80";
-
-function toDisplayProject(p: GeneratedProject): DisplayProject {
-  return {
-    id: p.id,
-    name: p.name,
-    cover: p.thumbnailUrl || p.resultUrl || DEFAULT_COVER,
-    updatedAt: p.createdAt,
-    resultType: p.resultType,
-  };
-}
-
-function demoToDisplayProject(p: { id: number; name: string; updatedAt: string; cover: string; statusText?: string }): DisplayProject {
-  return {
-    id: String(p.id),
-    name: p.name,
-    cover: p.cover,
-    updatedAt: p.updatedAt,
-    statusText: p.statusText,
-  };
-}
+import { Sparkles, FolderUp, ArrowRight, Bot } from "lucide-react";
 
 export default function DashboardHomePage() {
-  const { projects, usage } = useGeneratedProjects();
   const [userName, setUserName] = useState("创作者");
 
-  // 读取用户名
   useEffect(() => {
     try {
       const raw = localStorage.getItem("growpilot_user");
       if (raw) {
         const user = JSON.parse(raw);
-        if (user.name) setUserName(user.name);
+        if (user.username) setUserName(user.username);
+        else if (user.email) setUserName(user.email);
       }
     } catch {}
   }, []);
-
-  // 统计卡片 — 有真实数据的用真实值，没有的保持 mock
-  const weekCount = useMemo(
-    () => projects.filter((p) => isThisWeek(p.createdAt)).length,
-    [projects]
-  );
-
-  const STATS: StatItem[] = [
-    { icon: Video,    label: "本周创作", value: String(weekCount),       trend: weekCount > 0 ? `+${weekCount}` : "0", positive: weekCount > 0, bg: "bg-[#FFD93D]" },
-    { icon: FolderUp, label: "资产容量", value: formatBytes(usage.used), trend: "",                                 positive: false,              bg: "bg-[#4ECDC4]" },
-    { icon: Sparkles, label: "获得积分", value: "1,250",                trend: "+150",                             positive: true,               bg: "bg-[#FFB3C6]" },
-    { icon: Zap,      label: "算力消耗", value: String(usage.count),     trend: `共 ${usage.count} 次`,            positive: false,              bg: "bg-[#74B9FF]" },
-  ];
-
-  // 最近项目 — 有真实数据用真实的，没有则 fallback demo
-  const recentProjects: DisplayProject[] = useMemo(() => {
-    if (projects.length > 0) {
-      return projects.slice(0, 8).map(toDisplayProject);
-    }
-    return demoProjects.slice(0, 8).map(demoToDisplayProject);
-  }, [projects]);
-
 
   return (
     <div className="space-y-7 animate-fade-in">
@@ -120,100 +30,35 @@ export default function DashboardHomePage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link href="/dashboard/ideas" className="brut-btn bg-[#FFD93D] text-text-primary px-4 py-2 text-sm inline-flex items-center gap-2">
+          <Link href="/dashboard/ideas" className="px-4 py-2 rounded-xl text-sm font-bold inline-flex items-center gap-2 bg-accent text-stone-900 hover:bg-amber-400 transition-colors">
             <Sparkles size={14} /> 收藏的灵感
           </Link>
-          <Link href="/dashboard/assets/hot" className="brut-btn bg-surface text-text-primary px-4 py-2 text-sm inline-flex items-center gap-2">
+          <Link href="/dashboard/assets/hot" className="brut-btn text-text-primary px-4 py-2 text-sm inline-flex items-center gap-2">
             <FolderUp size={14} /> 打开资产
           </Link>
         </div>
       </div>
 
-      {/* ── 统计卡片 ── */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-fade-up delay-1">
-        {STATS.map((stat, i) => (
-          <div key={i} className={`delay-${i + 1} brut-card p-5`}>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm font-bold text-text-secondary">{stat.label}</span>
-              <div className={`w-9 h-9 rounded-xl ${stat.bg} border-2 border-border flex items-center justify-center shadow-[2px_2px_0px_#1A1A1A]`}>
-                <stat.icon size={16} className="text-text-primary" />
-              </div>
+      {/* ── 功能入口卡片 ── */}
+      <Link
+        href="/dashboard/ecom-agent"
+        className="animate-fade-up delay-1 block rounded-2xl border border-white/[0.08] bg-gradient-to-r from-accent/15 via-accent/8 to-transparent p-6 hover:border-accent/20 transition-all group"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center">
+              <Bot size={22} className="text-accent" />
             </div>
-            <div className="text-3xl font-black text-text-primary tabular-nums">
-              {stat.value}
+            <div>
+              <h3 className="text-base font-bold text-text-primary mb-0.5">电商智能体</h3>
+              <p className="text-sm text-text-muted">AI 对话驱动的营销创作，支持文案、卖点分析、图片与视频生成</p>
             </div>
-            {stat.trend && (
-              <span className={`text-xs font-bold mt-1 inline-block ${stat.positive ? "text-[#6BCB77]" : "text-text-muted"}`}>
-                {stat.trend}
-              </span>
-            )}
           </div>
-        ))}
-      </div>
-
-      {/* ── 最近项目 ── */}
-      <div className="brut-card p-6 animate-fade-up delay-2">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg font-black text-text-primary">最近项目</h2>
-            <span className="brut-tag bg-[#6BCB77] text-white">
-              {recentProjects.length} 个
-            </span>
+          <div className="px-4 py-2 rounded-lg bg-accent/10 border border-accent/20 text-accent text-sm font-bold flex items-center gap-1.5 group-hover:bg-accent/20 transition-colors">
+            立即使用 <ArrowRight size={14} />
           </div>
-          <Link href="/dashboard/project" className="brut-btn bg-surface text-text-primary px-4 py-1.5 text-sm inline-flex items-center gap-1.5">
-            查看全部 <ArrowRight size={13} />
-          </Link>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {recentProjects.map((project, i) => (
-            <Link
-              key={project.id}
-              href={
-                project.resultType === "video"
-                  ? "/dashboard/video-factory"
-                  : project.resultType === "image"
-                    ? "/dashboard/art-studio"
-                    : "/dashboard/project"
-              }
-              className={`animate-fade-up delay-${Math.min(i + 1, 6)} group brut-card overflow-hidden p-0`}
-            >
-              <div className="relative w-full aspect-16/10 overflow-hidden">
-                <img
-                  src={project.cover}
-                  alt={project.name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-400 group-hover:scale-[1.04]"
-                  onError={(e) => {
-                    e.currentTarget.src = DEFAULT_COVER;
-                  }}
-                />
-                <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />
-                {project.statusText ? (
-                  <div className="absolute left-3 top-3">
-                    <span className="brut-tag bg-[#FFD93D] text-black">{project.statusText}</span>
-                  </div>
-                ) : project.resultType ? (
-                  <div className="absolute left-3 top-3">
-                    <span className={`brut-tag ${project.resultType === "video" ? "bg-[#74B9FF] text-white" : "bg-[#C77DFF] text-white"}`}>
-                      {project.resultType === "video" ? "视频" : project.resultType === "image" ? "图片" : "文本"}
-                    </span>
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="p-4">
-                <div className="text-sm font-bold text-text-primary leading-snug line-clamp-2">
-                  {project.name}
-                </div>
-                <div className="mt-2 text-xs text-text-muted font-medium">
-                  更新于 {formatProjectTime(project.updatedAt)}
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-
+      </Link>
     </div>
   );
 }

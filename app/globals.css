@@ -1,33 +1,35 @@
 @import "tailwindcss";
 
 @theme {
-  /* ── Soft Brutalism 色彩系统 ── */
-  --color-background: #FAF9F4;
-  --color-surface: #FFFFFF;
-  --color-surface-hover: #F5F4EE;
+  /* ── Dark Warm 色彩系统 ── */
+  --color-background: #0C0A09;
+  --color-surface: rgba(28, 25, 23, 0.6);
+  --color-surface-hover: rgba(41, 37, 36, 0.8);
 
-  /* 实色块调色盘 */
-  --color-accent: #FF6B6B;
-  --color-accent-hover: #FF5252;
-  --color-yellow: #FFD93D;
-  --color-teal: #4ECDC4;
-  --color-green: #6BCB77;
-  --color-purple: #C77DFF;
-  --color-blue: #74B9FF;
-  --color-pink: #FFB3C6;
+  /* 暖色强调调色盘 */
+  --color-accent: #F59E0B;
+  --color-accent-hover: #D97706;
+  --color-yellow: #FBBF24;
+  --color-teal: #2DD4BF;
+  --color-green: #34D399;
+  --color-purple: #C084FC;
+  --color-blue: #60A5FA;
+  --color-pink: #F472B6;
+  --color-rose: #FB7185;
+  --color-coral: #F97316;
 
   /* 文字 */
-  --color-text-primary: #1A1A1A;
-  --color-text-secondary: #5A5A5A;
-  --color-text-muted: #9A9A9A;
+  --color-text-primary: #FAFAF9;
+  --color-text-secondary: #A8A29E;
+  --color-text-muted: #78716C;
 
-  /* Brutalist 核心：黑色粗边框 */
-  --color-border: #1A1A1A;
-  --color-border-light: rgba(26, 26, 26, 0.12);
+  /* 边框 */
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-light: rgba(255, 255, 255, 0.04);
 
-  --color-success: #6BCB77;
-  --color-warning: #FFD93D;
-  --color-error: #FF6B6B;
+  --color-success: #34D399;
+  --color-warning: #FBBF24;
+  --color-error: #F87171;
 
   /* ── 字体 ── */
   --font-body: "Rubik", system-ui, sans-serif;
@@ -47,92 +49,110 @@ body {
   font-family: var(--font-body);
   background-color: var(--color-background);
   color: var(--color-text-primary);
+  /* 微妙的暖色径向渐变，打破纯黑平面感 */
+  background-image: radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.04) 0%, transparent 60%);
+  background-attachment: fixed;
+}
+
+/* ── 噪点纹理 ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='a'><feTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='300' height='300' filter='url(%23a)'/></svg>");
+  background-repeat: repeat;
+  background-size: 300px 300px;
 }
 
 ::selection {
-  background: var(--color-yellow);
+  background: rgba(245, 158, 11, 0.3);
   color: var(--color-text-primary);
 }
 
 /* ══════════════════════════════════
-   Brutalist 核心：粗边框 + 偏移投影
+   Dark Glass 组件系统
 ══════════════════════════════════ */
 
 .brut-card {
-  background: var(--color-surface);
-  border: 2px solid var(--color-border);
-  border-radius: 12px;
-  box-shadow: 4px 4px 0px var(--color-border);
+  background: rgba(28, 25, 23, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
   transition: transform var(--duration-fast) var(--ease-smooth),
+              border-color var(--duration-fast) var(--ease-smooth),
               box-shadow var(--duration-fast) var(--ease-smooth);
 }
 
 .brut-card:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 6px 6px 0px var(--color-border);
+  transform: translateY(-2px);
+  border-color: rgba(245, 158, 11, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(245, 158, 11, 0.05);
 }
 
 .brut-card:active {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0px var(--color-border);
+  transform: translateY(0);
 }
 
-/* 静态卡片：不响应 hover/active 动画，用于包含表单的卡片 */
 .brut-card-static {
-  background: var(--color-surface);
-  border: 2px solid var(--color-border);
-  border-radius: 12px;
-  box-shadow: 4px 4px 0px var(--color-border);
+  background: rgba(28, 25, 23, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
 }
 
 .brut-btn {
-  border: 2px solid var(--color-border);
-  border-radius: 10px;
-  box-shadow: 4px 4px 0px var(--color-border);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
   font-weight: 700;
-  transition: transform var(--duration-fast) var(--ease-smooth),
-              box-shadow var(--duration-fast) var(--ease-smooth);
+  transition: all var(--duration-fast) var(--ease-smooth);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
 }
 
 .brut-btn:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 5px 5px 0px var(--color-border);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
 }
 
 .brut-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0px var(--color-border);
+  transform: translateY(0);
 }
 
 .brut-btn-pill {
-  border: 2px solid var(--color-border);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
-  box-shadow: 4px 4px 0px var(--color-border);
   font-weight: 700;
-  transition: transform var(--duration-fast) var(--ease-smooth),
-              box-shadow var(--duration-fast) var(--ease-smooth);
+  transition: all var(--duration-fast) var(--ease-smooth);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
 }
 
 .brut-btn-pill:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 5px 5px 0px var(--color-border);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
 }
 
 .brut-btn-pill:active {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0px var(--color-border);
+  transform: translateY(0);
 }
 
 .brut-tag {
-  border: 2px solid var(--color-border);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   font-weight: 700;
   font-size: 0.7rem;
   padding: 2px 8px;
   display: inline-block;
-  box-shadow: 2px 2px 0px var(--color-border);
   letter-spacing: 0.03em;
   text-transform: uppercase;
+  backdrop-filter: blur(8px);
 }
 
 /* ── 动效 ── */
@@ -160,9 +180,9 @@ body {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(26, 26, 26, 0.15);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(26, 26, 26, 0.3);
+  background: rgba(255, 255, 255, 0.2);
 }

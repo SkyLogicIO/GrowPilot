@@ -17,7 +17,7 @@ interface HeaderProps {
 
 export default function Header({ onToggleSidebar, onOpenCreateTeam, onOpenLogin }: HeaderProps) {
   return (
-    <header className="h-16 border-b-2 border-border bg-surface sticky top-0 z-20 px-8 flex items-center justify-between">
+    <header className="h-16 border-b border-white/[0.06] bg-stone-950/80 backdrop-blur-xl sticky top-0 z-20 px-8 flex items-center justify-between">
       <div className="flex items-center gap-4">
         <SidebarToggle onToggle={onToggleSidebar} />
       </div>

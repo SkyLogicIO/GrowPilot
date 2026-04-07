@@ -38,7 +38,7 @@ export default function VideoGenerationForm({ isGenerating, onGenerate }: VideoG
   const [prompt, setPrompt] = useState("");
   const [inputImage, setInputImage] = useState<File | null>(null);
   const [inputImagePreview, setInputImagePreview] = useState<string>("");
-  const [videoModel, setVideoModel] = useState<string>("modelscope");
+  const [videoModel, setVideoModel] = useState<string>("auto");
   const [videoDuration, setVideoDuration] = useState<number>(8);
   const [videoResolution, setVideoResolution] = useState<string>("720p");
   const [videoAspectRatio, setVideoAspectRatio] = useState<string>("16:9");
@@ -154,8 +154,8 @@ export default function VideoGenerationForm({ isGenerating, onGenerate }: VideoG
             disabled={isGenerating}
             className="px-3 py-1.5 rounded-lg bg-surface border-2 border-border text-text-primary text-xs focus:outline-none focus:border-accent disabled:opacity-50 cursor-pointer"
           >
-            <option value="modelscope">ModelScope</option>
-            <option value="cogvideo">CogVideo</option>
+            <option value="auto">Auto (推荐)</option>
+            <option value="t2v-gemini">Gemini T2V</option>
           </select>
         </div>
 

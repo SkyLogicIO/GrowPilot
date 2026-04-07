@@ -19,7 +19,9 @@ export default function DashboardGroupLayout({
 
   // 初始化时检查登录态
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token =
+      localStorage.getItem("gp_token") ??
+      localStorage.getItem("access_token");
     if (token) {
       setAuthed(true);
     }

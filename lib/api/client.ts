@@ -4,6 +4,28 @@ const BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   "http://35.240.178.148:10086";
 
+// ─── Token 管理 ─────────────────────────────────────────────
+
+const TOKEN_KEY = "access_token";
+
+/** 获取存储的 token */
+function getStoredToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+/** 清除所有认证数据 */
+export function clearAuthData() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem("growpilot_user");
+  localStorage.removeItem("growpilot_user_profile");
+}
+
+export { TOKEN_KEY, getStoredToken };
+
+// ─── 统一请求 ───────────────────────────────────────────────
+
 export class ApiError extends Error {
   constructor(
     public code: number,
@@ -18,10 +40,7 @@ export async function request<T>(
   endpoint: string,
   options?: RequestInit,
 ): Promise<T> {
-  const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("access_token")
-      : null;
+  const token = getStoredToken();
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",

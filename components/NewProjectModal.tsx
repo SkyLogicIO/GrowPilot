@@ -15,6 +15,7 @@ import VideoGenerationForm, { VideoGenerationParams, VideoGenerationResult } fro
 import ImageGenerationForm, { ImageGenerationParams, ImageGenerationResult } from "./ImageGenerationForm";
 import AvatarGenerationForm, { AvatarGenerationParams, AvatarGenerationResult } from "./AvatarGenerationForm";
 import { useGeneratedProjects } from "../lib/storage/useGeneratedProjects";
+import { generateVideo, generateImage } from "@/lib/ai";
 
 export type ModeKey = "video" | "image" | "avatar" | "assistant";
 
@@ -87,155 +88,56 @@ export default function NewProjectModal({ defaultMode, openSignal, hideTriggerBu
   }, [open, isGenerating]);
 
   const handleVideoGenerate = async (params: VideoGenerationParams): Promise<VideoGenerationResult> => {
-    const apiKey = window.localStorage.getItem("gemini_api_key")?.trim();
-    
-    if (!apiKey) {
-      throw new Error("请先设置 Gemini API Key");
-    }
-    
     setIsGenerating(true);
-    
-    const modelDisplayName = params.model === "veo-3.1-fast-generate-preview" ? "Veo 3.1 Fast" : "Veo 3.1";
-    
-    // Log frontend parameters before sending
-    console.log('🚀 Frontend - Sending params:', {
-      model: params.model,
-      duration: params.duration,
-      duration_type: typeof params.duration,
-      resolution: params.resolution,
-      aspectRatio: params.aspectRatio,
-      hasImage: !!params.inputImage
-    });
-    
+
     try {
-      const endpoint = "/api/proxy/text2video";
-      
-      let response;
-      if (params.inputImage) {
-        const formData = new FormData();
-        formData.append("prompt", params.prompt);
-        formData.append("model", params.model);
-        formData.append("api_key", apiKey);
-        
-        // Ensure duration is a clean number string
-        const durationValue = Number(params.duration);
-        const durationString = durationValue.toString();
-        console.log('📤 Frontend - FormData duration:', {
-          original: params.duration,
-          converted: durationValue,
-          string: durationString,
-          type: typeof durationString
-        });
-        formData.append("duration", durationString);
-        
-        formData.append("resolution", params.resolution);
-        formData.append("aspect_ratio", params.aspectRatio);
-        formData.append("image", params.inputImage, params.inputImage.name);
-        
-        response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Accept": "application/json",
-          },
-          body: formData,
-        });
-      } else {
-        console.log('📤 Frontend - JSON body duration:', {
-          value: params.duration,
-          type: typeof params.duration
-        });
-        
-        response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ 
-            prompt: params.prompt,
-            model: params.model,
-            api_key: apiKey,
-            duration: params.duration,
-            resolution: params.resolution,
-            aspect_ratio: params.aspectRatio
-          }),
-        });
-      }
-      
-      // Parse response data
-      const data = await response.json();
-      
-      // Handle error responses
-      if (!response.ok || !data.success) {
-        const errorMessage = data.error || data.message || `HTTP ${response.status}: ${response.statusText}`;
-        const errorDetails = data.details || '';
-        const fullErrorMessage = errorDetails ? `${errorMessage}\n\n${errorDetails}` : errorMessage;
-        
-        console.error('❌ 视频生成失败 - Response data:', data);
-        throw new Error(fullErrorMessage);
-      }
-      
-      // Success - extract video data
-      const fullUrl = data.video_url || data.image_url || "";
-      const resultType = data.type || (data.video_url ? "video" : (data.image_url ? "image" : "text"));
-      const textContent = data.content || "";
-      
-      console.log('✅ 视频生成成功 - Response data:', {
-        model: data.model,
-        duration: data.duration,
-        resolution: data.resolution,
-        aspect_ratio: data.aspect_ratio,
-        size_mb: data.size_mb,
-        video_uri: data.video_uri
+      const result = await generateVideo({
+        prompt: params.prompt,
+        model: params.model,
+        duration: params.duration,
+        resolution: params.resolution,
+        aspectRatio: params.aspectRatio,
+        inputImage: params.inputImage ?? undefined,
       });
-      
+
+      const videoUrl = result.videoUrl;
+      const modelDisplayName = params.model === "veo-3.1-fast-generate-preview" ? "Veo 3.1 Fast" : "Veo 3.1";
+
       const newProject = {
         id: Date.now(),
         name: name || "新生成视频",
         updatedAt: new Date().toISOString(),
-        cover: fullUrl || "",
+        cover: videoUrl,
         statusText: "已完成",
         mode: "video",
         prompt: params.prompt,
         attachments: [{
-          type: resultType,
-          src: fullUrl,
-          content: textContent,
-          name: `生成结果 (${modelDisplayName}, ${params.duration}s, ${params.resolution}, ${params.aspectRatio})`
+          type: "video",
+          src: videoUrl,
+          content: "",
+          name: `生成结果 (${modelDisplayName}, ${result.duration}s, ${result.resolution}, ${result.aspectRatio})`,
         }],
-        metadata: {
-          model: data.model,
-          duration: data.duration,
-          resolution: data.resolution,
-          aspect_ratio: data.aspect_ratio,
-          size_mb: data.size_mb,
-          video_uri: data.video_uri
-        }
       };
 
-      // 持久化保存
       saveProject({
         name: name || "新生成视频",
         mode: "video",
         prompt: params.prompt,
-        resultUrl: fullUrl,
-        resultType: resultType as "video" | "image" | "text",
-        thumbnailUrl: resultType === "image" ? fullUrl : undefined,
+        resultUrl: videoUrl,
+        resultType: "video",
         metadata: {
-          model: data.model,
-          duration: data.duration,
-          resolution: data.resolution,
-          aspect_ratio: data.aspect_ratio,
-          size_mb: data.size_mb,
-          video_uri: data.video_uri
-        }
+          model: result.model,
+          duration: result.duration,
+          resolution: result.resolution,
+          aspectRatio: result.aspectRatio,
+        },
       });
 
       setResultData(newProject);
       setStep("result");
       return newProject;
-      
     } catch (error: any) {
-      console.error(`❌ 视频生成错误:`, error);
+      console.error("视频生成失败:", error);
       throw error;
     } finally {
       setIsGenerating(false);
@@ -243,114 +145,52 @@ export default function NewProjectModal({ defaultMode, openSignal, hideTriggerBu
   };
 
   const handleImageGenerate = async (params: ImageGenerationParams): Promise<ImageGenerationResult> => {
-    const apiKey = window.localStorage.getItem("gemini_api_key")?.trim();
-    
-    if (!apiKey) {
-      alert("请先设置 Gemini API Key");
-      throw new Error("Missing API Key");
-    }
-    
     setIsGenerating(true);
-    
+
     try {
-      const endpoint = "/api/proxy/text2img";
-      
-      let response;
-      if (params.inputImage) {
-        const formData = new FormData();
-        formData.append("prompt", params.prompt);
-        formData.append("model", params.model);
-        formData.append("api_key", apiKey);
-        formData.append("image", params.inputImage, params.inputImage.name);
-        
-        response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Accept": "application/json",
-          },
-          body: formData,
-        });
-      } else {
-        response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ 
-            prompt: params.prompt,
-            model: params.model,
-            api_key: apiKey
-          }),
-        });
-      }
+      const result = await generateImage({
+        prompt: params.prompt,
+        model: params.model,
+        aspectRatio: params.ratio,
+        numberOfImages: params.count ? parseInt(params.count, 10) : undefined,
+        inputImage: params.inputImage ?? undefined,
+      });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorData;
-        try {
-          errorData = JSON.parse(errorText);
-        } catch (e) {
-          errorData = { error: errorText.substring(0, 200) };
-        }
-
-        if (errorData.attemptLog && Array.isArray(errorData.attemptLog)) {
-          const logMessage = errorData.attemptLog.join('\n');
-          alert(`生成失败！\n\n尝试过程：\n${logMessage}\n\n建议：\n${errorData.suggestion || '请检查API Key和网络连接'}`);
-        } else if (errorData.error) {
-          alert(`生成失败: ${errorData.error}\n${errorData.message || ''}`);
-        } else {
-          alert(`API Error: ${response.status} - ${errorText.substring(0, 100)}`);
-        }
-        
-        throw new Error(errorData.error || errorText);
-      }
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error || "生成失败");
-      }
-
-      const fullUrl = data.image_url || data.video_url || "";
-      const resultType = data.type || (data.video_url ? "video" : (data.image_url ? "image" : "text"));
-      const textContent = data.content || "";
+      const imageUrl = result.imageUrl;
 
       const newProject = {
         id: Date.now(),
         name: name || "新生成图片",
         updatedAt: new Date().toISOString(),
-        cover: fullUrl || "", 
+        cover: imageUrl,
         statusText: "已完成",
         mode: "image",
         prompt: params.prompt,
         attachments: [{
-          type: resultType,
-          src: fullUrl,
-          content: textContent,
-          name: "生成结果"
+          type: "image",
+          src: imageUrl,
+          content: result.enhancedPrompt || "",
+          name: "生成结果",
         }],
       };
 
-      // 持久化保存
       saveProject({
         name: name || "新生成图片",
         mode: "image",
         prompt: params.prompt,
-        resultUrl: fullUrl,
-        resultType: resultType as "video" | "image" | "text",
-        thumbnailUrl: resultType === "image" ? fullUrl : undefined,
+        resultUrl: imageUrl,
+        resultType: "image",
+        thumbnailUrl: imageUrl,
         metadata: {
-          model: params.model
-        }
+          model: params.model,
+        },
       });
 
       setResultData(newProject);
       setStep("result");
       return newProject;
-
     } catch (error: any) {
-      console.error("Generation failed:", error);
-      alert(`生成失败: ${error.message || "请检查网络或稍后重试"}`);
+      console.error("图片生成失败:", error);
       throw error;
     } finally {
       setIsGenerating(false);

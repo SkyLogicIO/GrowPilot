@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Video, ArrowLeft, Clock, Download } from "lucide-react";
 import Link from "next/link";
 import VideoGenerationForm, {
@@ -9,20 +9,6 @@ import VideoGenerationForm, {
 } from "../../../components/VideoGenerationForm";
 import { useGeneratedProjects } from "../../../lib/storage/useGeneratedProjects";
 import { generateVideo } from "../../../lib/ai";
-import { textToVideo } from "@/lib/api/ai-tools";
-import { useTaskPolling } from "@/hooks/useTaskPolling";
-
-/** resolution + aspectRatio → 后端 width/height（后端约束 256-1024） */
-const VIDEO_SIZE_MAP: Record<string, Record<string, { width: number; height: number }>> = {
-  "720p": {
-    "16:9": { width: 1024, height: 576 },
-    "9:16": { width: 576, height: 1024 },
-  },
-  "1080p": {
-    "16:9": { width: 1024, height: 576 },
-    "9:16": { width: 576, height: 1024 },
-  },
-};
 
 export default function VideoFactoryPageClient() {
   const { projects, save: saveProject } = useGeneratedProjects();
@@ -30,23 +16,26 @@ export default function VideoFactoryPageClient() {
   const [step, setStep] = useState<"input" | "result">("input");
   const [resultData, setResultData] = useState<VideoGenerationResult | null>(null);
 
-  const polling = useTaskPolling({ interval: 5000 }); // 视频生成较慢，5 秒轮询
-  const paramsRef = useRef<VideoGenerationParams | null>(null);
-  const resolveRef = useRef<((result: VideoGenerationResult) => void) | null>(null);
-  const rejectRef = useRef<((error: Error) => void) | null>(null);
-  const useBackendRef = useRef(false);
-
   const videoProjects = projects
     .filter((p) => p.mode === "video")
     .slice(0, 10);
 
-  // 监听轮询终态
-  useEffect(() => {
-    if (!polling.task || polling.isLoading) return;
+  const handleGenerate = async (
+    params: VideoGenerationParams,
+  ): Promise<VideoGenerationResult> => {
+    setIsGenerating(true);
 
-    if (polling.task.status === "completed" && polling.task.result_url) {
-      const p = paramsRef.current;
-      const fullUrl = polling.task.result_url;
+    try {
+      const genResult = await generateVideo({
+        prompt: params.prompt,
+        model: params.model,
+        duration: params.duration,
+        resolution: params.resolution,
+        aspectRatio: params.aspectRatio,
+        inputImage: params.inputImage || undefined,
+      });
+
+      const fullUrl = genResult.videoUrl;
       const result: VideoGenerationResult = {
         id: Date.now(),
         name: "新生成视频",
@@ -54,13 +43,13 @@ export default function VideoFactoryPageClient() {
         cover: fullUrl,
         statusText: "已完成",
         mode: "video",
-        prompt: p?.prompt || "",
+        prompt: params.prompt,
         attachments: [
           {
             type: "video",
             src: fullUrl,
             content: "",
-            name: `生成结果 (${p?.duration ?? 8}s, ${p?.resolution ?? "720p"}, ${p?.aspectRatio ?? "16:9"})`,
+            name: `生成结果 (${genResult.duration}s, ${genResult.resolution}, ${genResult.aspectRatio})`,
           },
         ],
       };
@@ -68,125 +57,21 @@ export default function VideoFactoryPageClient() {
       saveProject({
         name: "新生成视频",
         mode: "video",
-        prompt: p?.prompt || "",
+        prompt: params.prompt,
         resultUrl: fullUrl,
         resultType: "video",
         thumbnailUrl: fullUrl,
         metadata: {
-          model: p?.model || "auto",
-          duration: p?.duration ?? 8,
-          resolution: p?.resolution ?? "720p",
-          aspect_ratio: p?.aspectRatio ?? "16:9",
+          model: genResult.model,
+          duration: genResult.duration,
+          resolution: genResult.resolution,
+          aspect_ratio: genResult.aspectRatio,
         },
       });
 
       setResultData(result);
       setStep("result");
-      setIsGenerating(false);
-
-      resolveRef.current?.(result);
-      resolveRef.current = null;
-      rejectRef.current = null;
-
-      polling.reset();
-    }
-
-    if (polling.task.status === "failed") {
-      const err = new Error(polling.error || "任务执行失败");
-      setIsGenerating(false);
-
-      rejectRef.current?.(err);
-      rejectRef.current = null;
-      resolveRef.current = null;
-
-      polling.reset();
-    }
-  }, [polling.task?.status, polling.isLoading, saveProject, polling.reset]);
-
-  const handleGenerate = async (
-    params: VideoGenerationParams,
-  ): Promise<VideoGenerationResult> => {
-    setIsGenerating(true);
-    paramsRef.current = params;
-
-    try {
-      // ── 图生视频：保留直连 Google GenAI（需要 API Key）────────
-      if (params.inputImage) {
-        useBackendRef.current = false;
-        const modelDisplayName =
-          params.model === "veo-3.1-fast-generate-preview"
-            ? "Veo 3.1 Fast"
-            : "Veo 3.1";
-
-        const genResult = await generateVideo({
-          prompt: params.prompt,
-          model: params.model,
-          duration: params.duration,
-          resolution: params.resolution,
-          aspectRatio: params.aspectRatio,
-          inputImage: params.inputImage,
-        });
-
-        const fullUrl = genResult.videoUrl;
-        const result: VideoGenerationResult = {
-          id: Date.now(),
-          name: "新生成视频",
-          updatedAt: new Date().toISOString(),
-          cover: fullUrl,
-          statusText: "已完成",
-          mode: "video",
-          prompt: params.prompt,
-          attachments: [
-            {
-              type: "video",
-              src: fullUrl,
-              content: "",
-              name: `生成结果 (${modelDisplayName}, ${params.duration}s, ${params.resolution}, ${params.aspectRatio})`,
-            },
-          ],
-        };
-
-        saveProject({
-          name: "新生成视频",
-          mode: "video",
-          prompt: params.prompt,
-          resultUrl: fullUrl,
-          resultType: "video",
-          thumbnailUrl: fullUrl,
-          metadata: {
-            model: genResult.model,
-            duration: genResult.duration,
-            resolution: genResult.resolution,
-            aspect_ratio: genResult.aspectRatio,
-          },
-        });
-
-        setResultData(result);
-        setStep("result");
-        return result;
-      }
-
-      // ── 文生视频：走后端 API + 异步轮询 ───────────────────────
-      useBackendRef.current = true;
-      const sizeMap = VIDEO_SIZE_MAP[params.resolution] || VIDEO_SIZE_MAP["720p"];
-      const size = sizeMap[params.aspectRatio] || sizeMap["16:9"];
-
-      const taskInfo = await textToVideo({
-        prompt: params.prompt,
-        width: size.width,
-        height: size.height,
-        steps: 30,
-        fps: 8,
-        duration: params.duration,
-        model_name: params.model || "modelscope",
-      });
-
-      polling.start(taskInfo.task_id);
-
-      return new Promise((resolve, reject) => {
-        resolveRef.current = resolve;
-        rejectRef.current = reject;
-      });
+      return result;
     } catch (error: unknown) {
       setIsGenerating(false);
       throw error;
@@ -196,12 +81,7 @@ export default function VideoFactoryPageClient() {
   const handleReset = () => {
     setStep("input");
     setResultData(null);
-    polling.reset();
   };
-
-  const progress = polling.task?.progress ?? 0;
-  const showBackendProgress =
-    isGenerating && useBackendRef.current && polling.isLoading;
 
   return (
     <div className="space-y-6">
@@ -231,39 +111,10 @@ export default function VideoFactoryPageClient() {
         <div className="lg:col-span-2">
           <div className="brut-card-static p-6">
             {step === "input" ? (
-              <>
-                <VideoGenerationForm
-                  isGenerating={isGenerating}
-                  onGenerate={handleGenerate}
-                />
-
-                {/* 后端任务进度 */}
-                {showBackendProgress && (
-                  <div className="mt-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-bold text-text-secondary">
-                        任务处理中
-                      </span>
-                      <span className="text-sm font-bold text-text-muted">
-                        {progress}%
-                      </span>
-                    </div>
-                    <div className="h-3 rounded-full bg-surface-hover border-2 border-border overflow-hidden">
-                      <div
-                        className="h-full bg-accent rounded-full transition-all duration-500"
-                        style={{ width: `${Math.max(progress, 5)}%` }}
-                      />
-                    </div>
-                    <p className="mt-1 text-xs text-text-muted">
-                      {polling.task?.status === "pending"
-                        ? "排队等待中..."
-                        : polling.task?.status === "processing"
-                          ? "AI 正在生成视频，通常需要 1-3 分钟..."
-                          : "正在提交任务..."}
-                    </p>
-                  </div>
-                )}
-              </>
+              <VideoGenerationForm
+                isGenerating={isGenerating}
+                onGenerate={handleGenerate}
+              />
             ) : (
               <div className="space-y-5">
                 <div className="relative w-full aspect-video rounded-2xl bg-black/50 overflow-hidden border-2 border-border">

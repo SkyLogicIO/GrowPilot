@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { X, Sparkles, Upload, Wand2, Loader2, Download } from "lucide-react";
-import { editImages } from "@/lib/ai";
+import { uploadFile } from "@/lib/api/files";
+import { imageToImage } from "@/lib/api/ai-tools";
+import { editImages, getAuthToken } from "@/lib/ai";
+import { useTaskPolling } from "@/hooks/useTaskPolling";
 
 type ImageEditModalProps = {
   open: boolean;
@@ -13,33 +16,39 @@ export default function ImageEditModal({ open, onClose }: ImageEditModalProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [negativePrompt, setNegativePrompt] = useState("");
-  const [image1, setImage1] = useState<File | null>(null);
-  const [image2, setImage2] = useState<File | null>(null);
-  const [image3, setImage3] = useState<File | null>(null);
-  const [image1Preview, setImage1Preview] = useState<string>("");
-  const [image2Preview, setImage2Preview] = useState<string>("");
-  const [image3Preview, setImage3Preview] = useState<string>("");
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
   const [resultImage, setResultImage] = useState<string>("");
 
-  const image1Ref = useRef<HTMLInputElement>(null);
-  const image2Ref = useRef<HTMLInputElement>(null);
-  const image3Ref = useRef<HTMLInputElement>(null);
+  const imageRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const polling = useTaskPolling();
 
   useEffect(() => {
     if (open) {
       setPrompt("");
       setNegativePrompt("");
-      setImage1(null);
-      setImage2(null);
-      setImage3(null);
-      setImage1Preview("");
-      setImage2Preview("");
-      setImage3Preview("");
+      setImage(null);
+      setImagePreview("");
       setResultImage("");
       setIsGenerating(false);
+      polling.reset();
     }
-  }, [open]);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 监听轮询结果
+  useEffect(() => {
+    if (!polling.task) return;
+    if (polling.task.status === "completed") {
+      setResultImage(polling.task.result_url || "");
+      setIsGenerating(false);
+      polling.reset();
+    } else if (polling.task.status === "failed") {
+      alert(polling.task.error || "任务执行失败");
+      setIsGenerating(false);
+      polling.reset();
+    }
+  }, [polling.task]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!open) return;
@@ -66,51 +75,54 @@ export default function ImageEditModal({ open, onClose }: ImageEditModalProps) {
     };
   }, [open, isGenerating, onClose]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, index: 1 | 2 | 3) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (index === 1) {
-      setImage1(file);
-      setImage1Preview(URL.createObjectURL(file));
-    } else if (index === 2) {
-      setImage2(file);
-      setImage2Preview(URL.createObjectURL(file));
-    } else {
-      setImage3(file);
-      setImage3Preview(URL.createObjectURL(file));
-    }
+    setImage(file);
+    setImagePreview(URL.createObjectURL(file));
+    setResultImage("");
   };
 
   const handleGenerate = async () => {
-    if (!prompt.trim() || !image1) return;
-
-    const apiKey = window.localStorage.getItem("gemini_api_key")?.trim();
-    if (!apiKey) {
-      alert("请先设置 Gemini API Key");
-      return;
-    }
+    if (!prompt.trim() || !image) return;
 
     setIsGenerating(true);
     setResultImage("");
 
     try {
-      const images = [image1];
-      if (image2) images.push(image2);
-      if (image3) images.push(image3);
-
-      const result = await editImages({
+      // 优先走后端 API
+      const imageUrl = await uploadFile(image, "tools");
+      const taskInfo = await imageToImage({
+        image_url: imageUrl,
         prompt,
-        negativePrompt: negativePrompt || undefined,
-        images,
+        negative_prompt: negativePrompt || undefined,
+        model_name: "auto",
       });
-      setResultImage(result.imageUrl);
-    } catch (error: unknown) {
-      console.error("Image edit failed:", error);
-      const message = error instanceof Error ? error.message : "未知错误";
-      alert(`编辑失败：${message}`);
-    } finally {
-      setIsGenerating(false);
+      polling.start(taskInfo.task_id);
+    } catch (backendError: unknown) {
+      // ai-tools 路径失败，fallback 到 GenAI 代理
+      console.warn("ai-tools image-to-image failed, falling back to GenAI proxy:", backendError);
+
+      if (!getAuthToken()) {
+        alert("请先登录后再使用 AI 功能");
+        setIsGenerating(false);
+        return;
+      }
+
+      try {
+        const result = await editImages({
+          prompt,
+          negativePrompt: negativePrompt || undefined,
+          images: [image],
+        });
+        setResultImage(result.imageUrl);
+        setIsGenerating(false);
+      } catch (sdkError: unknown) {
+        console.error("SDK fallback also failed:", sdkError);
+        const message = sdkError instanceof Error ? sdkError.message : "未知错误";
+        alert(`编辑失败：${message}`);
+        setIsGenerating(false);
+      }
     }
   };
 
@@ -125,6 +137,9 @@ export default function ImageEditModal({ open, onClose }: ImageEditModalProps) {
   };
 
   if (!open) return null;
+
+  const progress = polling.task?.progress ?? 0;
+  const statusText = polling.task?.status === "pending" ? "排队中" : "处理中";
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center px-6 pl-64" style={{ zIndex: 100000 }}>
@@ -183,73 +198,41 @@ export default function ImageEditModal({ open, onClose }: ImageEditModalProps) {
                 </div>
               </div>
 
-              {/* Image Uploads */}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-text-secondary mb-2">图片上传 (支持1-3张)</label>
-                  <div className="grid grid-cols-3 gap-3">
-                    {/* Image 1 */}
-                    <div
-                      onClick={() => !isGenerating && image1Ref.current?.click()}
-                      className={`relative aspect-square rounded-xl border-2 border-dashed transition-colors flex flex-col items-center justify-center cursor-pointer overflow-hidden ${
-                        image1Preview ? "border-accent bg-accent/5" : "border-border bg-surface-hover hover:bg-surface"
-                      }`}
-                    >
-                      {image1Preview ? (
-                        <img src={image1Preview} alt="Img 1" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="flex flex-col items-center">
-                          <Upload size={20} className="text-text-muted mb-1" />
-                          <span className="text-[10px] font-bold text-text-muted">图片1(必填)</span>
-                        </div>
-                      )}
-                      <input ref={image1Ref} type="file" accept="image/*" hidden onChange={(e) => handleFileChange(e, 1)} disabled={isGenerating} />
+              {/* Image Upload */}
+              <div>
+                <label className="block text-sm font-bold text-text-secondary mb-2">上传图片</label>
+                <div
+                  onClick={() => !isGenerating && imageRef.current?.click()}
+                  className={`relative aspect-[4/3] rounded-xl border-2 border-dashed transition-colors flex flex-col items-center justify-center cursor-pointer overflow-hidden ${
+                    imagePreview ? "border-accent bg-accent/5" : "border-border bg-surface-hover hover:bg-surface"
+                  }`}
+                >
+                  {imagePreview ? (
+                    <img src={imagePreview} alt="Input" className="w-full h-full object-contain" />
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <div className="w-12 h-12 rounded-xl bg-surface border-2 border-border shadow-[2px_2px_0px_#1A1A1A] flex items-center justify-center mb-3">
+                        <Upload size={24} className="text-text-muted" />
+                      </div>
+                      <span className="text-sm text-text-muted">点击上传图片</span>
                     </div>
-
-                    {/* Image 2 */}
-                    <div
-                      onClick={() => !isGenerating && image2Ref.current?.click()}
-                      className={`relative aspect-square rounded-xl border-2 border-dashed transition-colors flex flex-col items-center justify-center cursor-pointer overflow-hidden ${
-                        image2Preview ? "border-accent bg-accent/5" : "border-border bg-surface-hover hover:bg-surface"
-                      }`}
-                    >
-                      {image2Preview ? (
-                        <img src={image2Preview} alt="Img 2" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="flex flex-col items-center">
-                          <Upload size={20} className="text-text-muted mb-1" />
-                          <span className="text-[10px] font-bold text-text-muted">图片2(选填)</span>
-                        </div>
-                      )}
-                      <input ref={image2Ref} type="file" accept="image/*" hidden onChange={(e) => handleFileChange(e, 2)} disabled={isGenerating} />
-                    </div>
-
-                    {/* Image 3 */}
-                    <div
-                      onClick={() => !isGenerating && image3Ref.current?.click()}
-                      className={`relative aspect-square rounded-xl border-2 border-dashed transition-colors flex flex-col items-center justify-center cursor-pointer overflow-hidden ${
-                        image3Preview ? "border-accent bg-accent/5" : "border-border bg-surface-hover hover:bg-surface"
-                      }`}
-                    >
-                      {image3Preview ? (
-                        <img src={image3Preview} alt="Img 3" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="flex flex-col items-center">
-                          <Upload size={20} className="text-text-muted mb-1" />
-                          <span className="text-[10px] font-bold text-text-muted">图片3(选填)</span>
-                        </div>
-                      )}
-                      <input ref={image3Ref} type="file" accept="image/*" hidden onChange={(e) => handleFileChange(e, 3)} disabled={isGenerating} />
-                    </div>
-                  </div>
+                  )}
+                  <input
+                    ref={imageRef}
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={handleFileChange}
+                    disabled={isGenerating}
+                  />
                 </div>
               </div>
 
               <button
                 onClick={handleGenerate}
-                disabled={isGenerating || !prompt || !image1}
+                disabled={isGenerating || !prompt || !image}
                 className={`w-full h-12 brut-btn text-white flex items-center justify-center gap-2 ${
-                  isGenerating || !prompt || !image1
+                  isGenerating || !prompt || !image
                     ? "bg-text-muted cursor-not-allowed"
                     : "bg-[#83b7f9]"
                 }`}
@@ -294,7 +277,9 @@ export default function ImageEditModal({ open, onClose }: ImageEditModalProps) {
                         <Sparkles size={24} className="text-accent animate-pulse" />
                       </div>
                     </div>
-                    <p className="text-text-muted text-sm animate-pulse">正在处理图片...</p>
+                    <p className="text-text-muted text-sm animate-pulse">
+                      {statusText} {progress > 0 ? `${progress}%` : "..."}
+                    </p>
                   </div>
                 ) : (
                   <div className="text-center p-6">

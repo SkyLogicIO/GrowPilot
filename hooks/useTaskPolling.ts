@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getTask } from "@/lib/api/ai-tools";
 import { ApiError } from "@/lib/api/client";
-import type { TaskInfo, TaskStatus } from "@/lib/api/types";
+import type { TaskDetailInfo, TaskStatus } from "@/lib/api/types";
 
 /** 终态：无需继续轮询 */
 const TERMINAL_STATUSES: TaskStatus[] = ["completed", "failed", "cancelled"];
@@ -16,7 +16,7 @@ export interface UseTaskPollingOptions {
 }
 
 export interface UseTaskPollingResult {
-  task: TaskInfo | null;
+  task: TaskDetailInfo | null;
   isLoading: boolean;
   error: string | null;
   /** 启动轮询 */
@@ -36,7 +36,7 @@ export function useTaskPolling(
     waitForCompletion = false,
   } = options;
 
-  const [task, setTask] = useState<TaskInfo | null>(null);
+  const [task, setTask] = useState<TaskDetailInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +46,7 @@ export function useTaskPolling(
   const stoppedRef = useRef(false);
 
   // 终态 resolve 队列
-  const resolveQueueRef = useRef<((t: TaskInfo) => void)[]>([]);
+  const resolveQueueRef = useRef<((t: TaskDetailInfo) => void)[]>([]);
   const rejectQueueRef = useRef<((e: Error) => void)[]>([]);
 
   const clearTimer = useCallback(() => {
@@ -137,7 +137,7 @@ export function useTaskPolling(
       stoppedRef.current = false;
       setIsLoading(true);
       setError(null);
-      setTask({ task_id: taskId, status: "pending", progress: 0, created_at: new Date().toISOString() });
+      setTask({ id: 0, status: "pending", progress: 0, created_at: new Date().toISOString() });
 
       // 立即查询一次
       poll();
@@ -165,10 +165,10 @@ export function useTaskPolling(
   }, [clearTimer]);
 
   // waitForCompletion 支持：返回 Promise
-  const waitForCompletionRef = useRef<((taskId: string) => Promise<TaskInfo>) | null>(null);
+  const waitForCompletionRef = useRef<((taskId: string) => Promise<TaskDetailInfo>) | null>(null);
   waitForCompletionRef.current = waitForCompletion
     ? (taskId: string) =>
-        new Promise<TaskInfo>((resolve, reject) => {
+        new Promise<TaskDetailInfo>((resolve, reject) => {
           resolveQueueRef.current.push(resolve);
           rejectQueueRef.current.push(reject);
           // 如果 start 还没调用或者已经终态，需要处理

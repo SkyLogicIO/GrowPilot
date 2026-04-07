@@ -31,7 +31,9 @@ export default function HomePageClient() {
 
   // 检查登录态 + 监听事件
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token =
+      localStorage.getItem("gp_token") ??
+      localStorage.getItem("access_token");
     setIsAuthed(Boolean(token));
 
     const onLogin = () => setIsAuthed(true);

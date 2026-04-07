@@ -1,18 +1,45 @@
 /**
  * 客户端 AI 服务层
- * 直接在浏览器调用 Google GenAI SDK，不经过服务端 API 路由
+ * 通过后端 GenAI 代理（/api/v1/genai/v1beta）调用 Google Gemini API，
+ * 使用 JWT 认证，API Key 由后端统一管理。
  */
 
 import {
   GoogleGenAI,
+  setDefaultBaseUrls,
   GenerateImagesParameters,
   GenerateImagesConfig,
   GenerateVideosParameters,
 } from "@google/genai";
 
-/** 从 localStorage 获取 API Key */
-export function getApiKey(): string {
-  return window.localStorage.getItem("gemini_api_key")?.trim() || "";
+// 配置 SDK Base URL，指向后端 GenAI 代理
+// 注意：SDK 会自动追加 /{apiVersion}（默认 v1beta），所以这里只到 /api/v1/genai
+setDefaultBaseUrls({
+  geminiUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/genai`,
+});
+
+/** 从 localStorage 获取 JWT token */
+export function getAuthToken(): string {
+  return window.localStorage.getItem("access_token")?.trim() || "";
+}
+
+/**
+ * 创建带 JWT 认证的 GoogleGenAI 实例
+ *
+ * - apiKey 设为 "dummy"（后端不使用）
+ * - Authorization 头携带 JWT
+ * - 预设 x-goog-api-key 头阻止 SDK 发送真实 API Key（避免 CORS 拦截）
+ */
+function createAI(): GoogleGenAI {
+  const token = getAuthToken();
+  return new GoogleGenAI({
+    apiKey: "dummy",
+    httpOptions: {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  });
 }
 
 // ─── 文生图 / 图生图（Imagen 4.0）────────────────────────────────
@@ -34,10 +61,10 @@ export interface GenerateImageResult {
 export async function generateImage(
   params: GenerateImageParams
 ): Promise<GenerateImageResult> {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("请先设置 Gemini API Key");
+  const token = getAuthToken();
+  if (!token) throw new Error("请先登录后再使用 AI 功能");
 
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = createAI();
   const modelName = params.model || "imagen-4.0-generate-001";
 
   // 图生图模式：使用 Gemini generateContent
@@ -99,10 +126,10 @@ export interface EditImageParams {
 }
 
 export async function editImage(params: EditImageParams): Promise<GenerateImageResult> {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("请先设置 Gemini API Key");
+  const token = getAuthToken();
+  if (!token) throw new Error("请先登录后再使用 AI 功能");
 
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = createAI();
   const base64 = await fileToBase64(params.image);
 
   const genResponse = await ai.models.generateContent({
@@ -134,10 +161,10 @@ export interface EditImagesParams {
 }
 
 export async function editImages(params: EditImagesParams): Promise<GenerateImageResult> {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("请先设置 Gemini API Key");
+  const token = getAuthToken();
+  if (!token) throw new Error("请先登录后再使用 AI 功能");
 
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = createAI();
 
   // 构建完整 prompt（含负面提示词）
   let fullPrompt = params.prompt;
@@ -194,10 +221,10 @@ export interface GenerateVideoResult {
 export async function generateVideo(
   params: GenerateVideoParams
 ): Promise<GenerateVideoResult> {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("请先设置 Gemini API Key");
+  const token = getAuthToken();
+  if (!token) throw new Error("请先登录后再使用 AI 功能");
 
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = createAI();
   const modelName = params.model || "veo-3.1-fast-generate-preview";
 
   const ALLOWED_DURATIONS = [4, 6, 8];
@@ -248,8 +275,14 @@ export async function generateVideo(
 
   if (!operation.done) throw new Error(`视频生成超时（${maxAttempts * 10}秒）`);
 
+  // 检查操作是否包含错误
+  if ((operation as any).error) {
+    const err = (operation as any).error;
+    throw new Error(`视频生成失败: ${err.message || JSON.stringify(err)}`);
+  }
+
   if (!operation.response?.generatedVideos?.length) {
-    throw new Error("视频生成完成但没有返回视频");
+    throw new Error(`视频生成完成但没有返回视频（响应: ${JSON.stringify(operation.response ?? operation).slice(0, 300)}）`);
   }
 
   const firstVideo = operation.response.generatedVideos[0];
@@ -258,8 +291,9 @@ export async function generateVideo(
   const videoUri = decodeURIComponent(firstVideo.video.uri);
   params.onProgress?.("下载视频中...");
 
-  const videoUrl = `${videoUri}&key=${apiKey}`;
-  const videoResponse = await fetch(videoUrl);
+  const videoResponse = await fetch(videoUri, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   if (!videoResponse.ok) throw new Error(`获取视频文件失败: ${videoResponse.status}`);
 
   const videoBlob = await videoResponse.blob();
@@ -272,6 +306,141 @@ export async function generateVideo(
     resolution,
     aspectRatio,
   };
+}
+
+// ─── 文本对话（Gemini Chat）────────────────────────────────────────
+
+export interface GeminiChatMessage {
+  role: "user" | "model";
+  content: string;
+}
+
+export interface GeminiChatParams {
+  messages: GeminiChatMessage[];
+  systemInstruction?: string;
+  model?: string;
+  maxOutputTokens?: number;
+  temperature?: number;
+}
+
+export async function chatWithGemini(params: GeminiChatParams): Promise<string> {
+  const token = getAuthToken();
+  if (!token) throw new Error("请先登录后再使用 AI 功能");
+
+  const ai = createAI();
+  const modelName = params.model || "gemini-2.5-flash";
+
+  const contents = params.messages.map((m) => ({
+    role: m.role,
+    parts: [{ text: m.content }],
+  }));
+
+  const config: Record<string, unknown> = {};
+  if (params.systemInstruction) {
+    config.systemInstruction = { text: params.systemInstruction };
+  }
+  if (params.maxOutputTokens) config.maxOutputTokens = params.maxOutputTokens;
+  if (params.temperature !== undefined) config.temperature = params.temperature;
+
+  const response = await ai.models.generateContent({
+    model: modelName,
+    contents,
+    config,
+  });
+
+  return response.text ?? "";
+}
+
+// ─── 多模态对话（文本 + 图片）────────────────────────────────────────
+
+export interface MediaItem {
+  id: string;
+  type: "image" | "video";
+  dataUrl: string;
+  prompt: string;
+  createdAt: number;
+  status?: string;
+}
+
+export interface ChatWithMediaResult {
+  text: string;
+  images: MediaItem[];
+  videoDescriptions: string[];
+}
+
+export interface ChatWithMediaParams {
+  messages: GeminiChatMessage[];
+  systemInstruction?: string;
+  model?: string;
+  maxOutputTokens?: number;
+  temperature?: number;
+}
+
+export async function chatWithMedia(
+  params: ChatWithMediaParams,
+): Promise<ChatWithMediaResult> {
+  // 第一步：纯文本对话（使用 gemini-2.5-flash，不请求 IMAGE modality）
+  const text = await chatWithGemini({
+    messages: params.messages,
+    systemInstruction: params.systemInstruction,
+    model: "gemini-2.5-flash",
+    maxOutputTokens: params.maxOutputTokens,
+    temperature: params.temperature,
+  });
+
+  // 第二步：从回复中提取 [IMAGE: ...] 标记，用 Imagen 生成图片
+  const imageRegex = /\[IMAGE:\s*([^\]]+)\]/g;
+  const imageDescriptions: string[] = [];
+  let match: RegExpExecArray | null;
+
+  while ((match = imageRegex.exec(text)) !== null) {
+    imageDescriptions.push(match[1].trim());
+  }
+  let cleanText = text.replace(imageRegex, "").trim();
+
+  // 第三步：提取 [VIDEO: ...] 标记（不在此处调用 generateVideo）
+  const videoRegex = /\[VIDEO:\s*([^\]]+)\]/g;
+  const videoDescriptions: string[] = [];
+
+  while ((match = videoRegex.exec(text)) !== null) {
+    videoDescriptions.push(match[1].trim());
+  }
+  cleanText = cleanText.replace(videoRegex, "").trim();
+
+  // 最多返回 1 个视频描述（视频生成耗时长）
+  const videoDesc = videoDescriptions.length > 0 ? [videoDescriptions[0]] : [];
+
+  // 最多生成 2 张图片
+  const descriptions = imageDescriptions.slice(0, 2);
+  const images: MediaItem[] = [];
+  const now = Date.now();
+
+  for (let i = 0; i < descriptions.length; i++) {
+    try {
+      const result = await generateImage({
+        prompt: descriptions[i],
+        numberOfImages: 1,
+        aspectRatio: "1:1",
+      });
+      images.push({
+        id: `media_${now}_${i}`,
+        type: "image",
+        dataUrl: result.imageUrl,
+        prompt: descriptions[i],
+        createdAt: now,
+      });
+    } catch (err) {
+      // 单张图片失败不影响整体回复
+      console.warn(`图片生成失败 (${descriptions[i]}):`, err);
+    }
+  }
+
+  // 如果有图片标记但全部生成失败，在文本末尾提示
+  if (descriptions.length > 0 && images.length === 0) {
+    cleanText += `\n\n[图片生成失败，请重试]`;
+  }
+
+  return { text: cleanText, images, videoDescriptions: videoDesc };
 }
 
 // ─── 工具函数 ─────────────────────────────────────────────────────

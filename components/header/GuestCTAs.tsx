@@ -13,7 +13,9 @@ export default function GuestCTAs({ onOpenLogin }: GuestCTAsProps) {
 
   useEffect(() => {
     setMounted(true);
-    const token = localStorage.getItem("access_token");
+    const token =
+      localStorage.getItem("gp_token") ??
+      localStorage.getItem("access_token");
     setAuthed(Boolean(token));
 
     const onLogin = () => setAuthed(true);
