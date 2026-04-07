@@ -28,7 +28,6 @@ import {
   getSystemPrompt,
   getPlaceholder,
 } from "@/lib/prompts/marketing-prompts";
-import { agentChatStream } from "@/lib/api/agents";
 import {
   loadThreads,
   saveThread,
@@ -378,61 +377,24 @@ export default function EcomAgentPageClient() {
       const imageDescriptions: string[] = [];
       const videoDescriptions: string[] = [];
 
-      // ── 调用后端营销助手 Agent（流式） ──
-      try {
-        const stream = agentChatStream("marketing-assistant", {
-          product_info: text,
-        });
+      // ── 通过 GenAI 代理调用 Gemini ──
+      const history = [
+        ...(activeThread?.messages ?? [])
+          .filter((m) => m.id !== "welcome" && m.content !== "分析中..." && !m.content.startsWith("请求失败:"))
+          .slice(-50)
+          .map((m) => ({
+            role: (m.role === "assistant" ? "model" : "user") as "user" | "model",
+            content: m.content,
+          })),
+        { role: "user" as const, content: text },
+      ];
 
-        for await (const event of stream) {
-          if (event.type === "complete" && event.result) {
-            finalText = event.result;
-          } else if (event.type === "step_complete" && event.result) {
-            // 逐步展示中间结果
-            setThreads((prev) => {
-              const updated = prev.map((t) =>
-                t.id === activeThreadId
-                  ? {
-                      ...t,
-                      messages: t.messages.map((m) =>
-                        m.id === `a_${now}`
-                          ? { ...m, content: event.result || "分析中...", timestamp: Date.now() }
-                          : m,
-                      ),
-                    updatedAt: Date.now(),
-                  }
-                  : t,
-              );
-              const current = updated.find((t) => t.id === activeThreadId);
-              if (current) saveThread(current);
-              return updated;
-            });
-          } else if (event.type === "error") {
-            throw new Error(event.error || "Agent 执行失败");
-          }
-        }
-      } catch (agentError: unknown) {
-        // Agent API 失败，fallback 到普通 Gemini 对话
-        console.warn("Agent API failed, falling back to Gemini:", agentError);
-
-        const history = [
-          ...(activeThread?.messages ?? [])
-            .filter((m) => m.id !== "welcome" && m.content !== "分析中..." && !m.content.startsWith("请求失败:"))
-            .slice(-50)
-            .map((m) => ({
-              role: (m.role === "assistant" ? "model" : "user") as "user" | "model",
-              content: m.content,
-            })),
-          { role: "user" as const, content: text },
-        ];
-
-        const reply = await chatWithGemini({
-          messages: history,
-          systemInstruction: getSystemPrompt("ecom"),
-          maxOutputTokens: 8192,
-        });
-        finalText = reply;
-      }
+      const reply = await chatWithGemini({
+        messages: history,
+        systemInstruction: getSystemPrompt("ecom"),
+        maxOutputTokens: 8192,
+      });
+      finalText = reply;
 
       // ── 解析 [IMAGE:...] 和 [VIDEO:...] 标签 ──
       const imageRegex = /\[IMAGE:\s*([^\]]+)\]/g;
