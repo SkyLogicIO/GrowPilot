@@ -2,10 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { X, Sparkles, Upload, Wand2, Loader2, Download } from "lucide-react";
-import { uploadFile } from "@/lib/api/files";
-import { imageToImage } from "@/lib/api/ai-tools";
-import { editImage, getAuthToken } from "@/lib/ai";
-import { useTaskPolling } from "@/hooks/useTaskPolling";
+import { editImage } from "@/lib/ai";
 
 type BackgroundReplaceModalProps = {
   open: boolean;
@@ -21,7 +18,6 @@ export default function BackgroundReplaceModal({ open, onClose }: BackgroundRepl
 
   const inputImageRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const polling = useTaskPolling();
 
   useEffect(() => {
     if (open) {
@@ -30,23 +26,8 @@ export default function BackgroundReplaceModal({ open, onClose }: BackgroundRepl
       setInputImagePreview("");
       setResultImage("");
       setIsGenerating(false);
-      polling.reset();
     }
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // 监听轮询结果
-  useEffect(() => {
-    if (!polling.task) return;
-    if (polling.task.status === "completed") {
-      setResultImage(polling.task.result_url || "");
-      setIsGenerating(false);
-      polling.reset();
-    } else if (polling.task.status === "failed") {
-      alert(polling.task.error || "任务执行失败");
-      setIsGenerating(false);
-      polling.reset();
-    }
-  }, [polling.task]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!open) return;
@@ -88,41 +69,17 @@ export default function BackgroundReplaceModal({ open, onClose }: BackgroundRepl
     setResultImage("");
 
     try {
-      // 优先走后端 API
-      const imageUrl = await uploadFile(inputImage, "tools");
-      const taskInfo = await imageToImage({
-        image_url: imageUrl,
-        prompt,
-        model_name: "auto",
-      });
-      polling.start(taskInfo.task_id);
-    } catch (backendError: unknown) {
-      // ai-tools 路径失败，fallback 到 GenAI 代理
-      console.warn("ai-tools image-to-image failed, falling back to GenAI proxy:", backendError);
-
-      if (!getAuthToken()) {
-        alert("请先登录后再使用 AI 功能");
-        setIsGenerating(false);
-        return;
-      }
-
-      try {
-        const result = await editImage({ prompt, image: inputImage });
-        setResultImage(result.imageUrl);
-        setIsGenerating(false);
-      } catch (sdkError: unknown) {
-        console.error("SDK fallback also failed:", sdkError);
-        const message = sdkError instanceof Error ? sdkError.message : "未知错误";
-        alert(`换背景失败：${message}`);
-        setIsGenerating(false);
-      }
+      const result = await editImage({ prompt, image: inputImage });
+      setResultImage(result.imageUrl);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "未知错误";
+      alert(`换背景失败：${message}`);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
   if (!open) return null;
-
-  const progress = polling.task?.progress ?? 0;
-  const statusText = polling.task?.status === "pending" ? "排队中" : "处理中";
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center px-6 pl-64" style={{ zIndex: 100000 }}>
@@ -205,9 +162,7 @@ export default function BackgroundReplaceModal({ open, onClose }: BackgroundRepl
                 ) : isGenerating ? (
                   <div className="flex flex-col items-center gap-3">
                     <Loader2 size={32} className="text-[#4ECDC4] animate-spin" />
-                    <span className="text-text-muted text-sm">
-                      {statusText} {progress > 0 ? `${progress}%` : "..."}
-                    </span>
+                    <span className="text-text-muted text-sm">生成中...</span>
                   </div>
                 ) : (
                   <div className="text-text-muted text-sm text-center px-4">

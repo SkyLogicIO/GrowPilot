@@ -25,10 +25,10 @@ export interface ParseMetadataResponse {
 /** 预签名上传请求（单个） */
 export interface PresignedUploadRequest {
   filename: string;
-  content_type: string;
+  contentType: string;
   folder?: string;
   path?: string;
-  expires_in?: number;
+  expiresIn?: number;
 }
 
 /** 预签名上传响应（单个） */
@@ -47,7 +47,7 @@ export interface PresignedUploadResponse {
 export interface BatchPresignedUploadRequest {
   files: PresignedUploadRequest[];
   folder?: string;
-  expires_in?: number;
+  expiresIn?: number;
 }
 
 /** 上传配置 */
@@ -142,7 +142,7 @@ export async function uploadFile(
 ): Promise<string> {
   const presigned = await getPresignedUploadUrl({
     filename: file.name,
-    content_type: file.type,
+    contentType: file.type,
     folder: folder || "uploads",
   });
   await uploadFileToPresignedUrl(presigned, file);
@@ -157,7 +157,7 @@ export async function uploadFiles(
   const { urls } = await getBatchPresignedUploadUrls({
     files: files.map((f) => ({
       filename: f.name,
-      content_type: f.type,
+      contentType: f.type,
     })),
     folder: folder || "uploads",
   });
