@@ -28,9 +28,7 @@ export default function ArtStudioPageClient() {
     try {
       const genResult = await generateImage({
         prompt: params.prompt,
-        model: params.model,
         aspectRatio: params.ratio,
-        numberOfImages: params.count ? parseInt(params.count, 10) : undefined,
         inputImage: params.inputImage || undefined,
       });
 

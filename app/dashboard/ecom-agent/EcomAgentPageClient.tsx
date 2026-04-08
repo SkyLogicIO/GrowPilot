@@ -426,7 +426,6 @@ export default function EcomAgentPageClient() {
           try {
             const result = await generateImage({
               prompt: descs[i],
-              numberOfImages: 1,
               aspectRatio: "1:1",
             });
             const item: MediaItem = {

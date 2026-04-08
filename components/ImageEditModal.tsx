@@ -2,10 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { X, Sparkles, Upload, Wand2, Loader2, Download } from "lucide-react";
-import { uploadFile } from "@/lib/api/files";
-import { imageToImage } from "@/lib/api/ai-tools";
-import { editImages, getAuthToken } from "@/lib/ai";
-import { useTaskPolling } from "@/hooks/useTaskPolling";
+import { editImages } from "@/lib/ai";
 
 type ImageEditModalProps = {
   open: boolean;
@@ -22,7 +19,6 @@ export default function ImageEditModal({ open, onClose }: ImageEditModalProps) {
 
   const imageRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const polling = useTaskPolling();
 
   useEffect(() => {
     if (open) {
@@ -32,23 +28,8 @@ export default function ImageEditModal({ open, onClose }: ImageEditModalProps) {
       setImagePreview("");
       setResultImage("");
       setIsGenerating(false);
-      polling.reset();
     }
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // 监听轮询结果
-  useEffect(() => {
-    if (!polling.task) return;
-    if (polling.task.status === "completed") {
-      setResultImage(polling.task.result_url || "");
-      setIsGenerating(false);
-      polling.reset();
-    } else if (polling.task.status === "failed") {
-      alert(polling.task.error || "任务执行失败");
-      setIsGenerating(false);
-      polling.reset();
-    }
-  }, [polling.task]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!open) return;
@@ -90,39 +71,17 @@ export default function ImageEditModal({ open, onClose }: ImageEditModalProps) {
     setResultImage("");
 
     try {
-      // 优先走后端 API
-      const imageUrl = await uploadFile(image, "tools");
-      const taskInfo = await imageToImage({
-        image_url: imageUrl,
+      const result = await editImages({
         prompt,
-        negative_prompt: negativePrompt || undefined,
-        model_name: "auto",
+        negativePrompt: negativePrompt || undefined,
+        images: [image],
       });
-      polling.start(taskInfo.task_id);
-    } catch (backendError: unknown) {
-      // ai-tools 路径失败，fallback 到 GenAI 代理
-      console.warn("ai-tools image-to-image failed, falling back to GenAI proxy:", backendError);
-
-      if (!getAuthToken()) {
-        alert("请先登录后再使用 AI 功能");
-        setIsGenerating(false);
-        return;
-      }
-
-      try {
-        const result = await editImages({
-          prompt,
-          negativePrompt: negativePrompt || undefined,
-          images: [image],
-        });
-        setResultImage(result.imageUrl);
-        setIsGenerating(false);
-      } catch (sdkError: unknown) {
-        console.error("SDK fallback also failed:", sdkError);
-        const message = sdkError instanceof Error ? sdkError.message : "未知错误";
-        alert(`编辑失败：${message}`);
-        setIsGenerating(false);
-      }
+      setResultImage(result.imageUrl);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "未知错误";
+      alert(`编辑失败：${message}`);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -137,9 +96,6 @@ export default function ImageEditModal({ open, onClose }: ImageEditModalProps) {
   };
 
   if (!open) return null;
-
-  const progress = polling.task?.progress ?? 0;
-  const statusText = polling.task?.status === "pending" ? "排队中" : "处理中";
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center px-6 pl-64" style={{ zIndex: 100000 }}>
@@ -277,9 +233,7 @@ export default function ImageEditModal({ open, onClose }: ImageEditModalProps) {
                         <Sparkles size={24} className="text-accent animate-pulse" />
                       </div>
                     </div>
-                    <p className="text-text-muted text-sm animate-pulse">
-                      {statusText} {progress > 0 ? `${progress}%` : "..."}
-                    </p>
+                    <p className="text-text-muted text-sm animate-pulse">生成中...</p>
                   </div>
                 ) : (
                   <div className="text-center p-6">

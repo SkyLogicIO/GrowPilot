@@ -7,8 +7,6 @@
 import {
   GoogleGenAI,
   setDefaultBaseUrls,
-  GenerateImagesParameters,
-  GenerateImagesConfig,
   GenerateVideosParameters,
 } from "@google/genai";
 
@@ -42,20 +40,16 @@ function createAI(): GoogleGenAI {
   });
 }
 
-// ─── 文生图 / 图生图（Imagen 4.0）────────────────────────────────
+// ─── 文生图 / 图生图（Gemini Flash Image）────────────────────────
 
 export interface GenerateImageParams {
   prompt: string;
-  model?: string;
-  numberOfImages?: number;
   aspectRatio?: string;
-  imageSize?: string;
   inputImage?: File;
 }
 
 export interface GenerateImageResult {
   imageUrl: string; // base64 data URL
-  enhancedPrompt?: string;
 }
 
 export async function generateImage(
@@ -65,56 +59,39 @@ export async function generateImage(
   if (!token) throw new Error("请先登录后再使用 AI 功能");
 
   const ai = createAI();
-  const modelName = params.model || "imagen-4.0-generate-001";
 
-  // 图生图模式：使用 Gemini generateContent
+  // 构建 contents
+  const contents: any[] = [{ text: params.prompt }];
   if (params.inputImage) {
     const base64 = await fileToBase64(params.inputImage);
-    const genResponse = await ai.models.generateContent({
-      model: "gemini-2.5-flash-image",
-      contents: [
-        { text: params.prompt },
-        { inlineData: { mimeType: params.inputImage.type || "image/jpeg", data: base64 } },
-      ],
-      config: { responseModalities: ["TEXT", "IMAGE"] },
+    contents.push({
+      inlineData: { mimeType: params.inputImage.type || "image/jpeg", data: base64 },
     });
-
-    const parts = genResponse.candidates?.[0]?.content?.parts;
-    if (!parts?.length) throw new Error("图片编辑完成但没有返回图片");
-    const imagePart = parts.find((p: any) => p.inlineData);
-    if (!imagePart?.inlineData) throw new Error("响应中没有找到图片数据");
-
-    const mimeType = imagePart.inlineData.mimeType || "image/png";
-    return {
-      imageUrl: `data:${mimeType};base64,${imagePart.inlineData.data}`,
-    };
   }
 
-  // 文生图模式：使用 Imagen generateImages
-  const config: GenerateImagesConfig = {
-    numberOfImages: 1,
-    aspectRatio: "1:1",
-  };
-  if (params.numberOfImages) config.numberOfImages = params.numberOfImages;
-  if (params.aspectRatio) config.aspectRatio = params.aspectRatio;
-  if (params.imageSize) config.imageSize = params.imageSize;
+  // 构建 imageConfig
+  const imageConfig: Record<string, unknown> = {};
+  if (params.aspectRatio) imageConfig.aspectRatio = params.aspectRatio;
 
-  const genParams: GenerateImagesParameters = {
-    model: modelName,
-    prompt: params.prompt,
+  const config: Record<string, unknown> = {
+    responseModalities: ["IMAGE"],
+    imageConfig,
+  };
+
+  const genResponse = await ai.models.generateContent({
+    model: "gemini-2.5-flash-image",
+    contents,
     config,
-  };
+  } as any);
 
-  const response = await ai.models.generateImages(genParams);
+  const parts = genResponse.candidates?.[0]?.content?.parts;
+  if (!parts?.length) throw new Error("图片生成完成但没有返回数据");
+  const imagePart = parts.find((p: any) => p.inlineData);
+  if (!imagePart?.inlineData) throw new Error("响应中没有找到图片数据");
 
-  if (!response.generatedImages?.length) throw new Error("图片生成完成但没有返回图片");
-  const firstImage = response.generatedImages[0];
-  if (!firstImage?.image?.imageBytes) throw new Error("生成的图片缺少数据");
-
-  const mimeType = firstImage.image.mimeType || "image/jpeg";
+  const mimeType = imagePart.inlineData.mimeType || "image/png";
   return {
-    imageUrl: `data:${mimeType};base64,${firstImage.image.imageBytes}`,
-    enhancedPrompt: firstImage.enhancedPrompt,
+    imageUrl: `data:${mimeType};base64,${imagePart.inlineData.data}`,
   };
 }
 
@@ -419,7 +396,6 @@ export async function chatWithMedia(
     try {
       const result = await generateImage({
         prompt: descriptions[i],
-        numberOfImages: 1,
         aspectRatio: "1:1",
       });
       images.push({

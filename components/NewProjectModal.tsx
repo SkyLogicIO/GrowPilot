@@ -150,9 +150,7 @@ export default function NewProjectModal({ defaultMode, openSignal, hideTriggerBu
     try {
       const result = await generateImage({
         prompt: params.prompt,
-        model: params.model,
         aspectRatio: params.ratio,
-        numberOfImages: params.count ? parseInt(params.count, 10) : undefined,
         inputImage: params.inputImage ?? undefined,
       });
 
@@ -169,7 +167,7 @@ export default function NewProjectModal({ defaultMode, openSignal, hideTriggerBu
         attachments: [{
           type: "image",
           src: imageUrl,
-          content: result.enhancedPrompt || "",
+          content: result.imageUrl ? "" : "",
           name: "生成结果",
         }],
       };
