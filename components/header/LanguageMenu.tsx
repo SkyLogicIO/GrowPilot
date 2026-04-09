@@ -25,7 +25,7 @@ export default function LanguageMenu() {
   }, [isOpen]);
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative hidden md:block" ref={ref}>
       <button
         type="button"
         onClick={() => setIsOpen((v) => !v)}

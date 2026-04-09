@@ -14,28 +14,24 @@ const QUICK_TOOLS = [
 
 interface GuestOverlayProps {
   onOpenLogin: () => void;
-  isSidebarOpen?: boolean;
 }
 
-export default function GuestOverlay({ onOpenLogin, isSidebarOpen = true }: GuestOverlayProps) {
+export default function GuestOverlay({ onOpenLogin }: GuestOverlayProps) {
   const [draft, setDraft] = useState("");
-
-  const sidebarW = isSidebarOpen ? 256 : 80;
-  const headerH = 64;
 
   return (
     <div
-      className="fixed z-30 flex items-center justify-center pointer-events-none"
-      style={{ left: sidebarW, top: headerH, right: 0, bottom: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      onClick={onOpenLogin}
     >
-      {/* 半透明遮罩 */}
-      <div
-        className="absolute inset-0 bg-background/60 backdrop-blur-sm pointer-events-auto"
-        onClick={onOpenLogin}
-      />
+      {/* 全屏半透明遮罩 */}
+      <div className="absolute inset-0 bg-background/60 backdrop-blur-sm" />
 
       {/* 内容区域 */}
-      <div className="relative z-10 pointer-events-auto w-full max-w-2xl mx-6 flex flex-col items-center gap-8">
+      <div
+        className="relative z-10 w-full max-w-2xl mx-6 flex flex-col items-center gap-8"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* 标题 */}
         <div className="text-center">
           <h2 className="text-3xl md:text-4xl font-black text-text-primary leading-snug">

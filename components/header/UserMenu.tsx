@@ -81,6 +81,7 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [authed, setAuthed] = useState(false);
   const [txPage, setTxPage] = useState(1);
   const [profile, setProfile] = useState<UserProfile>({
     name: "Anna Hua",
@@ -97,6 +98,23 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
 
   useEffect(() => {
     setMounted(true);
+    const token =
+      localStorage.getItem("gp_token") ??
+      localStorage.getItem("access_token");
+    setAuthed(Boolean(token));
+
+    const onLogin = () => setAuthed(true);
+    const onLogout = () => setAuthed(false);
+    const onUnauthorized = () => setAuthed(false);
+
+    window.addEventListener("growpilot:login", onLogin);
+    window.addEventListener("growpilot:logout", onLogout);
+    window.addEventListener("growpilot:unauthorized", onUnauthorized);
+    return () => {
+      window.removeEventListener("growpilot:login", onLogin);
+      window.removeEventListener("growpilot:logout", onLogout);
+      window.removeEventListener("growpilot:unauthorized", onUnauthorized);
+    };
   }, []);
 
   useEffect(() => {
@@ -160,6 +178,17 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
       window.localStorage.removeItem(STORAGE_KEY);
       clearAuthData();
     } catch {}
+    setProfile({
+      name: "Anna Hua",
+      membership: "高级会员",
+      points: 1280,
+      userId: "GP-********",
+      storageTotalGb: 50,
+      storageUsedGb: 12.8,
+      storageRatePointsPerGb: 10,
+      transactions: [],
+      onboarding: null,
+    });
     window.dispatchEvent(new CustomEvent("growpilot:logout"));
   };
 
@@ -177,6 +206,8 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
     return () => window.removeEventListener("pointerdown", onPointerDown);
   }, [isOpen]);
 
+  if (!mounted || !authed) return null;
+
   return (
     <div className="flex items-center gap-3 pl-6 border-l-2 border-border relative" ref={ref}>
       <div className="text-right hidden md:block">
@@ -193,7 +224,7 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-12 w-64 bg-surface border-2 border-border shadow-[4px_4px_0px_#1A1A1A] rounded-xl overflow-hidden">
+        <div className="absolute right-0 top-12 w-64 bg-[#0A1228] border-2 border-border shadow-[4px_4px_0px_#1A1A1A] rounded-xl overflow-hidden">
           <button
             type="button"
             onClick={() => { setIsOpen(false); setIsProfileOpen(true); }}
@@ -273,7 +304,7 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
           style={{ zIndex: 99999, position: "fixed", top: 0, left: 0, right: 0, bottom: 0 }}
           onMouseDown={(e) => { if (e.target === e.currentTarget) setIsProfileOpen(false); }}
         >
-          <div className="w-full max-w-xl bg-surface border-2 border-border shadow-[6px_6px_0px_#1A1A1A] rounded-xl overflow-hidden animate-fade-up">
+          <div className="w-full max-w-xl bg-[#0A1228] border-2 border-border shadow-[6px_6px_0px_#1A1A1A] rounded-xl overflow-hidden animate-fade-up">
             <div className="px-6 py-5 border-b-2 border-border flex items-center justify-between">
               <div className="min-w-0">
                 <div className="text-lg font-black text-text-primary">我的资料</div>
@@ -413,7 +444,7 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
           style={{ zIndex: 99999, position: "fixed", top: 0, left: 0, right: 0, bottom: 0 }}
           onMouseDown={(e) => { if (e.target === e.currentTarget) setIsAboutOpen(false); }}
         >
-          <div className="w-full max-w-xl bg-surface border-2 border-border shadow-[6px_6px_0px_#1A1A1A] rounded-xl overflow-hidden animate-fade-up">
+          <div className="w-full max-w-xl bg-[#0A1228] border-2 border-border shadow-[6px_6px_0px_#1A1A1A] rounded-xl overflow-hidden animate-fade-up">
             <div className="px-6 py-5 border-b-2 border-border flex items-center justify-between">
               <div className="min-w-0">
                 <div className="text-lg font-black text-text-primary">关于我们</div>

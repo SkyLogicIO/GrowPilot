@@ -721,7 +721,7 @@ export default function EcomAgentPageClient() {
   return (
     <div className="h-[calc(100vh-140px)] flex rounded-2xl overflow-hidden bg-white/[0.02] border border-white/[0.06]">
       {/* ── 左侧对话面板 ── */}
-      <div className="w-full lg:w-[300px] lg:min-w-[300px] flex flex-col lg:border-r border-white/[0.06]">
+      <div className="w-full lg:w-[350px] lg:min-w-[350px] flex flex-col lg:border-r border-white/[0.06]">
         {/* 线程选择器 */}
         <div className="px-3 py-2 border-b border-white/[0.06]">
           <ThreadSelector

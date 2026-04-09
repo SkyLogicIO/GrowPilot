@@ -74,14 +74,12 @@ export default function DashboardGroupLayout({
 
         <div className="flex-1 p-8 overflow-y-auto relative">
           {children}
-          {!authed && (
-            <GuestOverlay
-              onOpenLogin={() => setIsLoginOpen(true)}
-              isSidebarOpen={isSidebarOpen}
-            />
-          )}
         </div>
       </main>
+
+      {!authed && (
+        <GuestOverlay onOpenLogin={() => setIsLoginOpen(true)} />
+      )}
 
       <CreateTeamModal isOpen={isCreateTeamOpen} onClose={() => setIsCreateTeamOpen(false)} />
 

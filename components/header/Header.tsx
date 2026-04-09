@@ -22,18 +22,21 @@ export default function Header({ onToggleSidebar, onOpenCreateTeam, onOpenLogin 
 
   return (
     <>
-      <header className="h-16 border-b border-accent/[0.08] bg-[#030710]/90 backdrop-blur-xl sticky top-0 z-20 px-8 flex items-center justify-between">
+      <header className="h-16 border-b border-accent/[0.08] bg-[#030710]/90 backdrop-blur-xl sticky top-0 z-20 px-4 md:px-8 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-4">
           <SidebarToggle onToggle={onToggleSidebar} />
         </div>
 
-        <div className="flex items-center gap-6">
-          <div className="hidden lg:flex items-center gap-3">
+        <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
+          {/* 宽屏：未登录 CTA + 运营按钮 */}
+          <div className="hidden xl:flex items-center gap-3">
             <GuestCTAs onOpenLogin={onOpenLogin} />
             <InviteRewardButton onClick={() => setShowInviteModal(true)} />
             <CoinsVipButton />
           </div>
+          {/* 中屏：搜索框 */}
           <HeaderSearch />
+          {/* 中屏以上：语言切换 */}
           <LanguageMenu />
           <NotificationButton />
           <UserMenu onOpenCreateTeam={onOpenCreateTeam} />
