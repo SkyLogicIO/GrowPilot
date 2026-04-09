@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Sparkles, FolderUp, ArrowRight, Bot } from "lucide-react";
+import { getMe } from "@/lib/api/auth";
 
 export default function DashboardHomePage() {
   const [userName, setUserName] = useState("创作者");
@@ -16,6 +17,12 @@ export default function DashboardHomePage() {
         else if (user.email) setUserName(user.email);
       }
     } catch {}
+
+    // 从后端拉取最新数据
+    getMe().then((user) => {
+      if (user.username) setUserName(user.username);
+      else if (user.email) setUserName(user.email);
+    }).catch(() => {});
   }, []);
 
   return (
