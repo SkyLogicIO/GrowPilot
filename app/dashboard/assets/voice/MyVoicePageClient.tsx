@@ -121,12 +121,12 @@ export default function MyVoicePageClient() {
   return (
     <div className="space-y-8">
       <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20">
-        <div className="absolute inset-0 bg-[#0F1115]/40" />
+        <div className="absolute inset-0 bg-surface/40" />
         <div className="relative px-8 py-7 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-8 items-center">
           <div>
             <div className="flex items-center gap-3">
               <div className="text-3xl font-bold text-white">创建您的第一个声音！</div>
-              <span className="h-6 px-2 rounded-md bg-blue-500/15 border border-blue-400/30 text-xs font-bold text-blue-200">
+              <span className="h-6 px-2 rounded-md bg-blue-500/15 border border-blue-400/30 text-xs font-bold text-accent-bright">
                 Starter
               </span>
             </div>
@@ -136,7 +136,7 @@ export default function MyVoicePageClient() {
               <button
                 type="button"
                 onClick={() => setCreateModalOpen(true)}
-                className="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-blue-600 hover:bg-blue-500 transition-colors text-white text-sm font-bold shadow-lg shadow-blue-500/20"
+                className="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-accent hover:bg-accent-light transition-colors text-white text-sm font-bold shadow-lg shadow-accent/30"
               >
                 <Plus size={16} />
                 创建声音
@@ -194,10 +194,10 @@ export default function MyVoicePageClient() {
           <select
             value={gender}
             onChange={(e) => setGender(e.target.value as (typeof FILTERS.gender)[number])}
-            className="h-10 px-4 rounded-xl bg-white/5 border border-white/10 text-gray-200 text-sm font-semibold focus:outline-none focus:border-blue-500 transition-colors"
+            className="h-10 px-4 rounded-xl bg-white/5 border border-white/10 text-gray-200 text-sm font-semibold focus:outline-none focus:border-accent-light transition-colors"
           >
             {FILTERS.gender.map((x) => (
-              <option key={x} value={x} className="bg-[#0F1115]">
+              <option key={x} value={x} className="bg-surface">
                 {x === "全部" ? "全部性别" : x}
               </option>
             ))}
@@ -205,10 +205,10 @@ export default function MyVoicePageClient() {
           <select
             value={age}
             onChange={(e) => setAge(e.target.value as (typeof FILTERS.age)[number])}
-            className="h-10 px-4 rounded-xl bg-white/5 border border-white/10 text-gray-200 text-sm font-semibold focus:outline-none focus:border-blue-500 transition-colors"
+            className="h-10 px-4 rounded-xl bg-white/5 border border-white/10 text-gray-200 text-sm font-semibold focus:outline-none focus:border-accent-light transition-colors"
           >
             {FILTERS.age.map((x) => (
-              <option key={x} value={x} className="bg-[#0F1115]">
+              <option key={x} value={x} className="bg-surface">
                 {x === "全部" ? "所有年龄" : x}
               </option>
             ))}
@@ -216,10 +216,10 @@ export default function MyVoicePageClient() {
           <select
             value={style}
             onChange={(e) => setStyle(e.target.value as (typeof FILTERS.style)[number])}
-            className="h-10 px-4 rounded-xl bg-white/5 border border-white/10 text-gray-200 text-sm font-semibold focus:outline-none focus:border-blue-500 transition-colors"
+            className="h-10 px-4 rounded-xl bg-white/5 border border-white/10 text-gray-200 text-sm font-semibold focus:outline-none focus:border-accent-light transition-colors"
           >
             {FILTERS.style.map((x) => (
-              <option key={x} value={x} className="bg-[#0F1115]">
+              <option key={x} value={x} className="bg-surface">
                 {x === "全部" ? "全部风格" : x}
               </option>
             ))}
@@ -227,10 +227,10 @@ export default function MyVoicePageClient() {
           <select
             value={scene}
             onChange={(e) => setScene(e.target.value as (typeof FILTERS.scene)[number])}
-            className="h-10 px-4 rounded-xl bg-white/5 border border-white/10 text-gray-200 text-sm font-semibold focus:outline-none focus:border-blue-500 transition-colors"
+            className="h-10 px-4 rounded-xl bg-white/5 border border-white/10 text-gray-200 text-sm font-semibold focus:outline-none focus:border-accent-light transition-colors"
           >
             {FILTERS.scene.map((x) => (
-              <option key={x} value={x} className="bg-[#0F1115]">
+              <option key={x} value={x} className="bg-surface">
                 {x === "全部" ? "全部场景" : x}
               </option>
             ))}
@@ -238,10 +238,10 @@ export default function MyVoicePageClient() {
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value as (typeof FILTERS.language)[number])}
-            className="h-10 px-4 rounded-xl bg-white/5 border border-white/10 text-gray-200 text-sm font-semibold focus:outline-none focus:border-blue-500 transition-colors"
+            className="h-10 px-4 rounded-xl bg-white/5 border border-white/10 text-gray-200 text-sm font-semibold focus:outline-none focus:border-accent-light transition-colors"
           >
             {FILTERS.language.map((x) => (
-              <option key={x} value={x} className="bg-[#0F1115]">
+              <option key={x} value={x} className="bg-surface">
                 {x === "全部" ? "全部语种" : x}
               </option>
             ))}
@@ -254,7 +254,7 @@ export default function MyVoicePageClient() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="搜索声音"
-            className="w-full h-10 pl-10 pr-4 rounded-xl bg-white/5 border border-white/10 text-gray-200 text-sm font-semibold placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+            className="w-full h-10 pl-10 pr-4 rounded-xl bg-white/5 border border-white/10 text-gray-200 text-sm font-semibold placeholder:text-gray-500 focus:outline-none focus:border-accent-light transition-colors"
           />
         </div>
       </div>

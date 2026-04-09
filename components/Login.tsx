@@ -319,7 +319,7 @@ export default function Login({ isOpen, onClose, onSuccess }: LoginProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="brut-btn mt-5 w-full h-12 bg-accent hover:bg-accent-hover text-white text-sm font-bold rounded-[10px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="brut-btn-primary mt-5 w-full h-12 text-sm font-bold rounded-[10px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading
                   ? "处理中..."

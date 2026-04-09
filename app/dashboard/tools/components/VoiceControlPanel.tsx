@@ -39,7 +39,7 @@ export default function VoiceControlPanel({
             <span
               key={t}
               className={`brut-tag ${
-                t.includes("男") ? "bg-[#74B9FF]/20 text-text-primary" : "bg-[#FFB3C6]/20 text-text-primary"
+                t.includes("男") ? "bg-cyan-500/20 text-text-primary" : "bg-pink-500/20 text-text-primary"
               }`}
             >
               {t}
@@ -124,7 +124,7 @@ export default function VoiceControlPanel({
 
       <button
         type="button"
-        className="mt-6 w-full h-12 brut-btn bg-accent text-white"
+        className="mt-6 w-full h-12 brut-btn-primary"
       >
         立即合成
       </button>

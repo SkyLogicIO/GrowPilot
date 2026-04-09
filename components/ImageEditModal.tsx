@@ -106,7 +106,7 @@ export default function ImageEditModal({ open, onClose }: ImageEditModalProps) {
         {/* Header */}
         <div className="px-6 py-4 border-b-2 border-border flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C77DFF] border-2 border-border flex items-center justify-center shadow-[2px_2px_0px_#1A1A1A]">
+            <div className="w-10 h-10 rounded-xl bg-violet-500 border-2 border-border flex items-center justify-center shadow-[2px_2px_0px_#1A1A1A]">
               <Wand2 size={20} className="text-text-primary" />
             </div>
             <div>
@@ -237,7 +237,7 @@ export default function ImageEditModal({ open, onClose }: ImageEditModalProps) {
                   </div>
                 ) : (
                   <div className="text-center p-6">
-                    <div className="w-16 h-16 rounded-xl bg-[#C77DFF]/15 border-2 border-border flex items-center justify-center mx-auto mb-4 shadow-[2px_2px_0px_#1A1A1A]">
+                    <div className="w-16 h-16 rounded-xl bg-violet-500/15 border-2 border-border flex items-center justify-center mx-auto mb-4 shadow-[2px_2px_0px_#1A1A1A]">
                       <Wand2 size={28} className="text-text-muted" />
                     </div>
                     <p className="text-text-muted text-sm">生成的图片将显示在这里</p>

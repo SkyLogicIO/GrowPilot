@@ -187,7 +187,7 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
       <button
         type="button"
         onClick={() => setIsOpen((v) => !v)}
-        className="w-9 h-9 rounded-lg bg-[#FF6B6B] border-2 border-border shadow-[2px_2px_0px_#1A1A1A] flex items-center justify-center hover:bg-accent-hover transition-colors active:translate-y-0.5 active:shadow-[1px_1px_0px_#1A1A1A]"
+        className="w-9 h-9 rounded-lg bg-rose-500 border-2 border-border shadow-[2px_2px_0px_#1A1A1A] flex items-center justify-center hover:bg-accent-hover transition-colors active:translate-y-0.5 active:shadow-[1px_1px_0px_#1A1A1A]"
       >
         <User size={16} className="text-white" />
       </button>
@@ -295,17 +295,17 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
                 <div className="brut-card-static p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="text-xs font-bold text-text-secondary">积分</div>
-                    <button type="button" className="brut-tag bg-[#FFD93D]/20 text-text-primary">充值</button>
+                    <button type="button" className="brut-tag bg-accent/20 text-text-primary">充值</button>
                   </div>
                   <div className="mt-2 flex items-center gap-2">
-                    <Zap size={18} className="text-[#FFD93D]" />
+                    <Zap size={18} className="text-accent" />
                     <div className="text-2xl font-black text-text-primary">{profile.points}</div>
                   </div>
                 </div>
                 <div className="brut-card-static p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="text-xs font-bold text-text-secondary">存储空间</div>
-                    <button type="button" className="brut-tag bg-[#4ECDC4]/20 text-text-primary">充值</button>
+                    <button type="button" className="brut-tag bg-teal-500/20 text-text-primary">充值</button>
                   </div>
                   <div className="mt-2 flex items-center gap-2">
                     <HardDrive size={18} className="text-text-muted" />
@@ -397,7 +397,7 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
               <button
                 type="button"
                 onClick={() => setIsProfileOpen(false)}
-                className="brut-btn bg-accent text-white px-6 h-11 text-sm shrink-0"
+                className="brut-btn-primary px-6 h-11 text-sm shrink-0"
               >
                 确定
               </button>
@@ -457,7 +457,7 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
               <button
                 type="button"
                 onClick={() => setIsAboutOpen(false)}
-                className="brut-btn bg-accent text-white px-6 h-11 text-sm"
+                className="brut-btn-primary px-6 h-11 text-sm"
               >
                 确定
               </button>

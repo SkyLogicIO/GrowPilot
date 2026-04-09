@@ -50,7 +50,7 @@ export default function CreateVoiceModal({ open, onClose }: CreateVoiceModalProp
           </div>
 
           {/* Video Player Area */}
-          <div className="relative w-full aspect-[16/9] bg-[#0F1115] rounded-xl border border-white/10 flex flex-col items-center justify-center overflow-hidden">
+          <div className="relative w-full aspect-[16/9] bg-surface rounded-xl border border-white/10 flex flex-col items-center justify-center overflow-hidden">
             {/* Top Right Controls */}
             <div className="absolute top-3 right-3 flex items-center gap-2">
               <button className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors border border-white/5">

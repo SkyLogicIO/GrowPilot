@@ -57,7 +57,7 @@ export default function GuestOverlay({ onOpenLogin, isSidebarOpen = true }: Gues
             <span className="text-text-muted flex-1">
               {draft || "描述你想创作的内容，AI 帮你生成..."}
             </span>
-            <span className="brut-btn bg-accent text-white px-4 py-1.5 text-xs">
+            <span className="brut-btn-primary px-4 py-1.5 text-xs">
               登录后创作
             </span>
           </div>

@@ -174,7 +174,7 @@ export default function ImageGenerationForm({ isGenerating, onGenerate }: ImageG
           type="button"
           onClick={handleSubmit}
           disabled={isGenerating || (!prompt.trim() && !inputImage)}
-          className="brut-btn bg-accent text-white px-6 py-2.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          className="brut-btn-primary px-6 py-2.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {isGenerating ? (
             <>

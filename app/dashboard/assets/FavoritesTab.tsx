@@ -95,7 +95,7 @@ export default function FavoritesTab({
               className="h-9 px-4 bg-transparent text-gray-200 text-sm font-semibold focus:outline-none"
             >
               {categoryOptions.map((item) => (
-                <option key={item} value={item} className="bg-[#0F1115]">
+                <option key={item} value={item} className="bg-surface">
                   {item}
                 </option>
               ))}
@@ -109,7 +109,7 @@ export default function FavoritesTab({
               className="h-9 px-4 bg-transparent text-gray-200 text-sm font-semibold focus:outline-none"
             >
               {orientationOptions.map((item) => (
-                <option key={item} value={item} className="bg-[#0F1115]">
+                <option key={item} value={item} className="bg-surface">
                   {item}
                 </option>
               ))}

@@ -81,7 +81,7 @@ export default function ArtStudioPageClient() {
           <ArrowLeft size={18} className="text-text-secondary" />
         </Link>
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-[#C77DFF] border-2 border-border flex items-center justify-center shadow-[3px_3px_0px_#1A1A1A]">
+          <div className="w-12 h-12 rounded-xl bg-violet-500 border-2 border-border flex items-center justify-center shadow-[3px_3px_0px_#1A1A1A]">
             <ImageIcon size={22} className="text-text-primary" />
           </div>
           <div>
@@ -130,7 +130,7 @@ export default function ArtStudioPageClient() {
                         download={`image_${Date.now()}.png`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="brut-btn bg-accent text-white px-6 py-2.5 flex items-center gap-2"
+                        className="brut-btn-primary px-6 py-2.5 flex items-center gap-2"
                       >
                         <Download size={16} />
                         下载图片
@@ -148,7 +148,7 @@ export default function ArtStudioPageClient() {
           <div className="brut-card-static p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-black text-text-primary">生成历史</h3>
-              <span className="brut-tag bg-[#C77DFF] text-white">
+              <span className="brut-tag bg-violet-500 text-white">
                 {imageProjects.length}
               </span>
             </div>

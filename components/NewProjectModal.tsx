@@ -214,7 +214,7 @@ export default function NewProjectModal({ defaultMode, openSignal, hideTriggerBu
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-all shadow-lg shadow-blue-500/20"
+          className="px-6 py-2.5 bg-accent hover:bg-accent-light text-white rounded-lg font-medium transition-all shadow-lg shadow-accent/30"
         >
           + 新建项目
         </button>
@@ -224,7 +224,7 @@ export default function NewProjectModal({ defaultMode, openSignal, hideTriggerBu
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center px-6" style={{ zIndex: 100000 }}>
           <div
             ref={rootRef}
-            className="w-full max-w-3xl rounded-2xl border border-white/10 bg-[#0F1115] shadow-2xl ring-1 ring-white/10 overflow-hidden"
+            className="w-full max-w-3xl rounded-2xl border border-white/10 bg-surface shadow-2xl ring-1 ring-white/10 overflow-hidden"
           >
             <div className="px-5 py-3 border-b border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -249,7 +249,7 @@ export default function NewProjectModal({ defaultMode, openSignal, hideTriggerBu
                 onChange={(e) => setName(e.target.value)}
                 placeholder={namePlaceholder}
                 disabled={isGenerating}
-                className="w-full h-12 px-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
+                className="w-full h-12 px-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-500 focus:outline-none focus:border-accent-light transition-colors disabled:opacity-50"
               />
               <div className="mt-4">
                 <div className="flex items-center justify-between gap-3">
@@ -266,7 +266,7 @@ export default function NewProjectModal({ defaultMode, openSignal, hideTriggerBu
                             : "bg-transparent border-transparent text-gray-300 hover:bg-white/5"
                         } ${isGenerating ? "opacity-50 cursor-not-allowed" : ""}`}
                       >
-                        <m.icon size={16} className={mode === m.key ? "text-blue-300" : "text-gray-400"} />
+                        <m.icon size={16} className={mode === m.key ? "text-accent-bright" : "text-gray-400"} />
                         <span className="text-sm font-semibold">{m.label}</span>
                       </button>
                     ))}
@@ -281,7 +281,7 @@ export default function NewProjectModal({ defaultMode, openSignal, hideTriggerBu
                     disabled={isGenerating}
                     className="h-10 px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors flex items-center gap-2 whitespace-nowrap disabled:opacity-50"
                   >
-                    <Bot size={16} className="text-blue-300" />
+                    <Bot size={16} className="text-accent-bright" />
                     <span className="text-sm font-semibold text-gray-200">AI营销助手</span>
                   </button>
                 </div>
@@ -349,7 +349,7 @@ export default function NewProjectModal({ defaultMode, openSignal, hideTriggerBu
                       <button
                         type="button"
                         onClick={handleFinish}
-                        className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-lg shadow-blue-500/20 transition-colors"
+                        className="px-6 py-2.5 rounded-xl bg-accent hover:bg-accent-light text-white font-bold shadow-lg shadow-accent/30 transition-colors"
                       >
                         完成并保存
                       </button>

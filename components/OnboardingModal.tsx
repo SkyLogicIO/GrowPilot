@@ -195,13 +195,13 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
     >
       <div
         ref={modalRef}
-        className="w-full max-w-2xl bg-[#0F1115] rounded-2xl border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] ring-1 ring-white/10"
+        className="w-full max-w-2xl bg-surface rounded-2xl border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] ring-1 ring-white/10"
         style={{ height: stableHeight ? `${stableHeight}px` : undefined }}
       >
         {/* Progress Bar */}
-        <div className="h-1 bg-gray-800 w-full">
+        <div className="h-1 bg-surface-alt w-full">
           <div 
-            className="h-full bg-blue-600 transition-all duration-500 ease-out"
+            className="h-full bg-accent-light transition-all duration-500 ease-out"
             style={{ width: `${(step / 4) * 100}%` }}
           />
         </div>
@@ -223,8 +223,8 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
                       onClick={() => setFormData({ ...formData, role: "business" })}
                       className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${
                         formData.role === "business" 
-                          ? "bg-blue-600/20 border-blue-500 text-white" 
-                          : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10"
+                          ? "bg-accent/20 border-accent-light text-white" 
+                          : "bg-white/5 border-white/10 text-gray-400 hover:bg-accent/10 hover:border-accent/30"
                       }`}
                     >
                       <Building2 size={24} />
@@ -234,8 +234,8 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
                       onClick={() => setFormData({ ...formData, role: "individual" })}
                       className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${
                         formData.role === "individual" 
-                          ? "bg-blue-600/20 border-blue-500 text-white" 
-                          : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10"
+                          ? "bg-accent/20 border-accent-light text-white" 
+                          : "bg-white/5 border-white/10 text-gray-400 hover:bg-accent/10 hover:border-accent/30"
                       }`}
                     >
                       <User size={24} />
@@ -255,8 +255,8 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
                         onClick={() => toggleSelection(formData.industries, ind, "industries")}
                         className={`px-4 py-2 rounded-lg text-sm border transition-all flex items-center gap-2 ${
                           formData.industries.includes(ind)
-                            ? "bg-blue-600/20 border-blue-500 text-white"
-                            : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10"
+                            ? "bg-accent/20 border-accent-light text-white"
+                            : "bg-white/5 border-white/10 text-gray-400 hover:bg-accent/10 hover:border-accent/30"
                         }`}
                       >
                         <Icon size={16} className="shrink-0 opacity-90" />
@@ -270,7 +270,7 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
                     placeholder="其他行业（请输入）"
                     value={formData.customIndustry}
                     onChange={(e) => setFormData({ ...formData, customIndustry: e.target.value })}
-                    className="mt-3 w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-gray-500 focus:border-blue-500 focus:outline-none"
+                    className="mt-3 w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-gray-500 focus:border-accent-light focus:outline-none"
                   />
                 </div>
               </div>
@@ -292,7 +292,7 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
                     type="text"
                     value={formData.profile.name}
                     onChange={(e) => setFormData({ ...formData, profile: { ...formData.profile, name: e.target.value } })}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-blue-500 focus:outline-none"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-accent-light focus:outline-none"
                     placeholder="请输入名称"
                   />
                 </div>
@@ -302,7 +302,7 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
                     type="text"
                     value={formData.profile.scale}
                     onChange={(e) => setFormData({ ...formData, profile: { ...formData.profile, scale: e.target.value } })}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-blue-500 focus:outline-none"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-accent-light focus:outline-none"
                     placeholder="例如：5家门店 / 20人团队"
                   />
                 </div>
@@ -311,7 +311,7 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
                   <textarea
                     value={formData.profile.product}
                     onChange={(e) => setFormData({ ...formData, profile: { ...formData.profile, product: e.target.value } })}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-blue-500 focus:outline-none h-24 resize-none"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-accent-light focus:outline-none h-24 resize-none"
                     placeholder="简要描述您的核心产品或服务"
                   />
                 </div>
@@ -339,8 +339,8 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
                         onClick={() => toggleSelection(formData.media.platforms, platform, "platforms")}
                         className={`px-4 py-3 rounded-xl border transition-all flex items-center justify-between ${
                           formData.media.platforms.includes(platform)
-                            ? "bg-blue-600/20 border-blue-500 text-white"
-                            : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10"
+                            ? "bg-accent/20 border-accent-light text-white"
+                            : "bg-white/5 border-white/10 text-gray-400 hover:bg-accent/10 hover:border-accent/30"
                         }`}
                       >
                         <div className="flex items-center gap-2">
@@ -360,11 +360,11 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
                     <div className="flex bg-black/40 p-1 rounded-lg">
                       <button
                         onClick={() => setFormData({ ...formData, media: { ...formData.media, hasContent: true } })}
-                        className={`px-4 py-1 rounded-md text-sm transition-all ${formData.media.hasContent ? "bg-blue-600 text-white" : "text-gray-400"}`}
+                        className={`px-4 py-1 rounded-md text-sm transition-all ${formData.media.hasContent ? "bg-accent text-white" : "text-gray-400"}`}
                       >是</button>
                       <button
                         onClick={() => setFormData({ ...formData, media: { ...formData.media, hasContent: false } })}
-                        className={`px-4 py-1 rounded-md text-sm transition-all ${!formData.media.hasContent ? "bg-gray-700 text-white" : "text-gray-400"}`}
+                        className={`px-4 py-1 rounded-md text-sm transition-all ${!formData.media.hasContent ? "bg-white/10 text-white" : "text-gray-400"}`}
                       >否</button>
                     </div>
                   </div>
@@ -374,11 +374,11 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
                     <div className="flex bg-black/40 p-1 rounded-lg">
                       <button
                         onClick={() => setFormData({ ...formData, media: { ...formData.media, hasAds: true } })}
-                        className={`px-4 py-1 rounded-md text-sm transition-all ${formData.media.hasAds ? "bg-blue-600 text-white" : "text-gray-400"}`}
+                        className={`px-4 py-1 rounded-md text-sm transition-all ${formData.media.hasAds ? "bg-accent text-white" : "text-gray-400"}`}
                       >是</button>
                       <button
                         onClick={() => setFormData({ ...formData, media: { ...formData.media, hasAds: false } })}
-                        className={`px-4 py-1 rounded-md text-sm transition-all ${!formData.media.hasAds ? "bg-gray-700 text-white" : "text-gray-400"}`}
+                        className={`px-4 py-1 rounded-md text-sm transition-all ${!formData.media.hasAds ? "bg-white/10 text-white" : "text-gray-400"}`}
                       >否</button>
                     </div>
                   </div>
@@ -407,8 +407,8 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
                       onClick={() => toggleSelection(formData.goals, goal, "goals")}
                       className={`p-4 rounded-xl border transition-all text-left flex items-center justify-between group ${
                         selected
-                          ? "bg-blue-600/20 border-blue-500 text-white"
-                          : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10"
+                          ? "bg-accent/20 border-accent-light text-white"
+                          : "bg-white/5 border-white/10 text-gray-400 hover:bg-accent/10 hover:border-accent/30"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -416,7 +416,7 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
                         <span className="font-medium text-lg">{goal}</span>
                       </div>
                       <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-colors ${
-                        selected ? "bg-blue-500 border-blue-500" : "border-gray-600 group-hover:border-gray-400"
+                        selected ? "bg-accent-light border-accent-light" : "border-gray-600 group-hover:border-blue-400"
                       }`}>
                         {selected && <Check size={14} className="text-white" />}
                       </div>
@@ -430,7 +430,7 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
         </div>
 
         {/* Footer Navigation */}
-        <div className="p-6 border-t border-white/10 bg-[#0F1115] flex justify-between items-center">
+        <div className="p-6 border-t border-white/10 bg-surface flex justify-between items-center">
           <button
             onClick={handleBack}
             disabled={step === 1}
@@ -442,7 +442,7 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
           
           <button
             onClick={handleNext}
-            className="flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full font-bold transition-all shadow-lg shadow-blue-500/20"
+            className="flex items-center gap-2 px-8 py-3 bg-accent hover:bg-accent-light text-white rounded-full font-bold transition-all shadow-lg shadow-accent/30"
           >
             {step === 4 ? "开启数字AI助理" : "下一步"}
             {step !== 4 && <ChevronRight size={20} />}

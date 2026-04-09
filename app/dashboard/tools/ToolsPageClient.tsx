@@ -20,11 +20,11 @@ type TabConfig = {
 };
 
 const TABS: TabConfig[] = [
-  { key: "write",    label: "AI帮我写",  icon: FileText,   color: "bg-[#FFD93D]" },
-  { key: "image",    label: "图像处理",   icon: ImageIcon,  color: "bg-[#4ECDC4]" },
-  { key: "ai_image", label: "AI图像工具", icon: Wand2,      color: "bg-[#C77DFF]" },
-  { key: "video",    label: "视频分析",   icon: Video,      color: "bg-[#74B9FF]" },
-  { key: "voice",    label: "语音生成",   icon: Mic,        color: "bg-[#FF6B6B]" },
+  { key: "write",    label: "AI帮我写",  icon: FileText,   color: "bg-accent" },
+  { key: "image",    label: "图像处理",   icon: ImageIcon,  color: "bg-teal-500" },
+  { key: "ai_image", label: "AI图像工具", icon: Wand2,      color: "bg-violet-500" },
+  { key: "video",    label: "视频分析",   icon: Video,      color: "bg-cyan-500" },
+  { key: "voice",    label: "语音生成",   icon: Mic,        color: "bg-rose-500" },
 ];
 
 export default function ToolsPageClient() {
@@ -115,14 +115,14 @@ export default function ToolsPageClient() {
                   onClick={() => openComingSoon(title)}
                   className="group text-left brut-card p-5 flex items-start gap-4"
                 >
-                  <div className={`w-10 h-10 rounded-lg bg-[#FFD93D] border-2 border-border flex items-center justify-center shadow-[2px_2px_0px_#1A1A1A] shrink-0 text-text-primary font-black text-sm`}>
+                  <div className={`w-10 h-10 rounded-lg bg-accent border-2 border-border flex items-center justify-center shadow-[2px_2px_0px_#1A1A1A] shrink-0 text-text-primary font-black text-sm`}>
                     {String(i + 1).padStart(2, "0")}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-text-primary font-bold">{title}</div>
                     <div className="mt-1 text-sm text-text-secondary">点击进入，快速生成可用内容</div>
                   </div>
-                  <span className="brut-btn bg-accent text-white text-xs px-3 h-8 flex items-center shrink-0 mt-0.5">
+                  <span className="brut-btn-primary text-xs px-3 h-8 flex items-center shrink-0 mt-0.5">
                     立即使用
                   </span>
                 </button>

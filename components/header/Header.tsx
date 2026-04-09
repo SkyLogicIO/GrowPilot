@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import CoinsVipButton from "./CoinsVipButton";
 import GuestCTAs from "./GuestCTAs";
 import HeaderSearch from "./HeaderSearch";
 import InviteRewardButton from "./InviteRewardButton";
+import InviteRewardModal from "./InviteRewardModal";
 import LanguageMenu from "./LanguageMenu";
 import NotificationButton from "./NotificationButton";
 import SidebarToggle from "./SidebarToggle";
@@ -16,23 +18,29 @@ interface HeaderProps {
 }
 
 export default function Header({ onToggleSidebar, onOpenCreateTeam, onOpenLogin }: HeaderProps) {
-  return (
-    <header className="h-16 border-b border-white/[0.06] bg-stone-950/80 backdrop-blur-xl sticky top-0 z-20 px-8 flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <SidebarToggle onToggle={onToggleSidebar} />
-      </div>
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
-      <div className="flex items-center gap-6">
-        <div className="hidden lg:flex items-center gap-3">
-          <GuestCTAs onOpenLogin={onOpenLogin} />
-          <InviteRewardButton />
-          <CoinsVipButton />
+  return (
+    <>
+      <header className="h-16 border-b border-accent/[0.08] bg-[#030710]/90 backdrop-blur-xl sticky top-0 z-20 px-8 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <SidebarToggle onToggle={onToggleSidebar} />
         </div>
-        <HeaderSearch />
-        <LanguageMenu />
-        <NotificationButton />
-        <UserMenu onOpenCreateTeam={onOpenCreateTeam} />
-      </div>
-    </header>
+
+        <div className="flex items-center gap-6">
+          <div className="hidden lg:flex items-center gap-3">
+            <GuestCTAs onOpenLogin={onOpenLogin} />
+            <InviteRewardButton onClick={() => setShowInviteModal(true)} />
+            <CoinsVipButton />
+          </div>
+          <HeaderSearch />
+          <LanguageMenu />
+          <NotificationButton />
+          <UserMenu onOpenCreateTeam={onOpenCreateTeam} />
+        </div>
+      </header>
+
+      <InviteRewardModal isOpen={showInviteModal} onClose={() => setShowInviteModal(false)} />
+    </>
   );
 }

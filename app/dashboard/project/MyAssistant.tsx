@@ -77,7 +77,7 @@ function RoleBubble({ role, children }: RoleBubbleProps) {
         className={`max-w-[820px] rounded-2xl border px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
           isAssistant
             ? "bg-white/5 border-white/10 text-gray-100"
-            : "bg-blue-600/20 border-blue-500/20 text-white"
+            : "bg-accent/20 border-accent-light/30 text-white"
         }`}
       >
         {children}
@@ -124,13 +124,13 @@ export default function MyAssistant() {
   };
 
   return (
-    <div className="rounded-2xl border border-white/5 bg-[#0F1115] overflow-hidden">
+    <div className="rounded-2xl border border-white/5 bg-surface overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] min-h-[720px]">
         <div className="border-r border-white/5 bg-[#0B0D10]">
           <div className="p-5">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center">
-                <Bot size={18} className="text-blue-200" />
+                <Bot size={18} className="text-accent-bright" />
               </div>
               <div className="min-w-0">
                 <div className="text-sm font-bold text-white truncate">AI营销助手</div>
@@ -145,7 +145,7 @@ export default function MyAssistant() {
                 const id = `t_${now}`;
                 setActiveThreadId(id);
               }}
-              className="mt-5 w-full h-10 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2"
+              className="mt-5 w-full h-10 rounded-xl bg-accent hover:bg-accent-light text-white text-sm font-bold transition-colors flex items-center justify-center gap-2"
             >
               <Plus size={16} />
               新对话
@@ -214,14 +214,14 @@ export default function MyAssistant() {
                       active ? "bg-white/10 border-white/20 text-white" : "bg-white/5 border-white/10 text-gray-300 hover:bg-white/10"
                     }`}
                   >
-                    <Icon size={16} className={active ? "text-blue-200" : "text-gray-400"} />
+                    <Icon size={16} className={active ? "text-accent-bright" : "text-gray-400"} />
                     <span className="text-sm font-bold">{t.label}</span>
                   </button>
                 );
               })}
 
               <div className="ml-auto hidden md:flex items-center gap-2 text-xs text-gray-500">
-                <Sparkles size={14} className="text-blue-300" />
+                <Sparkles size={14} className="text-accent-bright" />
                 <span>支持多模态与结构化输出</span>
               </div>
             </div>
@@ -238,7 +238,7 @@ export default function MyAssistant() {
           </div>
 
           <div className="px-6 py-4 border-t border-white/5 bg-[#0B0D10]">
-            <div className="rounded-2xl border border-white/10 bg-[#0F1115] overflow-hidden">
+            <div className="rounded-2xl border border-white/10 bg-surface overflow-hidden">
               <div className="px-4 py-3">
                 <textarea
                   value={draft}
@@ -259,7 +259,7 @@ export default function MyAssistant() {
                     type="button"
                     className="h-10 px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors flex items-center gap-2"
                   >
-                    <Sparkles size={16} className="text-blue-200" />
+                    <Sparkles size={16} className="text-accent-bright" />
                     <span className="text-sm font-semibold text-gray-200">深度思考</span>
                   </button>
                   <button
@@ -274,7 +274,7 @@ export default function MyAssistant() {
                 <button
                   type="button"
                   onClick={send}
-                  className="h-10 px-5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors flex items-center gap-2"
+                  className="h-10 px-5 rounded-xl bg-accent hover:bg-accent-light text-white font-bold transition-colors flex items-center gap-2"
                 >
                   <Send size={16} className="text-white" />
                   发送

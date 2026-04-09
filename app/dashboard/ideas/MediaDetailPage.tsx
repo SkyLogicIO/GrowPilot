@@ -33,7 +33,7 @@ export default function MediaDetailPage({ open, item, onClose }: MediaDetailPage
     {
       label: "类型",
       value: (
-        <span className="inline-flex px-3 h-8 rounded-full bg-blue-500/20 text-blue-200 font-bold items-center">
+        <span className="inline-flex px-3 h-8 rounded-full bg-accent-light/20 text-accent-bright font-bold items-center">
           CHECKPOINT
         </span>
       ),
@@ -85,7 +85,7 @@ export default function MediaDetailPage({ open, item, onClose }: MediaDetailPage
     <div className="h-full rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
       <div className="h-full grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_420px]">
         <div className="p-5 overflow-auto">
-          <div className="rounded-2xl bg-[#0F1115] border border-white/5 overflow-hidden">
+          <div className="rounded-2xl bg-surface border border-white/5 overflow-hidden">
             <img src={item.cover} alt={item.title} className="w-full h-auto block" />
           </div>
         </div>
@@ -114,16 +114,16 @@ export default function MediaDetailPage({ open, item, onClose }: MediaDetailPage
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                className="h-12 rounded-2xl bg-[#F3C96B] text-[#2B1B00] font-extrabold flex items-center justify-center gap-2"
+                className="h-12 rounded-2xl bg-accent text-white font-extrabold flex items-center justify-center gap-2"
               >
-                <Sparkles size={18} className="text-[#2B1B00]" />
+                <Sparkles size={18} className="text-white" />
                 一键同款
               </button>
               <button
                 type="button"
-                className="h-12 rounded-2xl bg-[#F3C96B] text-[#2B1B00] font-extrabold flex items-center justify-center gap-2"
+                className="h-12 rounded-2xl bg-accent text-white font-extrabold flex items-center justify-center gap-2"
               >
-                <Wand2 size={18} className="text-[#2B1B00]" />
+                <Wand2 size={18} className="text-white" />
                 使用模型
               </button>
               <button
@@ -135,9 +135,9 @@ export default function MediaDetailPage({ open, item, onClose }: MediaDetailPage
               </button>
               <button
                 type="button"
-                className="h-12 rounded-2xl bg-[#F3C96B] text-[#2B1B00] font-extrabold flex items-center justify-center gap-2"
+                className="h-12 rounded-2xl bg-accent text-white font-extrabold flex items-center justify-center gap-2"
               >
-                <Download size={18} className="text-[#2B1B00]" />
+                <Download size={18} className="text-white" />
                 会员下载
               </button>
             </div>
@@ -145,7 +145,7 @@ export default function MediaDetailPage({ open, item, onClose }: MediaDetailPage
 
           <div className="mt-5 rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
             <div className="px-4 py-3 border-b border-white/10 flex items-center gap-3">
-              <span className="px-2.5 h-7 rounded-lg bg-blue-600 text-white text-sm font-bold flex items-center">独家</span>
+              <span className="px-2.5 h-7 rounded-lg bg-accent text-white text-sm font-bold flex items-center">独家</span>
               <div className="text-base font-bold text-white">版本详情</div>
             </div>
 

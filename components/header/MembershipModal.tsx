@@ -23,9 +23,8 @@ const PLANS: {
   price?: string;
   bonus?: string;
   validity?: string;
-  discount?: string;
   realPrice?: string;
-  badge?: string;
+  discountBadge?: { text: string; color: string };
   cta: string;
   ctaStyle: string;
 }[] = [
@@ -51,10 +50,10 @@ const PLANS: {
     desc: "专业卖家，当月积分立即到账",
     price: "449 元/月",
     bonus: "赠 44,900 积分",
-    discount: "限时89折",
     realPrice: "399元",
+    discountBadge: { text: "89折", color: "bg-accent text-white" },
     cta: "立即购买（399元，89折优惠）",
-    ctaStyle: "bg-accent text-stone-900 hover:bg-accent-hover",
+    ctaStyle: "bg-accent text-white hover:bg-accent-light shadow-lg shadow-accent/30",
   },
   {
     key: "annual",
@@ -62,11 +61,10 @@ const PLANS: {
     desc: "超值年付，当月积分立即到账",
     price: "5,388 元/年",
     bonus: "赠 538,800 积分",
-    discount: "限时53折",
     realPrice: "2,999元",
-    badge: "最超值",
+    discountBadge: { text: "53折", color: "bg-gradient-to-r from-orange-500 to-rose-500 text-white" },
     cta: "立即购买（2,999元，53折优惠）",
-    ctaStyle: "bg-amber-500 text-stone-900 hover:bg-amber-400 shadow-lg shadow-amber-500/15",
+    ctaStyle: "bg-accent text-white hover:bg-accent-light shadow-lg shadow-accent/30 animate-glow",
   },
 ];
 
@@ -96,11 +94,11 @@ export default function MembershipModal({ isOpen, onClose }: MembershipModalProp
 
   const renderCellValue = (value: string | boolean, planKey: PlanKey, featureLabel: string) => {
     if (value === false) return <Minus size={14} className="text-white/20" />;
-    if (value === true) return <Check size={14} className="text-amber-400" />;
+    if (value === true) return <Check size={14} className="text-accent-bright" />;
     const freeVal = FEATURES.find(f => f.label === featureLabel)?.values.free;
     const upgraded = planKey !== "free" && value !== freeVal;
     return (
-      <span className={`text-sm font-bold ${upgraded ? "text-amber-400" : "text-text-secondary"}`}>
+      <span className={`text-sm font-bold ${upgraded ? "text-accent-bright" : "text-text-secondary"}`}>
         {value as string}
       </span>
     );
@@ -112,13 +110,13 @@ export default function MembershipModal({ isOpen, onClose }: MembershipModalProp
       style={{ zIndex: 99999 }}
       onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="w-full max-w-4xl mx-4 bg-stone-950 border border-white/[0.08] rounded-2xl overflow-hidden shadow-2xl shadow-black/50 animate-fade-up">
+      <div className="w-full max-w-4xl mx-4 bg-[#030710] border border-white/[0.08] rounded-2xl overflow-hidden shadow-2xl shadow-black/50 animate-fade-up">
         {/* ── Header ── */}
         <div className="px-8 pt-7 pb-5 flex items-start justify-between">
           <div>
             <h2 className="text-xl font-black text-text-primary">会员详细权益对比</h2>
             <p className="mt-1.5 text-sm text-text-muted">
-              月卡 399元 (89折) · 年卡 2,999元 (53折) · 积分当月到账
+              积分当月到账 · 年付享最低折扣
             </p>
           </div>
           <button
@@ -144,26 +142,25 @@ export default function MembershipModal({ isOpen, onClose }: MembershipModalProp
                   className={`relative cursor-pointer rounded-xl p-4 transition-all duration-150 text-center ${
                     isActive
                       ? isAnnual
-                        ? "bg-amber-500/[0.08] border-2 border-amber-500/40"
+                        ? "bg-accent/[0.08] border-2 border-accent/40"
                         : "bg-accent/[0.08] border-2 border-accent/40"
                       : "bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04]"
                   }`}
                 >
-                  {plan.badge && (
-                    <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-amber-500 text-stone-900 text-[0.6rem] font-black uppercase tracking-wider rounded-full whitespace-nowrap">
-                      {plan.badge}
+                  {plan.discountBadge && (
+                    <span className={`absolute -top-2.5 -right-2 text-[0.65rem] font-black px-2 py-0.5 rounded-full z-10 ${plan.discountBadge.color}`}>
+                      {plan.discountBadge.text}
                     </span>
                   )}
                   <div className="text-sm font-black text-text-primary">{plan.name}</div>
                   {plan.desc && <div className="mt-1 text-[0.7rem] text-text-muted leading-relaxed">{plan.desc}</div>}
-                  {plan.price && <div className="mt-2.5 text-base font-black text-text-primary">{plan.price}</div>}
-                  {plan.bonus && <div className="mt-1 text-xs font-bold text-amber-400">{plan.bonus}</div>}
-                  {plan.validity && <div className="mt-0.5 text-[0.7rem] text-text-muted">{plan.validity}</div>}
-                  {plan.discount && (
-                    <span className={`mt-2 inline-block text-[0.6rem] font-black px-2 py-0.5 rounded-full ${
-                      isAnnual ? "bg-amber-500/20 text-amber-400" : "bg-white/[0.08] text-text-secondary"
-                    }`}>{plan.discount}</span>
+                  {plan.price && (
+                    <div className="mt-2.5">
+                      <span className="text-base font-black text-text-primary">{plan.price}</span>
+                    </div>
                   )}
+                  {plan.bonus && <div className="mt-1 text-xs font-bold text-accent-bright">{plan.bonus}</div>}
+                  {plan.validity && <div className="mt-0.5 text-[0.7rem] text-text-muted">{plan.validity}</div>}
                 </div>
               );
             })}

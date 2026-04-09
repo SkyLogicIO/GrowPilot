@@ -122,7 +122,7 @@ export default function FaceSwapModal({ open, onClose }: FaceSwapModalProps) {
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center px-6" style={{ zIndex: 100000 }}>
       <div
         ref={rootRef}
-        className="w-full max-w-4xl rounded-2xl border border-white/10 bg-[#0F1115] shadow-2xl ring-1 ring-white/10 overflow-hidden flex flex-col max-h-[90vh]"
+        className="w-full max-w-4xl rounded-2xl border border-white/10 bg-surface shadow-2xl ring-1 ring-white/10 overflow-hidden flex flex-col max-h-[90vh]"
       >
         <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
@@ -241,7 +241,7 @@ export default function FaceSwapModal({ open, onClose }: FaceSwapModalProps) {
           </div>
         </div>
 
-        <div className="px-6 py-5 border-t border-white/10 flex justify-end gap-3 shrink-0 bg-[#0F1115]">
+        <div className="px-6 py-5 border-t border-white/10 flex justify-end gap-3 shrink-0 bg-surface">
           <button
             type="button"
             onClick={onClose}
@@ -254,7 +254,7 @@ export default function FaceSwapModal({ open, onClose }: FaceSwapModalProps) {
             type="button"
             onClick={handleGenerate}
             disabled={isGenerating || !inputImage || !sourceImage}
-            className="px-8 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+            className="px-8 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-accent/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
           >
             {isGenerating ? (
               <>

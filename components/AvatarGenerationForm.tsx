@@ -100,7 +100,7 @@ export default function AvatarGenerationForm({ isGenerating, onGenerate }: Avata
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="请输入数字人形象、口播风格、场景与需要输出的内容…"
           disabled={isGenerating}
-          className="h-[180px] w-full resize-none rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
+          className="h-[180px] w-full resize-none rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-accent-light transition-colors disabled:opacity-50"
         />
       </div>
 
@@ -117,7 +117,7 @@ export default function AvatarGenerationForm({ isGenerating, onGenerate }: Avata
           type="button"
           onClick={handleSubmit}
           disabled={isGenerating || !prompt.trim()}
-          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-accent/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
         >
           {isGenerating ? (
             <>

@@ -69,14 +69,14 @@ export default function ComingSoonModal({
 
         {/* 标签 */}
         <div className="flex justify-center gap-2 mb-6">
-          <span className="brut-tag bg-[#FFD93D] text-black">即将上线</span>
-          <span className="brut-tag bg-[#4ECDC4] text-white">敬请期待</span>
+          <span className="brut-tag bg-accent text-black">即将上线</span>
+          <span className="brut-tag bg-teal-500 text-white">敬请期待</span>
         </div>
 
         {/* 按钮 */}
         <button
           onClick={onClose}
-          className="brut-btn bg-accent text-white px-8 py-3 text-base w-full"
+          className="brut-btn-primary px-8 py-3 text-base w-full"
         >
           我知道了
         </button>

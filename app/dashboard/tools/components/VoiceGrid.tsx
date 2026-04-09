@@ -18,7 +18,7 @@ export default function VoiceGrid({ voices, selectedId, onSelect }: VoiceGridPro
       {voices.map((v) => {
         const selected = selectedId === v.id;
         const isMale = v.tags.includes("成年男声") || v.tags.includes("童年男声");
-        const avatarBg = isMale ? "bg-[#74B9FF]" : "bg-[#FFB3C6]";
+        const avatarBg = isMale ? "bg-cyan-500" : "bg-pink-500";
         return (
           <button
             key={v.id}
@@ -44,7 +44,7 @@ export default function VoiceGrid({ voices, selectedId, onSelect }: VoiceGridPro
                     <span
                       key={t}
                       className={`brut-tag ${
-                        t.includes("男") ? "bg-[#74B9FF]/20 text-text-primary" : "bg-[#FFB3C6]/20 text-text-primary"
+                        t.includes("男") ? "bg-cyan-500/20 text-text-primary" : "bg-pink-500/20 text-text-primary"
                       }`}
                     >
                       {t}

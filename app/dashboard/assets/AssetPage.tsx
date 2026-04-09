@@ -402,7 +402,7 @@ export default function AssetPage({
             <button
               type="button"
               onClick={() => setAddAssetOpen(true)}
-              className="h-10 px-5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition-colors shadow-lg shadow-blue-500/20"
+              className="h-10 px-5 rounded-full bg-accent hover:bg-accent-light text-white text-sm font-bold transition-colors shadow-lg shadow-accent/30"
             >
               添加素材
             </button>
@@ -482,10 +482,10 @@ export default function AssetPage({
               <select
                 value={activeOrientation}
                 onChange={(e) => setActiveOrientation(e.target.value)}
-                className="h-9 px-4 rounded-full bg-white/5 border border-white/10 text-gray-200 text-sm font-semibold focus:outline-none focus:border-blue-500 transition-colors"
+                className="h-9 px-4 rounded-full bg-white/5 border border-white/10 text-gray-200 text-sm font-semibold focus:outline-none focus:border-accent-light transition-colors"
               >
                 {ORIENTATIONS.map((item) => (
-                  <option key={item} value={item} className="bg-[#0F1115]">
+                  <option key={item} value={item} className="bg-surface">
                     {item}
                   </option>
                 ))}
@@ -546,7 +546,7 @@ export default function AssetPage({
                         e.stopPropagation();
                         await tryCopy(item.copyText);
                       }}
-                      className="px-4 h-10 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
+                      className="px-4 h-10 rounded-full bg-accent hover:bg-accent-light text-white text-sm font-bold transition-all shadow-lg shadow-accent/30 flex items-center justify-center gap-2"
                     >
                       <Copy size={16} className="text-white" />
                       一键复制

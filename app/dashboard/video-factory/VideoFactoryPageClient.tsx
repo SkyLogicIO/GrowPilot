@@ -94,7 +94,7 @@ export default function VideoFactoryPageClient() {
           <ArrowLeft size={18} className="text-text-secondary" />
         </Link>
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-[#74B9FF] border-2 border-border flex items-center justify-center shadow-[3px_3px_0px_#1A1A1A]">
+          <div className="w-12 h-12 rounded-xl bg-cyan-500 border-2 border-border flex items-center justify-center shadow-[3px_3px_0px_#1A1A1A]">
             <Video size={22} className="text-text-primary" />
           </div>
           <div>
@@ -148,7 +148,7 @@ export default function VideoFactoryPageClient() {
                         download="video.mp4"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="brut-btn bg-accent text-white px-6 py-2.5"
+                        className="brut-btn-primary px-6 py-2.5"
                       >
                         下载视频
                       </a>
@@ -165,7 +165,7 @@ export default function VideoFactoryPageClient() {
           <div className="brut-card-static p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-black text-text-primary">生成历史</h3>
-              <span className="brut-tag bg-[#74B9FF] text-text-primary">
+              <span className="brut-tag bg-cyan-500 text-text-primary">
                 {videoProjects.length}
               </span>
             </div>

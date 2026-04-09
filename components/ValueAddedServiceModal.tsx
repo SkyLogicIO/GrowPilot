@@ -118,11 +118,11 @@ export default function ValueAddedServiceModal({ open, onClose, defaultProjectNa
 
   return (
     <div className="fixed inset-0 bg-transparent flex items-center justify-center px-6" style={{ zIndex: 100000 }}>
-      <div ref={rootRef} className="w-full max-w-2xl rounded-2xl border border-white/10 bg-[#0F1115] shadow-2xl ring-1 ring-white/10 overflow-hidden">
+      <div ref={rootRef} className="w-full max-w-2xl rounded-2xl border border-white/10 bg-surface shadow-2xl ring-1 ring-white/10 overflow-hidden">
         <div className="px-5 py-3 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center">
-              <BadgeDollarSign size={18} className="text-blue-200" />
+              <BadgeDollarSign size={18} className="text-accent-bright" />
             </div>
             <div>
               <div className="text-lg font-bold text-white">联系专属客服</div>
@@ -166,7 +166,7 @@ export default function ValueAddedServiceModal({ open, onClose, defaultProjectNa
                 <button
                   type="button"
                   onClick={onClose}
-                  className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors shadow-lg shadow-blue-500/20"
+                  className="h-11 px-5 rounded-xl bg-accent hover:bg-accent-light text-white font-bold transition-colors shadow-lg shadow-accent/30"
                 >
                   关闭
                 </button>
@@ -181,7 +181,7 @@ export default function ValueAddedServiceModal({ open, onClose, defaultProjectNa
                     value={contact}
                     onChange={(e) => setContact(e.target.value)}
                     placeholder="必填：手机号/微信/邮箱（任选其一）"
-                    className="w-full h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-500 focus:outline-none focus:border-accent-light transition-colors"
                   />
                 </div>
 
@@ -191,7 +191,7 @@ export default function ValueAddedServiceModal({ open, onClose, defaultProjectNa
                     value={projectName}
                     onChange={(e) => setProjectName(e.target.value)}
                     placeholder="可选：例如“房产项目 15 秒短视频”"
-                    className="w-full h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-500 focus:outline-none focus:border-accent-light transition-colors"
                   />
                 </div>
               </div>
@@ -202,7 +202,7 @@ export default function ValueAddedServiceModal({ open, onClose, defaultProjectNa
                   value={goal}
                   onChange={(e) => setGoal(e.target.value)}
                   placeholder="可选：例如“短视频脚本 / 海报设计 / 投放素材 / 代运营咨询”"
-                  className="w-full h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-500 focus:outline-none focus:border-accent-light transition-colors"
                 />
                 <div className="text-xs text-gray-500">建议写清楚：渠道（抖音/小红书/朋友圈）、数量、时长/尺寸、交付格式。</div>
               </div>
@@ -213,7 +213,7 @@ export default function ValueAddedServiceModal({ open, onClose, defaultProjectNa
                   value={requirement}
                   onChange={(e) => setRequirement(e.target.value)}
                   placeholder="必填：请描述你的需求（行业/产品、目标人群、预算范围、期望风格、时间节点等）"
-                  className="w-full h-28 resize-none rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full h-28 resize-none rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-accent-light transition-colors"
                 />
               </div>
 
@@ -223,7 +223,7 @@ export default function ValueAddedServiceModal({ open, onClose, defaultProjectNa
                   value={assets}
                   onChange={(e) => setAssets(e.target.value)}
                   placeholder="可选：粘贴素材链接、参考视频/图片、品牌规范、竞品链接等（多行输入）"
-                  className="w-full h-24 resize-none rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full h-24 resize-none rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-accent-light transition-colors"
                 />
               </div>
 
@@ -241,7 +241,7 @@ export default function ValueAddedServiceModal({ open, onClose, defaultProjectNa
                   type="button"
                   onClick={submit}
                   disabled={submitting}
-                  className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-60 disabled:hover:bg-blue-600 text-white font-bold transition-colors shadow-lg shadow-blue-500/20"
+                  className="h-11 px-5 rounded-xl bg-accent hover:bg-accent-light disabled:opacity-60 disabled:hover:bg-accent text-white font-bold transition-colors shadow-lg shadow-accent/30"
                 >
                   {submitting ? "提交中..." : "提交"}
                 </button>

@@ -1,32 +1,42 @@
 @import "tailwindcss";
 
 @theme {
-  /* ── Dark Warm 色彩系统 ── */
-  --color-background: #0C0A09;
-  --color-surface: rgba(28, 25, 23, 0.6);
-  --color-surface-hover: rgba(41, 37, 36, 0.8);
+  /* ── 暗蓝主题色彩系统 ── */
+  --color-background: #040912;
+  --color-surface: rgba(10, 18, 40, 0.75);
+  --color-surface-hover: rgba(20, 33, 63, 0.8);
+  --color-surface-alt: rgba(6, 12, 28, 0.85);
+  --color-surface-raised: rgba(15, 26, 55, 0.9);
 
-  /* 暖色强调调色盘 */
-  --color-accent: #F59E0B;
-  --color-accent-hover: #D97706;
+  /* 主色调：亮蓝 — 更亮更鲜艳 */
+  --color-accent: #2563EB;
+  --color-accent-light: #3B82F6;
+  --color-accent-bright: #60A5FA;
+  --color-accent-hover: #1D4ED8;
+  --color-accent-glow: rgba(37, 99, 235, 0.4);
+
+  /* 辅助色（冷色调） */
   --color-yellow: #FBBF24;
   --color-teal: #2DD4BF;
   --color-green: #34D399;
-  --color-purple: #C084FC;
+  --color-purple: #A78BFA;
   --color-blue: #60A5FA;
   --color-pink: #F472B6;
   --color-rose: #FB7185;
-  --color-coral: #F97316;
+  --color-cyan: #22D3EE;
+  --color-sky: #38BDF8;
 
   /* 文字 */
-  --color-text-primary: #FAFAF9;
-  --color-text-secondary: #A8A29E;
-  --color-text-muted: #78716C;
+  --color-text-primary: #EFF6FF;
+  --color-text-secondary: #93C5FD;
+  --color-text-muted: #4B6FA8;
 
   /* 边框 */
-  --color-border: rgba(255, 255, 255, 0.08);
-  --color-border-light: rgba(255, 255, 255, 0.04);
+  --color-border: rgba(96, 165, 250, 0.12);
+  --color-border-light: rgba(96, 165, 250, 0.06);
+  --color-border-accent: rgba(59, 130, 246, 0.35);
 
+  /* 状态色 */
   --color-success: #34D399;
   --color-warning: #FBBF24;
   --color-error: #F87171;
@@ -49,8 +59,11 @@ body {
   font-family: var(--font-body);
   background-color: var(--color-background);
   color: var(--color-text-primary);
-  /* 微妙的暖色径向渐变，打破纯黑平面感 */
-  background-image: radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.04) 0%, transparent 60%);
+  /* 深邃暗蓝径向渐变 */
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(37, 99, 235, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(15, 23, 64, 0.3) 0%, transparent 70%);
   background-attachment: fixed;
 }
 
@@ -61,26 +74,26 @@ body::after {
   inset: 0;
   z-index: 9999;
   pointer-events: none;
-  opacity: 0.03;
+  opacity: 0.018;
   background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='a'><feTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='300' height='300' filter='url(%23a)'/></svg>");
   background-repeat: repeat;
   background-size: 300px 300px;
 }
 
 ::selection {
-  background: rgba(245, 158, 11, 0.3);
-  color: var(--color-text-primary);
+  background: rgba(37, 99, 235, 0.4);
+  color: #EFF6FF;
 }
 
 /* ══════════════════════════════════
-   Dark Glass 组件系统
+   Dark Blue Glass 组件系统
 ══════════════════════════════════ */
 
 .brut-card {
-  background: rgba(28, 25, 23, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 18, 40, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(96, 165, 250, 0.1);
   border-radius: 16px;
   transition: transform var(--duration-fast) var(--ease-smooth),
               border-color var(--duration-fast) var(--ease-smooth),
@@ -89,8 +102,8 @@ body::after {
 
 .brut-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(245, 158, 11, 0.15);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(245, 158, 11, 0.05);
+  border-color: rgba(59, 130, 246, 0.28);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(59, 130, 246, 0.1), 0 0 24px rgba(37, 99, 235, 0.08);
 }
 
 .brut-card:active {
@@ -98,53 +111,107 @@ body::after {
 }
 
 .brut-card-static {
-  background: rgba(28, 25, 23, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 18, 40, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(96, 165, 250, 0.1);
   border-radius: 16px;
 }
 
+/* ── 基础按钮（方形圆角） */
 .brut-btn {
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(96, 165, 250, 0.18);
   border-radius: 12px;
-  font-weight: 700;
+  font-weight: 600;
   transition: all var(--duration-fast) var(--ease-smooth);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(15, 30, 65, 0.6);
   backdrop-filter: blur(8px);
 }
 
 .brut-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(25, 45, 90, 0.75);
+  border-color: rgba(96, 165, 250, 0.4);
+  box-shadow: 0 0 12px rgba(37, 99, 235, 0.15);
   transform: translateY(-1px);
 }
 
 .brut-btn:active {
   transform: translateY(0);
+  box-shadow: none;
 }
 
+/* ── 胶囊按钮 */
 .brut-btn-pill {
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(96, 165, 250, 0.18);
   border-radius: 999px;
-  font-weight: 700;
+  font-weight: 600;
   transition: all var(--duration-fast) var(--ease-smooth);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(15, 30, 65, 0.6);
   backdrop-filter: blur(8px);
 }
 
 .brut-btn-pill:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(25, 45, 90, 0.75);
+  border-color: rgba(96, 165, 250, 0.4);
+  box-shadow: 0 0 12px rgba(37, 99, 235, 0.15);
   transform: translateY(-1px);
 }
 
 .brut-btn-pill:active {
   transform: translateY(0);
+  box-shadow: none;
 }
 
+/* ── 主 CTA 按钮（最重要可执行按钮） */
+.brut-btn-primary {
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  border-radius: 12px;
+  font-weight: 700;
+  transition: all var(--duration-fast) var(--ease-smooth);
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  color: #FFFFFF;
+  box-shadow: 0 0 16px rgba(37, 99, 235, 0.35), 0 2px 8px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.brut-btn-primary:hover {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  border-color: rgba(96, 165, 250, 0.7);
+  box-shadow: 0 0 24px rgba(59, 130, 246, 0.5), 0 4px 16px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.brut-btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.25);
+}
+
+/* ── 主 CTA 胶囊按钮 */
+.brut-btn-primary-pill {
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  border-radius: 999px;
+  font-weight: 700;
+  transition: all var(--duration-fast) var(--ease-smooth);
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  color: #FFFFFF;
+  box-shadow: 0 0 16px rgba(37, 99, 235, 0.35), 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.brut-btn-primary-pill:hover {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  border-color: rgba(96, 165, 250, 0.7);
+  box-shadow: 0 0 28px rgba(59, 130, 246, 0.55), 0 4px 16px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.brut-btn-primary-pill:active {
+  transform: translateY(0);
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.25);
+}
+
+/* ── 标签 */
 .brut-tag {
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(96, 165, 250, 0.2);
   border-radius: 8px;
   font-weight: 700;
   font-size: 0.7rem;
@@ -166,8 +233,14 @@ body::after {
   to { opacity: 1; }
 }
 
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 16px rgba(37, 99, 235, 0.35), 0 2px 8px rgba(0,0,0,0.3); }
+  50% { box-shadow: 0 0 28px rgba(59, 130, 246, 0.55), 0 4px 16px rgba(0,0,0,0.3); }
+}
+
 .animate-fade-up { animation: fade-up 0.45s var(--ease-smooth) both; }
 .animate-fade-in { animation: fade-in 0.3s ease-out both; }
+.animate-glow { animation: glow-pulse 2.5s ease-in-out infinite; }
 
 .delay-1 { animation-delay: 50ms; }
 .delay-2 { animation-delay: 100ms; }
@@ -180,9 +253,14 @@ body::after {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(96, 165, 250, 0.15);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(96, 165, 250, 0.3);
+}
+
+/* ── 输入框全局增强 ── */
+input, textarea, select {
+  color-scheme: dark;
 }

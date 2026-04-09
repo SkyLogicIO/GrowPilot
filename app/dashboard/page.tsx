@@ -30,7 +30,7 @@ export default function DashboardHomePage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link href="/dashboard/ideas" className="px-4 py-2 rounded-xl text-sm font-bold inline-flex items-center gap-2 bg-accent text-stone-900 hover:bg-amber-400 transition-colors">
+          <Link href="/dashboard/ideas" className="px-4 py-2 rounded-xl text-sm font-bold inline-flex items-center gap-2 brut-btn-primary transition-colors">
             <Sparkles size={14} /> 收藏的灵感
           </Link>
           <Link href="/dashboard/assets/hot" className="brut-btn text-text-primary px-4 py-2 text-sm inline-flex items-center gap-2">

@@ -53,9 +53,9 @@ export default function HomePageClient() {
       description: "输入一句创意或一张图片，AI 自动生成高品质营销短视频",
       icon: Video,
       action: "立即生成",
-      bg: "bg-[#74B9FF]",
+      bg: "bg-cyan-500",
       tag: "视频",
-      tagBg: "bg-[#C77DFF] text-white",
+      tagBg: "bg-purple-500/20 text-purple-300 border-purple-500/30",
       implemented: true,
     },
     {
@@ -63,9 +63,9 @@ export default function HomePageClient() {
       description: "一句话生成营销海报、商品主图与创意插画，告别设计外包",
       icon: ImageIcon,
       action: "开始绘图",
-      bg: "bg-[#C77DFF]",
+      bg: "bg-violet-500",
       tag: "绘图",
-      tagBg: "bg-[#FFB3C6] text-black",
+      tagBg: "bg-pink-500/20 text-pink-300 border-pink-500/30",
       implemented: true,
     },
     {
@@ -73,9 +73,9 @@ export default function HomePageClient() {
       description: "一键抠图去背景、智能换场景、擦除多余元素，商品图秒变大片",
       icon: Scissors,
       action: "开始编辑",
-      bg: "bg-[#4ECDC4]",
+      bg: "bg-teal-500",
       tag: "编辑",
-      tagBg: "bg-[#FFD93D] text-black",
+      tagBg: "bg-teal-500/20 text-teal-300 border-teal-500/30",
       implemented: false,
     },
     {
@@ -83,9 +83,9 @@ export default function HomePageClient() {
       description: "上传服装与模特照片，AI 自动生成真实换装效果，电商必备利器",
       icon: Shirt,
       action: "立即换装",
-      bg: "bg-[#FFD93D]",
+      bg: "bg-accent-light",
       tag: "换装",
-      tagBg: "bg-[#FF6B6B] text-white",
+      tagBg: "bg-rose-500/20 text-rose-300 border-rose-500/30",
       implemented: false,
     },
     {
@@ -93,9 +93,9 @@ export default function HomePageClient() {
       description: "框选不满意的区域，AI 精准重绘，哪里不满意改哪里",
       icon: Paintbrush,
       action: "开始重绘",
-      bg: "bg-[#FFB3C6]",
+      bg: "bg-indigo-500",
       tag: "重绘",
-      tagBg: "bg-[#4ECDC4] text-white",
+      tagBg: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
       implemented: false,
     },
     {
@@ -103,9 +103,9 @@ export default function HomePageClient() {
       description: "对话式生成爆款文案、直播话术、带货脚本，您的专属营销智囊",
       icon: PenLine,
       action: "生成文案",
-      bg: "bg-[#6BCB77]",
+      bg: "bg-emerald-500",
       tag: "文案",
-      tagBg: "bg-[#74B9FF] text-white",
+      tagBg: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
       implemented: true,
     },
   ];
@@ -116,13 +116,11 @@ export default function HomePageClient() {
       setComingSoonOpen(true);
       return;
     }
-    // 已登录 → 跳对应子页面
     if (isAuthed) {
       const route = FEATURE_ROUTE_MAP[feature.title];
       if (route) router.push(route);
       return;
     }
-    // 未登录 → 弹 Login
     setIsAuthOpen(true);
   };
 
@@ -141,7 +139,7 @@ export default function HomePageClient() {
         {/* ── 导航 ── */}
         <nav className="flex justify-between items-center mb-16 animate-fade-up">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-accent border-2 border-border flex items-center justify-center shadow-[3px_3px_0px_#1A1A1A]">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-accent-bright flex items-center justify-center shadow-lg shadow-accent/35">
               <Sprout size={20} className="text-white" />
             </div>
             <span className="text-xl font-black text-text-primary tracking-tight">GrowPilot</span>
@@ -151,7 +149,7 @@ export default function HomePageClient() {
             <span className="hidden md:block text-sm text-text-secondary font-medium">AI Growth Engine</span>
             <button
               onClick={handleStartCreating}
-              className="brut-btn-pill bg-accent text-white px-6 py-2.5 text-sm"
+              className="brut-btn-primary-pill px-6 py-2.5 text-sm animate-glow"
             >
               <span className="flex items-center gap-2">
                 立即创作
@@ -164,14 +162,14 @@ export default function HomePageClient() {
         {/* ── Hero ── */}
         <div className="mb-20 animate-fade-up delay-1">
           <div className="relative">
-            <div className="absolute -top-4 -left-3 w-14 h-14 bg-[#FFD93D] rounded-xl border-2 border-border opacity-60 rotate-[-8deg]" />
-            <div className="absolute -top-2 right-12 w-8 h-8 bg-[#4ECDC4] rounded-full border-2 border-border opacity-50" />
-            <div className="absolute top-10 right-0 w-10 h-10 bg-[#FFB3C6] rounded-lg border-2 border-border opacity-50 rotate-6" />
+            <div className="absolute -top-4 -left-3 w-14 h-14 bg-accent/15 rounded-xl opacity-60 rotate-[-8deg] blur-sm" />
+            <div className="absolute -top-2 right-12 w-8 h-8 bg-cyan-500/15 rounded-full opacity-50 blur-sm" />
+            <div className="absolute top-10 right-0 w-10 h-10 bg-purple-500/15 rounded-lg opacity-50 rotate-6 blur-sm" />
 
             <div className="relative z-10 max-w-2xl">
               <div className="inline-flex items-center gap-2 mb-6">
-                <span className="brut-tag bg-[#FFD93D] text-black">AI 增长平台</span>
-                <span className="brut-tag bg-[#4ECDC4] text-white">营销创作者专属</span>
+                <span className="brut-tag bg-accent/15 text-accent border-accent/25">AI 增长平台</span>
+                <span className="brut-tag bg-cyan-500/15 text-cyan-300 border-cyan-500/25">营销创作者专属</span>
               </div>
 
               <h1 className="text-5xl md:text-7xl font-black leading-[1.05] tracking-tight mb-6 text-text-primary">
@@ -179,11 +177,11 @@ export default function HomePageClient() {
                 <br />
                 <span className="relative inline-block">
                   <span className="relative z-10">帮您成就增长</span>
-                  <span className="absolute bottom-1 left-0 right-0 h-4 bg-[#FFD93D] z-0 -rotate-1" />
+                  <span className="absolute bottom-1 left-0 right-0 h-4 bg-accent/25 z-0 -rotate-1 rounded" />
                 </span>
               </h1>
 
-              <p className="text-text-primary text-lg leading-relaxed mb-10 max-w-lg font-medium opacity-80">
+              <p className="text-text-secondary text-lg leading-relaxed mb-10 max-w-lg font-medium">
                 AI 生图、生视频、智能编辑、模特换装、营销文案，
                 一站式 AI 视觉营销工具集，为电商与设计团队而生。
               </p>
@@ -191,7 +189,7 @@ export default function HomePageClient() {
               <div className="flex items-center gap-4 flex-wrap">
                 <button
                   onClick={handleStartCreating}
-                  className="brut-btn bg-accent text-white px-8 py-3.5 text-base"
+                  className="brut-btn-primary px-8 py-3.5 text-base"
                 >
                   <span className="flex items-center gap-2">
                     免费开始
@@ -201,7 +199,7 @@ export default function HomePageClient() {
                 <button
                   type="button"
                   onClick={handleStartCreating}
-                  className="brut-btn bg-surface text-text-primary px-8 py-3.5 text-base font-bold"
+                  className="brut-btn text-text-primary px-8 py-3.5 text-base font-bold"
                 >
                   了解更多
                 </button>
@@ -214,7 +212,7 @@ export default function HomePageClient() {
         <div className="mb-20 animate-fade-up delay-2">
           <div className="flex items-center gap-3 mb-8">
             <h2 className="text-2xl font-black text-text-primary">核心能力</h2>
-            <span className="brut-tag bg-accent text-white">6 个模块</span>
+            <span className="brut-tag bg-accent/15 text-accent border-accent/25">6 个模块</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -226,8 +224,8 @@ export default function HomePageClient() {
                   onClick={() => handleFeatureClick(feature)}
                   className={`animate-fade-up delay-${Math.min(index + 1, 6)} group brut-card p-6 cursor-pointer`}
                 >
-                  <div className={`w-12 h-12 rounded-xl ${feature.bg} border-2 border-border flex items-center justify-center mb-5 shadow-[2px_2px_0px_#1A1A1A] group-hover:shadow-[3px_3px_0px_#1A1A1A] transition-shadow`}>
-                    <Icon size={22} className="text-text-primary" />
+                  <div className={`w-12 h-12 rounded-xl ${feature.bg} flex items-center justify-center mb-5 shadow-lg`}>
+                    <Icon size={22} className="text-white" />
                   </div>
 
                   <div className="flex items-start justify-between mb-2">
@@ -244,7 +242,7 @@ export default function HomePageClient() {
                   <button
                     type="button"
                     onClick={() => handleFeatureClick(feature)}
-                    className={`brut-btn ${feature.bg} text-text-primary px-4 py-2 text-sm w-full`}
+                    className={`brut-btn ${feature.bg} text-white px-4 py-2 text-sm w-full shadow-lg`}
                   >
                     <span className="flex items-center justify-center gap-2">
                       {feature.implemented ? feature.action : "敬请期待"}
@@ -258,17 +256,17 @@ export default function HomePageClient() {
         </div>
 
         {/* ── CTA 横幅 ── */}
-        <div className="brut-card bg-[#FFD93D] p-10 text-center mb-8 animate-fade-up delay-4">
+        <div className="brut-card bg-gradient-to-r from-accent/15 via-cyan-500/10 to-purple-500/15 p-10 text-center mb-8 animate-fade-up delay-4 border-accent/15">
           <div className="flex justify-center gap-2 mb-5">
-            <span className="brut-tag bg-accent text-white">限时免费</span>
-            <span className="brut-tag bg-[#4ECDC4] text-white">即刻开始</span>
+            <span className="brut-tag bg-accent text-white border-accent">限时免费</span>
+            <span className="brut-tag bg-cyan-500 text-white border-cyan-500">即刻开始</span>
           </div>
           <h2 className="text-3xl md:text-4xl font-black text-text-primary mb-3">
             种下创意，收获增长
           </h2>
           <p className="text-text-secondary font-medium mb-8">加入数千名营销创作者的行列</p>
           <button
-            className="brut-btn bg-text-primary text-white px-10 py-4 text-lg"
+            className="brut-btn-primary px-10 py-4 text-lg"
             onClick={handleStartCreating}
           >
             立即体验 →

@@ -189,7 +189,7 @@ export default function AddAssetModal({ open, onClose, onAdd }: AddAssetModalPro
 
   return (
     <div className="fixed inset-0 bg-transparent flex items-center justify-center px-6" style={{ zIndex: 100000 }}>
-      <div ref={rootRef} className="w-full max-w-2xl rounded-2xl border border-white/10 bg-[#0F1115] shadow-2xl ring-1 ring-white/10 overflow-hidden">
+      <div ref={rootRef} className="w-full max-w-2xl rounded-2xl border border-white/10 bg-surface shadow-2xl ring-1 ring-white/10 overflow-hidden">
         <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
           <div className="text-lg font-bold text-white">添加素材</div>
           <button
@@ -231,10 +231,10 @@ export default function AddAssetModal({ open, onClose, onAdd }: AddAssetModalPro
                 <select
                   value={scene}
                   onChange={(e) => setScene(e.target.value as SceneKey)}
-                  className="w-full h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-medium focus:outline-none focus:border-blue-500 transition-colors appearance-none"
+                  className="w-full h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-medium focus:outline-none focus:border-accent-light transition-colors appearance-none"
                 >
                   {(Object.keys(SCENE_CONFIG) as SceneKey[]).map((s) => (
-                    <option key={s} value={s} className="bg-[#0F1115]">
+                    <option key={s} value={s} className="bg-surface">
                       {s}
                     </option>
                   ))}
@@ -245,7 +245,7 @@ export default function AddAssetModal({ open, onClose, onAdd }: AddAssetModalPro
                 onClick={() => setShowGuide(!showGuide)}
                 className={`h-11 px-4 rounded-xl border flex items-center gap-2 text-sm font-medium transition-colors ${
                   showGuide
-                    ? "bg-blue-600 border-blue-600 text-white"
+                    ? "bg-accent border-blue-600 text-white"
                     : "bg-white/5 border-white/10 text-gray-300 hover:text-white hover:bg-white/10"
                 }`}
               >
@@ -255,8 +255,8 @@ export default function AddAssetModal({ open, onClose, onAdd }: AddAssetModalPro
             </div>
 
             {showGuide && (
-              <div className="rounded-xl bg-blue-500/10 border border-blue-500/20 p-4 flex gap-3 items-start animate-in fade-in slide-in-from-top-2 duration-200">
-                <Info size={18} className="text-blue-300 shrink-0 mt-0.5" />
+              <div className="rounded-xl bg-accent/10 border border-accent-light/30 p-4 flex gap-3 items-start animate-in fade-in slide-in-from-top-2 duration-200">
+                <Info size={18} className="text-accent-bright shrink-0 mt-0.5" />
                 <div className="text-sm text-blue-100 leading-relaxed">{currentSceneConfig.guide}</div>
               </div>
             )}
@@ -269,7 +269,7 @@ export default function AddAssetModal({ open, onClose, onAdd }: AddAssetModalPro
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="必填：例如‘门店海报’"
-                className="w-full h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-500 focus:outline-none focus:border-accent-light transition-colors"
               />
             </div>
 
@@ -281,7 +281,7 @@ export default function AddAssetModal({ open, onClose, onAdd }: AddAssetModalPro
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="可选：例如‘用于门店引流’"
-                  className="w-full h-11 pl-10 pr-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full h-11 pl-10 pr-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-500 focus:outline-none focus:border-accent-light transition-colors"
                 />
               </div>
             </div>
@@ -294,7 +294,7 @@ export default function AddAssetModal({ open, onClose, onAdd }: AddAssetModalPro
                 tags.map((tag) => (
                   <span
                     key={tag}
-                    className="h-7 px-2 rounded-lg bg-blue-600/20 border border-blue-500/30 text-blue-200 text-xs font-semibold flex items-center gap-1"
+                    className="h-7 px-2 rounded-lg bg-accent/20 border border-accent-light/30 text-accent-bright text-xs font-semibold flex items-center gap-1"
                   >
                     {tag}
                     <button onClick={() => removeTag(tag)} className="hover:text-white">
@@ -313,7 +313,7 @@ export default function AddAssetModal({ open, onClose, onAdd }: AddAssetModalPro
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={handleTagInputKeyDown}
                 placeholder="输入自定义标签，按回车添加"
-                className="w-full h-9 px-3 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full h-9 px-3 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-accent-light transition-colors"
               />
             </div>
 
@@ -350,7 +350,7 @@ export default function AddAssetModal({ open, onClose, onAdd }: AddAssetModalPro
                     value={linkUrl}
                     onChange={(e) => setLinkUrl(e.target.value)}
                     placeholder="必填：请输入 URL（http(s)）"
-                    className="w-full h-11 pl-10 pr-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-11 pl-10 pr-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-500 focus:outline-none focus:border-accent-light transition-colors"
                   />
                 </div>
                 <div className="text-xs text-gray-500">仅保存链接地址（无后端存储）。</div>
@@ -389,7 +389,7 @@ export default function AddAssetModal({ open, onClose, onAdd }: AddAssetModalPro
             <button
               type="button"
               onClick={submit}
-              className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-colors shadow-lg shadow-blue-500/20"
+              className="h-11 px-5 rounded-xl bg-accent hover:bg-accent-light text-white font-bold transition-colors shadow-lg shadow-accent/30"
             >
               添加
             </button>

@@ -183,7 +183,7 @@ export default function MarketingAssistantPageClient() {
         <div className="border-r-2 border-border bg-surface-hover">
           <div className="p-5">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-accent border-2 border-border flex items-center justify-center shadow-[2px_2px_0px_#1A1A1A]">
+              <div className="w-9 h-9 rounded-xl bg-accent border-2 border-border flex items-center justify-center shadow-md">
                 <Bot size={18} className="text-white" />
               </div>
               <div className="min-w-0">
@@ -203,7 +203,7 @@ export default function MarketingAssistantPageClient() {
                 const id = `t_${now}`;
                 setActiveThreadId(id);
               }}
-              className="mt-5 w-full h-10 rounded-xl bg-surface border-2 border-border text-sm font-bold text-text-primary hover:bg-surface-hover transition-colors flex items-center justify-center gap-2 shadow-[2px_2px_0px_#1A1A1A] active:translate-y-0.5 active:shadow-[1px_1px_0px_#1A1A1A]"
+              className="mt-5 w-full h-10 rounded-xl bg-surface border-2 border-border text-sm font-bold text-text-primary hover:bg-surface-hover transition-colors flex items-center justify-center gap-2 shadow-md active:translate-y-0.5 active:shadow-sm"
             >
               <Plus size={16} />
               新对话
@@ -274,7 +274,7 @@ export default function MarketingAssistantPageClient() {
                         onClick={() => setActiveTool(t.key)}
                         className={`h-10 px-4 rounded-xl border-2 transition-colors flex items-center gap-2 ${
                           active
-                            ? "bg-accent border-border text-white shadow-[2px_2px_0px_#1A1A1A]"
+                            ? "bg-accent border-border text-white shadow-md"
                             : "bg-surface border-border text-text-secondary hover:bg-surface-hover"
                         } font-bold`}
                       >
@@ -341,7 +341,7 @@ export default function MarketingAssistantPageClient() {
 
           {/* 输入区域 */}
           <div className="px-6 py-4 border-t-2 border-border bg-surface">
-            <div className="rounded-xl border-2 border-border bg-surface-hover overflow-hidden shadow-[3px_3px_0px_#1A1A1A]">
+            <div className="rounded-xl border-2 border-border bg-surface-hover overflow-hidden shadow-lg">
               <div className="px-4 py-3">
                 <textarea
                   value={draft}
@@ -366,7 +366,7 @@ export default function MarketingAssistantPageClient() {
                   type="button"
                   onClick={send}
                   disabled={isSendingRef.current || !draft.trim()}
-                  className="h-10 px-5 rounded-xl bg-accent border-2 border-border text-white font-bold transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-[3px_3px_0px_#1A1A1A] hover:shadow-[4px_4px_0px_#1A1A1A] active:translate-y-0.5 active:shadow-[1px_1px_0px_#1A1A1A]"
+                  className="h-10 px-5 rounded-xl brut-btn-primary font-bold transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSendingRef.current ? (
                     <Loader2 size={16} className="animate-spin" />

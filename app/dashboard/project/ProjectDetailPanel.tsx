@@ -36,7 +36,7 @@ export default function ProjectDetailPanel({ details, onClose }: ProjectDetailPa
     <div className="h-full rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
       <div className="h-full grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_420px]">
         <div className="p-5 overflow-auto">
-          <div className="rounded-2xl bg-[#0F1115] border border-white/5 overflow-hidden">
+          <div className="rounded-2xl bg-surface border border-white/5 overflow-hidden">
             <img src={details.cover} alt={details.name} className="w-full h-auto block" />
           </div>
         </div>
@@ -47,7 +47,7 @@ export default function ProjectDetailPanel({ details, onClose }: ProjectDetailPa
               <div className="mt-2 text-lg font-extrabold text-white leading-snug line-clamp-2">{details.name}</div>
               <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-gray-300">
                 <div>更新于：{formatProjectTime(details.updatedAt)}</div>
-                {details.statusText ? <div className="text-blue-200 font-semibold">{details.statusText}</div> : null}
+                {details.statusText ? <div className="text-accent-bright font-semibold">{details.statusText}</div> : null}
               </div>
             </div>
 

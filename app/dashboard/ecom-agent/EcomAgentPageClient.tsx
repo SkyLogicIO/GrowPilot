@@ -17,6 +17,9 @@ import {
   MessageSquare,
   Play,
   ImageIcon,
+  Globe,
+  ShoppingBag,
+  Target,
 } from "lucide-react";
 import {
   chatWithGemini,
@@ -38,6 +41,113 @@ import {
 } from "@/lib/storage/ecom-chat";
 import { useMediaStore } from "@/hooks/useMediaStore";
 import MediaGallery from "./MediaGallery";
+
+// ─── 筛选配置 ─────────────────────────────────────────────────────────
+
+const PLATFORM_OPTIONS = [
+  { value: "Amazon", label: "亚马逊" },
+  { value: "Taobao", label: "淘宝" },
+  { value: "Tmall", label: "天猫" },
+  { value: "TikTok Shop", label: "TikTok" },
+  { value: "TEMU", label: "Temu" },
+  { value: "Shopify", label: "Shopify" },
+  { value: "Shopee", label: "虾皮" },
+  { value: "Lazada", label: "Lazada" },
+  { value: "JD.com", label: "京东" },
+  { value: "Pinduoduo", label: "拼多多" },
+];
+
+const INTENT_OPTIONS = [
+  { value: "写产品文案", label: "产品文案" },
+  { value: "写卖点分析", label: "卖点分析" },
+  { value: "写拍摄脚本", label: "拍摄脚本" },
+  { value: "写短视频脚本", label: "短视频脚本" },
+  { value: "写直播话术", label: "直播话术" },
+  { value: "做产品图设计", label: "产品图设计" },
+  { value: "写标题优化", label: "标题优化" },
+  { value: "写SEO描述", label: "SEO描述" },
+  { value: "写竞品分析", label: "竞品分析" },
+];
+
+const LANGUAGE_OPTIONS = [
+  { value: "中文", label: "中文" },
+  { value: "英文", label: "English" },
+  { value: "日文", label: "日本語" },
+  { value: "韩文", label: "한국어" },
+  { value: "德文", label: "Deutsch" },
+  { value: "法文", label: "Français" },
+  { value: "西班牙文", label: "Español" },
+  { value: "葡萄牙文", label: "Português" },
+  { value: "阿拉伯文", label: "العربية" },
+];
+
+// ─── FilterSelect 子组件 ─────────────────────────────────────────────
+
+function FilterSelect({
+  icon,
+  options,
+  value,
+  onChange,
+  activeColor,
+}: {
+  icon: ReactNode;
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (v: string) => void;
+  activeColor: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const selected = options.find((o) => o.value === value);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: PointerEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    window.addEventListener("pointerdown", handler);
+    return () => window.removeEventListener("pointerdown", handler);
+  }, [open]);
+
+  const isActive = !!value;
+
+  return (
+    <div className="relative flex-1 min-w-0" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={`w-full flex items-center gap-1.5 px-2.5 h-7 rounded-lg border text-[11px] font-bold transition-colors truncate ${
+          isActive
+            ? `${activeColor} border-current/40`
+            : "bg-white/[0.04] border-white/[0.08] text-text-muted hover:bg-white/[0.07]"
+        }`}
+      >
+        <span className="shrink-0 opacity-70">{icon}</span>
+        <span className="truncate flex-1 text-left">{selected?.label ?? options[0].label}</span>
+        <ChevronDown size={10} className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open && (
+        <div className="absolute top-full left-0 mt-1 z-50 w-36 bg-slate-900 border border-white/[0.1] rounded-xl shadow-xl shadow-black/40 overflow-hidden py-1">
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => { onChange(opt.value); setOpen(false); }}
+              className={`w-full text-left px-3 py-1.5 text-xs transition-colors ${
+                opt.value === value
+                  ? "bg-accent/15 text-accent font-bold"
+                  : "text-text-secondary hover:bg-white/[0.04] font-medium"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── 常量 ─────────────────────────────────────────────────────────────
 
@@ -161,7 +271,7 @@ function ThreadSelector({
       </div>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-8 mt-1 z-50 bg-stone-900 border border-white/[0.08] rounded-xl shadow-xl shadow-black/40 overflow-hidden min-w-[220px] max-h-[240px] flex flex-col">
+        <div className="absolute top-full left-0 right-8 mt-1 z-50 bg-slate-900 border border-white/[0.08] rounded-xl shadow-xl shadow-black/40 overflow-hidden min-w-[220px] max-h-[240px] flex flex-col">
           <div className="flex-1 overflow-y-auto py-1">
             {threads.length === 0 && (
               <div className="px-3 py-3 text-xs text-text-muted text-center">
@@ -249,6 +359,9 @@ export default function EcomAgentPageClient() {
   const [activeThreadId, setActiveThreadId] = useState("");
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [filterPlatform, setFilterPlatform] = useState("Amazon");
+  const [filterIntent, setFilterIntent] = useState("写产品文案");
+  const [filterLang, setFilterLang] = useState("中文");
 
   const mediaStore = useMediaStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -335,6 +448,15 @@ export default function EcomAgentPageClient() {
     const text = draft.trim();
     if (!text || isSending) return;
 
+    // 拼入筛选上下文前缀
+    const contextParts: string[] = [];
+    if (filterPlatform) contextParts.push(`平台：${filterPlatform}`);
+    if (filterIntent) contextParts.push(`任务：${filterIntent}`);
+    if (filterLang) contextParts.push(`输出语言：${filterLang}`);
+    const fullText = contextParts.length > 0
+      ? `[${contextParts.join(" | ")}]\n${text}`
+      : text;
+
     setDraft("");
     setIsSending(true);
 
@@ -342,7 +464,7 @@ export default function EcomAgentPageClient() {
     const userMsg: EcomChatMessage = {
       id: `u_${now}`,
       role: "user",
-      content: text,
+      content: fullText,
       timestamp: now,
     };
     const aiMsg: EcomChatMessage = {
@@ -386,7 +508,7 @@ export default function EcomAgentPageClient() {
             role: (m.role === "assistant" ? "model" : "user") as "user" | "model",
             content: m.content,
           })),
-        { role: "user" as const, content: text },
+        { role: "user" as const, content: fullText },
       ];
 
       const reply = await chatWithGemini({
@@ -532,7 +654,7 @@ export default function EcomAgentPageClient() {
         return updated;
       });
     }
-  }, [draft, isSending, activeThread, activeThreadId, mediaStore]);
+  }, [draft, isSending, activeThread, activeThreadId, mediaStore, filterPlatform, filterIntent, filterLang]);
 
   // ── 视频生成 ──
 
@@ -629,6 +751,30 @@ export default function EcomAgentPageClient() {
 
         {/* 输入区域 */}
         <div className="px-3 py-3 border-t border-white/[0.06]">
+          {/* 三个筛选按钮 */}
+          <div className="flex gap-1.5 mb-2">
+            <FilterSelect
+              icon={<ShoppingBag size={11} />}
+              options={PLATFORM_OPTIONS}
+              value={filterPlatform}
+              onChange={setFilterPlatform}
+              activeColor="bg-accent/15 text-accent"
+            />
+            <FilterSelect
+              icon={<Target size={11} />}
+              options={INTENT_OPTIONS}
+              value={filterIntent}
+              onChange={setFilterIntent}
+              activeColor="bg-violet-500/15 text-violet-400"
+            />
+            <FilterSelect
+              icon={<Globe size={11} />}
+              options={LANGUAGE_OPTIONS}
+              value={filterLang}
+              onChange={setFilterLang}
+              activeColor="bg-emerald-500/15 text-emerald-400"
+            />
+          </div>
           <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl overflow-hidden">
             <textarea
               value={draft}

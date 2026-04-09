@@ -10,7 +10,7 @@ export default function CreateTeamModal({ isOpen, onClose }: { isOpen: boolean; 
 
   return (
     <div className="fixed inset-0 bg-transparent flex items-center justify-center px-6" style={{ zIndex: 100000 }}>
-      <div className="w-full max-w-5xl bg-[#0F1115] rounded-2xl border border-white/10 shadow-2xl ring-1 ring-white/10 overflow-hidden">
+      <div className="w-full max-w-5xl bg-surface rounded-2xl border border-white/10 shadow-2xl ring-1 ring-white/10 overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-2">
           <div className="relative p-10">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/15 via-purple-500/10 to-emerald-500/10" />
@@ -21,7 +21,7 @@ export default function CreateTeamModal({ isOpen, onClose }: { isOpen: boolean; 
               <div className="mt-10 space-y-6">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                    <ShieldCheck size={18} className="text-blue-300" />
+                    <ShieldCheck size={18} className="text-accent-bright" />
                   </div>
                   <div>
                     <div className="text-white font-semibold">会员专属可商用模型</div>
@@ -87,7 +87,7 @@ export default function CreateTeamModal({ isOpen, onClose }: { isOpen: boolean; 
                   onClick={() => setTeamSize("2-20")}
                   className={`h-12 rounded-xl border text-sm font-semibold transition-colors ${
                     teamSize === "2-20"
-                      ? "bg-blue-600/20 border-blue-500 text-white"
+                      ? "bg-accent/20 border-blue-500 text-white"
                       : "bg-white/5 border-white/10 text-gray-300 hover:bg-white/10"
                   }`}
                 >
@@ -98,7 +98,7 @@ export default function CreateTeamModal({ isOpen, onClose }: { isOpen: boolean; 
                   onClick={() => setTeamSize("20+")}
                   className={`h-12 rounded-xl border text-sm font-semibold transition-colors ${
                     teamSize === "20+"
-                      ? "bg-blue-600/20 border-blue-500 text-white"
+                      ? "bg-accent/20 border-blue-500 text-white"
                       : "bg-white/5 border-white/10 text-gray-300 hover:bg-white/10"
                   }`}
                 >
@@ -110,7 +110,7 @@ export default function CreateTeamModal({ isOpen, onClose }: { isOpen: boolean; 
             <button
               type="button"
               onClick={onClose}
-              className="mt-8 w-full h-12 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20"
+              className="mt-8 w-full h-12 bg-accent hover:bg-accent-light text-white rounded-xl font-bold transition-all shadow-lg shadow-accent/30"
             >
               免费创建团队
             </button>

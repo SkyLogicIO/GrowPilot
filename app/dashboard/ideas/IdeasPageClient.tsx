@@ -73,10 +73,10 @@ function InspirationGallery({
           <select
             value={sort}
             onChange={(e) => onChangeSort(e.target.value)}
-            className="h-9 px-4 rounded-full bg-white/5 border border-white/10 text-gray-200 text-sm font-semibold focus:outline-none focus:border-blue-500 transition-colors"
+            className="h-9 px-4 rounded-full bg-white/5 border border-white/10 text-gray-200 text-sm font-semibold focus:outline-none focus:border-accent-light transition-colors"
           >
             {["推荐", "最新"].map((item) => (
-              <option key={item} value={item} className="bg-[#0F1115]">
+              <option key={item} value={item} className="bg-surface">
                 {item}
               </option>
             ))}
