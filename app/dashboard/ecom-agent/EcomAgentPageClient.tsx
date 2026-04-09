@@ -20,6 +20,8 @@ import {
   Globe,
   ShoppingBag,
   Target,
+  Paperclip,
+  Bot,
 } from "lucide-react";
 import {
   chatWithGemini,
@@ -81,6 +83,12 @@ const LANGUAGE_OPTIONS = [
   { value: "阿拉伯文", label: "العربية" },
 ];
 
+const CHAT_MODE_OPTIONS = [
+  { value: "电商智能体", label: "电商智能体" },
+  { value: "图像生成", label: "图像生成" },
+  { value: "图像编辑", label: "图像编辑" },
+];
+
 // ─── FilterSelect 子组件 ─────────────────────────────────────────────
 
 function FilterSelect({
@@ -116,14 +124,14 @@ function FilterSelect({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`w-full flex items-center gap-1.5 px-2.5 h-7 rounded-lg border text-[11px] font-bold transition-colors truncate ${
+        className={`w-full flex items-center gap-1 px-2 h-7 rounded-lg border text-[11px] font-bold transition-colors truncate ${
           isActive
             ? `${activeColor} border-current/40`
             : "bg-white/[0.04] border-white/[0.08] text-text-muted hover:bg-white/[0.07]"
         }`}
       >
         <span className="shrink-0 opacity-70">{icon}</span>
-        <span className="truncate flex-1 text-left">{selected?.label ?? options[0].label}</span>
+        <span className="truncate flex-1 text-left ml-0.5">{selected?.label ?? options[0].label}</span>
         <ChevronDown size={10} className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
@@ -362,9 +370,11 @@ export default function EcomAgentPageClient() {
   const [filterPlatform, setFilterPlatform] = useState("Amazon");
   const [filterIntent, setFilterIntent] = useState("写产品文案");
   const [filterLang, setFilterLang] = useState("中文");
+  const [chatMode, setChatMode] = useState("电商智能体");
 
   const mediaStore = useMediaStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 派生状态
   const activeThread = useMemo(
@@ -450,6 +460,7 @@ export default function EcomAgentPageClient() {
 
     // 拼入筛选上下文前缀
     const contextParts: string[] = [];
+    if (chatMode !== "电商智能体") contextParts.push(`模式：${chatMode}`);
     if (filterPlatform) contextParts.push(`平台：${filterPlatform}`);
     if (filterIntent) contextParts.push(`任务：${filterIntent}`);
     if (filterLang) contextParts.push(`输出语言：${filterLang}`);
@@ -654,7 +665,7 @@ export default function EcomAgentPageClient() {
         return updated;
       });
     }
-  }, [draft, isSending, activeThread, activeThreadId, mediaStore, filterPlatform, filterIntent, filterLang]);
+  }, [draft, isSending, activeThread, activeThreadId, mediaStore, filterPlatform, filterIntent, filterLang, chatMode]);
 
   // ── 视频生成 ──
 
@@ -716,6 +727,57 @@ export default function EcomAgentPageClient() {
     [activeThreadId, mediaStore],
   );
 
+  // ── 文件上传 ──
+
+  const handleFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const isImage = file.type.startsWith("image/");
+      if (!isImage) {
+        alert("目前仅支持上传图片文件！");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        if (!dataUrl) return;
+
+        const newItem: MediaItem = {
+          id: `media_${Date.now()}_upload`,
+          type: "image",
+          dataUrl,
+          prompt: file.name,
+          createdAt: Date.now(),
+          status: "已上传",
+        };
+
+        const existingImages = currentMedia.filter((m) => m.type === "image");
+        if (existingImages.length > 0) {
+          if (window.confirm("检测到已有图片，是否使用新上传的图片替换它们？")) {
+            existingImages.forEach((m) => mediaStore.removeMedia(activeThreadId, m.id));
+            mediaStore.addMedia(activeThreadId, [newItem]);
+          } else {
+            mediaStore.addMedia(activeThreadId, [newItem]);
+          }
+        } else {
+          mediaStore.addMedia(activeThreadId, [newItem]);
+        }
+        
+        // 当上传图片时自动切换为“图像编辑”模式
+        setChatMode("图像编辑");
+      };
+      reader.readAsDataURL(file);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    },
+    [currentMedia, mediaStore, activeThreadId],
+  );
+
   // ── 渲染 ──
 
   return (
@@ -751,24 +813,31 @@ export default function EcomAgentPageClient() {
 
         {/* 输入区域 */}
         <div className="px-3 py-3 border-t border-white/[0.06]">
-          {/* 三个筛选按钮 */}
-          <div className="flex gap-1.5 mb-2">
+          {/* 筛选按钮和对话模式选择 */}
+          <div className="grid grid-cols-2 gap-2 mb-3">
             <FilterSelect
-              icon={<ShoppingBag size={11} />}
+              icon={<Bot size={12} />}
+              options={CHAT_MODE_OPTIONS}
+              value={chatMode}
+              onChange={setChatMode}
+              activeColor="bg-blue-500/15 text-blue-400"
+            />
+            <FilterSelect
+              icon={<ShoppingBag size={12} />}
               options={PLATFORM_OPTIONS}
               value={filterPlatform}
               onChange={setFilterPlatform}
               activeColor="bg-accent/15 text-accent"
             />
             <FilterSelect
-              icon={<Target size={11} />}
+              icon={<Target size={12} />}
               options={INTENT_OPTIONS}
               value={filterIntent}
               onChange={setFilterIntent}
               activeColor="bg-violet-500/15 text-violet-400"
             />
             <FilterSelect
-              icon={<Globe size={11} />}
+              icon={<Globe size={12} />}
               options={LANGUAGE_OPTIONS}
               value={filterLang}
               onChange={setFilterLang}
@@ -790,7 +859,25 @@ export default function EcomAgentPageClient() {
               rows={2}
               className="w-full bg-transparent resize-none outline-none text-[13px] text-text-primary placeholder:text-text-muted px-3 pt-2.5 pb-1 disabled:opacity-50"
             />
-            <div className="flex items-center justify-end px-2 pb-2">
+            <div className="flex items-center justify-between px-2 pb-2">
+              <div className="flex items-center">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isSending}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-white/[0.04] transition-colors disabled:opacity-40"
+                  title="上传附件"
+                >
+                  <Paperclip size={16} />
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+              </div>
               <button
                 type="button"
                 onClick={send}
