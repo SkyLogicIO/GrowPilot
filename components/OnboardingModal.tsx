@@ -153,10 +153,10 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
     try {
       const existing = safeJsonParse(window.localStorage.getItem(STORAGE_KEY));
       const userId = existing?.userId ?? buildUserId();
-      const points = typeof existing?.points === "number" ? existing.points : 1280;
+      const points = typeof existing?.points === "number" ? existing.points : 0;
       const nameFromForm = (formData.profile?.name ?? "").trim();
-      const name = nameFromForm || existing?.name || "Anna Hua";
-      const membership = existing?.membership || "高级会员";
+      const name = nameFromForm || existing?.name || "创作者";
+      const membership = existing?.membership || "普通会员";
 
       window.localStorage.setItem(
         STORAGE_KEY,

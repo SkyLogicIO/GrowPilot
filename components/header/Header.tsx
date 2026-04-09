@@ -27,7 +27,7 @@ export default function Header({ onToggleSidebar, onOpenCreateTeam, onOpenLogin 
           <SidebarToggle onToggle={onToggleSidebar} />
         </div>
 
-        <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
+        <div className="flex items-center gap-3 md:gap-4">
           {/* 宽屏：未登录 CTA + 运营按钮 */}
           <div className="hidden xl:flex items-center gap-3">
             <GuestCTAs onOpenLogin={onOpenLogin} />

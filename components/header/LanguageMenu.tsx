@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Globe } from "lucide-react";
+import { Globe, ChevronDown } from "lucide-react";
 
 export default function LanguageMenu() {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,14 +29,15 @@ export default function LanguageMenu() {
       <button
         type="button"
         onClick={() => setIsOpen((v) => !v)}
-        className="h-10 px-3 rounded-xl bg-surface-hover border-2 border-border text-text-primary hover:bg-[#f0efea] transition-colors flex items-center gap-2 shadow-[2px_2px_0px_#1A1A1A] active:translate-y-0.5 active:shadow-[1px_1px_0px_#1A1A1A]"
+        className="h-10 px-3 rounded-xl bg-surface-hover border-2 border-border text-text-primary hover:bg-white/[0.04] transition-colors flex items-center gap-2 shadow-[2px_2px_0px_#1A1A1A] active:translate-y-0.5 active:shadow-[1px_1px_0px_#1A1A1A]"
       >
         <Globe size={18} className="text-text-secondary" />
         <span className="text-sm font-bold">{activeLang}</span>
+        <ChevronDown size={14} className="text-text-secondary ml-1" />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-12 w-44 rounded-xl border-2 border-border bg-surface shadow-[4px_4px_0px_#1A1A1A] overflow-hidden">
+        <div className="absolute right-0 top-12 z-50 w-44 rounded-xl border-2 border-border bg-surface shadow-[4px_4px_0px_#1A1A1A] overflow-hidden">
           {["中文", "英文", "西文"].map((lang) => (
             <button
               key={lang}

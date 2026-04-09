@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { HardDrive, Info, Lock, LogOut, Mail, User, Users, X, Zap } from "lucide-react";
 import { clearAuthData } from "@/lib/api/client";
+import { getMe } from "@/lib/api/auth";
 
 const STORAGE_KEY = "growpilot_user_profile";
 
@@ -72,6 +73,12 @@ const buildDemoTransactions = (): Transaction[] => {
   ];
 };
 
+const USER_TYPE_LABEL: Record<number, string> = {
+  1: "普通会员",
+  2: "VIP会员",
+  3: "企业会员",
+};
+
 interface UserMenuProps {
   onOpenCreateTeam: () => void;
 }
@@ -84,9 +91,9 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
   const [authed, setAuthed] = useState(false);
   const [txPage, setTxPage] = useState(1);
   const [profile, setProfile] = useState<UserProfile>({
-    name: "Anna Hua",
-    membership: "高级会员",
-    points: 1280,
+    name: "获取中...",
+    membership: "普通会员",
+    points: 0,
     userId: "GP-********",
     storageTotalGb: 50,
     storageUsedGb: 12.8,
@@ -103,7 +110,35 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
       localStorage.getItem("access_token");
     setAuthed(Boolean(token));
 
-    const onLogin = () => setAuthed(true);
+    const fetchUserInfo = async () => {
+      try {
+        const user = await getMe();
+        setProfile((prev) => {
+          const next = {
+            ...prev,
+            name: user.username,
+            membership: USER_TYPE_LABEL[user.user_type] || "普通会员",
+            points: user.credits,
+          };
+          try {
+            const saved = safeJsonParse(window.localStorage.getItem(STORAGE_KEY));
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...saved, ...next, updatedAt: new Date().toISOString() }));
+          } catch {}
+          return next;
+        });
+      } catch (e) {
+        // failed to fetch me
+      }
+    };
+
+    if (token) {
+      fetchUserInfo();
+    }
+
+    const onLogin = () => {
+      setAuthed(true);
+      fetchUserInfo();
+    };
     const onLogout = () => setAuthed(false);
     const onUnauthorized = () => setAuthed(false);
 
@@ -121,14 +156,14 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
     if (!mounted) return;
     const saved = safeJsonParse(window.localStorage.getItem(STORAGE_KEY));
     const userId = (saved?.userId as string) ?? buildUserId();
-    const points = typeof saved?.points === "number" ? saved.points : 1280;
+    const points = typeof saved?.points === "number" ? saved.points : 0;
     const storageTotalGb = typeof saved?.storageTotalGb === "number" ? saved.storageTotalGb : 50;
     const storageUsedGb = typeof saved?.storageUsedGb === "number" ? saved.storageUsedGb : 12.8;
     const storageRatePointsPerGb = typeof saved?.storageRatePointsPerGb === "number" ? saved.storageRatePointsPerGb : 10;
     const transactions = Array.isArray(saved?.transactions) ? (saved.transactions as Transaction[]) : buildDemoTransactions();
     const next: UserProfile = {
-      name: (saved?.name as string) ?? "Anna Hua",
-      membership: (saved?.membership as string) ?? "高级会员",
+      name: (saved?.name as string) ?? "获取中...",
+      membership: (saved?.membership as string) ?? "普通会员",
       points,
       userId,
       storageTotalGb,
@@ -179,9 +214,9 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
       clearAuthData();
     } catch {}
     setProfile({
-      name: "Anna Hua",
-      membership: "高级会员",
-      points: 1280,
+      name: "未登录",
+      membership: "普通会员",
+      points: 0,
       userId: "GP-********",
       storageTotalGb: 50,
       storageUsedGb: 12.8,
@@ -224,7 +259,7 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-12 w-64 bg-[#0A1228] border-2 border-border shadow-[4px_4px_0px_#1A1A1A] rounded-xl overflow-hidden">
+        <div className="absolute right-0 top-12 z-50 w-64 bg-[#0A1228] border-2 border-border shadow-[4px_4px_0px_#1A1A1A] rounded-xl overflow-hidden">
           <button
             type="button"
             onClick={() => { setIsOpen(false); setIsProfileOpen(true); }}
@@ -241,15 +276,6 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
           >
             <Users size={16} className="text-text-muted" />
             <span>创建团队</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setIsOpen(false)}
-            className="w-full flex items-center gap-3 px-4 py-3 text-left text-text-secondary hover:bg-surface-hover transition-colors text-sm font-bold"
-          >
-            <Mail size={16} className="text-text-muted" />
-            <span>联系我们</span>
           </button>
 
           <button
@@ -478,13 +504,19 @@ export default function UserMenu({ onOpenCreateTeam }: UserMenuProps) {
                 </div>
               </div>
 
-              <div className="brut-card-static p-4 text-sm">
-                <div className="font-bold text-text-secondary">提示</div>
-                <div className="mt-1 text-text-secondary">按 ESC 可关闭弹窗。</div>
+              <div className="brut-card-static p-4 flex flex-col items-center justify-center space-y-2">
+                <div className="text-sm font-bold text-text-secondary">联系微信：</div>
+                <div className="w-32 h-32 bg-white rounded-xl flex items-center justify-center p-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/qrcode.png" alt="微信二维码" className="w-full h-full object-contain" />
+                </div>
               </div>
             </div>
 
-            <div className="px-6 py-5 border-t-2 border-border flex items-center justify-end">
+            <div className="px-6 py-5 border-t-2 border-border flex items-center justify-between">
+              <div className="text-sm text-text-secondary">
+                <span className="font-bold">提示：</span>按 ESC 可关闭弹窗。
+              </div>
               <button
                 type="button"
                 onClick={() => setIsAboutOpen(false)}
