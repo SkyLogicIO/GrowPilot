@@ -9,6 +9,7 @@ export default function DashboardHomePage() {
   const [userName, setUserName] = useState("创作者");
 
   useEffect(() => {
+    // 尝试从本地缓存获取
     try {
       const raw = localStorage.getItem("growpilot_user");
       if (raw) {
