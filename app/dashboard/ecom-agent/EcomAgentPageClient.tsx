@@ -8,6 +8,8 @@ import {
   useMemo,
   type ReactNode,
 } from "react";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   Send,
   Plus,
@@ -179,9 +181,9 @@ function ChatBubble({
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[260px] rounded-xl px-3 py-2.5 text-[13px] leading-relaxed whitespace-pre-wrap break-words ${
+        className={`max-w-[260px] rounded-xl px-3 py-2.5 text-[13px] leading-relaxed break-words ${
           isUser
-            ? "bg-accent/15 border border-accent/20 text-text-primary"
+            ? "whitespace-pre-wrap bg-accent/15 border border-accent/20 text-text-primary"
             : "bg-white/[0.03] border border-white/[0.06] text-text-primary"
         }`}
       >
@@ -349,7 +351,40 @@ function MessageRenderer({
 
   return (
     <ChatBubble role={message.role}>
-      {message.content}
+      {message.role === "assistant" ? (
+        <Markdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            p: ({ children }) => <p className="mb-1.5 last:mb-0">{children}</p>,
+            ul: ({ children }) => <ul className="list-disc pl-4 mb-1.5 space-y-0.5">{children}</ul>,
+            ol: ({ children }) => <ol className="list-decimal pl-4 mb-1.5 space-y-0.5">{children}</ol>,
+            li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+            h1: ({ children }) => <h1 className="text-base font-bold mb-1">{children}</h1>,
+            h2: ({ children }) => <h2 className="text-sm font-bold mb-1">{children}</h2>,
+            h3: ({ children }) => <h3 className="text-[13px] font-bold mb-0.5">{children}</h3>,
+            strong: ({ children }) => <strong className="font-bold text-text-primary">{children}</strong>,
+            code: ({ className, children }) =>
+              className ? (
+                <code className="block rounded-lg bg-black/30 border border-white/[0.06] px-2.5 py-1.5 my-1.5 text-xs overflow-x-auto">{children}</code>
+              ) : (
+                <code className="bg-white/[0.06] px-1 py-0.5 rounded text-xs">{children}</code>
+              ),
+            table: ({ children }) => (
+              <table className="w-full text-xs border-collapse border border-white/[0.08] my-1.5">{children}</table>
+            ),
+            th: ({ children }) => (
+              <th className="bg-white/[0.04] border border-white/[0.08] px-2 py-1 text-left font-bold">{children}</th>
+            ),
+            td: ({ children }) => (
+              <td className="border border-white/[0.08] px-2 py-1">{children}</td>
+            ),
+          }}
+        >
+          {message.content}
+        </Markdown>
+      ) : (
+        message.content
+      )}
       {imageCount > 0 && <MediaRefTag count={imageCount} />}
       {showVideoBtn && (
         <GenerateVideoButton
