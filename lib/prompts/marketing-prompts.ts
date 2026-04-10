@@ -126,15 +126,15 @@ const MEDIA_INSTRUCTION = `
 【图片生成能力】
 当用户需求涉及视觉内容时（如广告主视觉、产品场景图、海报设计等），
 请在回复末尾用以下格式标注需要生成的图片：
-[IMAGE: 图片的英文描述，越详细越好，包括风格、构图、色调等]
-一次最多生成 2 张图片。示例：[IMAGE: A minimalist product poster showing a wireless earbud on a clean white background, soft studio lighting, professional commercial photography style]
+[IMAGE: 图片的中文描述，越详细越好，包括风格、构图、色调等]
+一次最多生成 2 张图片。示例：[IMAGE: 一张极简风格的产品海报，无线耳机放在干净的白色背景上，柔和的影棚灯光，专业商业摄影风格]
 
 【视频生成能力】
 当用户需求涉及视频内容时（如产品宣传视频、短视频素材、动态展示等），
 请在回复末尾用以下格式标注需要生成的视频：
-[VIDEO: 视频的英文描述，详细描述画面内容、风格、运动轨迹等]
+[VIDEO: 视频的中文描述，详细描述画面内容、风格、运动轨迹等]
 每次最多生成 1 个视频。视频生成需要较长时间，仅在用户明确需要时使用。
-示例：[VIDEO: A product showcase video of wireless earbuds rotating slowly on a minimalist white surface, soft studio lighting, smooth camera orbit, 16:9 aspect ratio, commercial style]`;
+示例：[VIDEO: 一段产品展示视频，无线耳机在极简白色台面上缓慢旋转，柔和影棚灯光，流畅的环绕运镜，16:9 比例，商业风格]`;
 
 export function getSystemPrompt(toolKey: ToolKey): string {
   const base = MARKETING_PROMPTS[toolKey] || MARKETING_PROMPTS.chat;

@@ -44,7 +44,10 @@ import {
   type EcomChatMessage,
 } from "@/lib/storage/ecom-chat";
 import { useMediaStore } from "@/hooks/useMediaStore";
-import MediaGallery from "./MediaGallery";
+import { saveProject, generateProjectId } from "@/lib/storage/index";
+import EcomWorkspacePanel from "./workspace/EcomWorkspacePanel";
+import { useWorkspaceState } from "./workspace/useWorkspaceState";
+import type { WorkspaceAsset, CurrentBrief } from "./workspace/types";
 
 // ─── 筛选配置 ─────────────────────────────────────────────────────────
 
@@ -179,7 +182,7 @@ function ChatBubble({
 }) {
   const isUser = role === "user";
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+    <div className={`flex ${isUser ? "justify-end" : "justify-start"} relative`}>
       <div
         className={`max-w-[260px] rounded-xl px-3 py-2.5 text-[13px] leading-relaxed break-words ${
           isUser
@@ -328,11 +331,15 @@ function MessageRenderer({
   isLatest,
   currentMedia,
   onGenerateVideo,
+  selectedAssetId,
+  onAssetClick,
 }: {
   message: EcomChatMessage;
   isLatest: boolean;
   currentMedia: MediaItem[];
   onGenerateVideo: (scriptText: string, messageId: string) => void;
+  selectedAssetId: string | null;
+  onAssetClick: (assetId: string) => void;
 }) {
   const hasVideoRef = (message.mediaRefs ?? []).some((id) =>
     currentMedia.some((m) => m.id === id && m.type === "video"),
@@ -348,6 +355,19 @@ function MessageRenderer({
   const imageCount = (message.mediaRefs ?? []).filter((id) =>
     currentMedia.some((m) => m.id === id && m.type === "image"),
   ).length;
+
+  // 是否有关联素材且其中一个是当前选中
+  const hasMediaRefs = (message.mediaRefs?.length ?? 0) > 0;
+  const isSelected = hasMediaRefs && selectedAssetId
+    ? message.mediaRefs!.includes(selectedAssetId)
+    : false;
+  const isClickable = hasMediaRefs;
+
+  // 渲染时去除 [IMAGE:...] 和 [VIDEO:...] 标签（存储保留标签，确保对话历史正确）
+  const displayContent = message.content
+    .replace(/\[IMAGE:\s*[^\]]+\]/g, "")
+    .replace(/\[VIDEO:\s*[^\]]+\]/g, "")
+    .trim();
 
   return (
     <ChatBubble role={message.role}>
@@ -380,16 +400,31 @@ function MessageRenderer({
             ),
           }}
         >
-          {message.content}
+          {displayContent}
         </Markdown>
       ) : (
         message.content
       )}
-      {imageCount > 0 && <MediaRefTag count={imageCount} />}
+      {imageCount > 0 && (
+        <div
+          className={isClickable ? "cursor-pointer" : ""}
+          onClick={() => {
+            if (isClickable && message.mediaRefs?.[0]) {
+              onAssetClick(message.mediaRefs[0]);
+            }
+          }}
+        >
+          <MediaRefTag count={imageCount} />
+        </div>
+      )}
       {showVideoBtn && (
         <GenerateVideoButton
           onClick={() => onGenerateVideo(message.content, message.id)}
         />
+      )}
+      {/* 选中指示器 */}
+      {isSelected && (
+        <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-full bg-accent" />
       )}
     </ChatBubble>
   );
@@ -410,6 +445,7 @@ export default function EcomAgentPageClient() {
   const mediaStore = useMediaStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // 派生状态
   const activeThread = useMemo(
@@ -425,6 +461,18 @@ export default function EcomAgentPageClient() {
     () => mediaStore.getMedia(activeThreadId),
     [mediaStore, activeThreadId],
   );
+
+  // ── 工作区状态 ──
+  const workspace = useWorkspaceState({
+    activeThreadId,
+    threadTitle: activeThread?.title ?? "新对话",
+    chatMode,
+    filterPlatform,
+    filterIntent,
+    filterLang,
+    mediaItems: currentMedia,
+    messages,
+  });
 
   // 初始化
   useEffect(() => {
@@ -564,6 +612,11 @@ export default function EcomAgentPageClient() {
       });
       finalText = reply;
 
+      // 守卫：如果 API 返回空文本，保留占位提示或显示错误
+      if (!finalText.trim()) {
+        finalText = "AI 未返回有效回复，请重试。";
+      }
+
       // ── 解析 [IMAGE:...] 和 [VIDEO:...] 标签 ──
       const imageRegex = /\[IMAGE:\s*([^\]]+)\]/g;
       const videoRegex = /\[VIDEO:\s*([^\]]+)\]/g;
@@ -577,12 +630,6 @@ export default function EcomAgentPageClient() {
         videoDescriptions.push(vidMatch[1].trim());
       }
 
-      // 清除标签，构建展示文本
-      let cleanText = finalText
-        .replace(imageRegex, "")
-        .replace(videoRegex, "")
-        .trim();
-
       const mediaIds: string[] = [];
 
       // ── 生成图片 ──
@@ -590,29 +637,53 @@ export default function EcomAgentPageClient() {
         const descs = imageDescriptions.slice(0, 2);
         const imgs: MediaItem[] = [];
 
+        // 先写入占位 item，让右侧工作区立刻显示 loading
         for (let i = 0; i < descs.length; i++) {
-          try {
-            const result = await generateImage({
-              prompt: descs[i],
-              aspectRatio: "1:1",
-            });
-            const item: MediaItem = {
-              id: `media_${now}_img_${i}`,
-              type: "image",
-              dataUrl: result.imageUrl,
-              prompt: descs[i],
-              createdAt: Date.now(),
-            };
-            imgs.push(item);
-            mediaIds.push(item.id);
-          } catch (err) {
-            console.warn(`图片生成失败 (${descs[i]}):`, err);
-          }
+          const placeholderId = `media_${now}_img_${i}`;
+          mediaStore.addMedia(activeThreadId, [{
+            id: placeholderId,
+            type: "image",
+            dataUrl: "",
+            prompt: descs[i],
+            createdAt: Date.now(),
+            status: "生成中...",
+          }]);
+          mediaIds.push(placeholderId);
         }
 
-        if (imgs.length > 0) {
-          mediaStore.addMedia(activeThreadId, imgs);
-          cleanText += `\n\n[已在工作区生成 ${imgs.length} 张图片]`;
+        // 并行生成图片，完成后更新占位 item 的 dataUrl
+        const genPromises = descs.map(async (desc, i) => {
+          const placeholderId = `media_${now}_img_${i}`;
+          try {
+            const result = await generateImage({
+              prompt: desc,
+              aspectRatio: "1:1",
+            });
+            mediaStore.updateVideo(activeThreadId, placeholderId, {
+              dataUrl: result.imageUrl,
+              status: undefined,
+            });
+            return {
+              id: placeholderId,
+              type: "image" as const,
+              dataUrl: result.imageUrl,
+              prompt: desc,
+              createdAt: Date.now(),
+            };
+          } catch (err) {
+            console.warn(`图片生成失败 (${desc}):`, err);
+            mediaStore.updateVideo(activeThreadId, placeholderId, {
+              status: "生成失败",
+            });
+            return null;
+          }
+        });
+
+        const results = await Promise.all(genPromises);
+        const succeeded = results.filter((r): r is NonNullable<typeof r> => r !== null);
+        if (succeeded.length > 0) {
+          imgs.push(...succeeded);
+          workspace.setSelectedAssetId(succeeded[succeeded.length - 1].id);
         }
       }
 
@@ -630,10 +701,9 @@ export default function EcomAgentPageClient() {
           status: "提交生成请求...",
         });
         mediaIds.push(videoId);
-        cleanText += `\n\n[视频生成中，请稍候...]`;
 
-        // 更新消息文本
-        updateAiMessage(cleanText, mediaIds);
+        // 存储原始文本（保留 [IMAGE:]/[VIDEO:] 标签，确保下一轮对话历史正确）
+        updateAiMessage(finalText, mediaIds);
 
         // 异步生成视频（fire-and-forget）
         (async () => {
@@ -659,7 +729,8 @@ export default function EcomAgentPageClient() {
           }
         })();
       } else {
-        updateAiMessage(cleanText, mediaIds);
+        // 存储原始文本（保留 [IMAGE:]/[VIDEO:] 标签，确保下一轮对话历史正确）
+        updateAiMessage(finalText, mediaIds);
       }
     } catch (error: unknown) {
       const errMsg = error instanceof Error ? error.message : "请求失败";
@@ -700,7 +771,7 @@ export default function EcomAgentPageClient() {
         return updated;
       });
     }
-  }, [draft, isSending, activeThread, activeThreadId, mediaStore, filterPlatform, filterIntent, filterLang, chatMode]);
+  }, [draft, isSending, activeThread, activeThreadId, mediaStore, filterPlatform, filterIntent, filterLang, chatMode, workspace.setSelectedAssetId]);
 
   // ── 视频生成 ──
 
@@ -735,8 +806,11 @@ export default function EcomAgentPageClient() {
       );
 
       try {
-        // 清理 prompt：移除末尾的素材引用标记
-        const cleanPrompt = scriptText.replace(/\n*\[已在工作区.*?\]\s*/g, "").trim();
+        // 清理 prompt：移除 [IMAGE:] / [VIDEO:] 标签
+        const cleanPrompt = scriptText
+          .replace(/\[IMAGE:\s*[^\]]+\]/g, "")
+          .replace(/\[VIDEO:\s*[^\]]+\]/g, "")
+          .trim();
 
         const videoResult = await generateVideo({
           prompt: cleanPrompt,
@@ -813,10 +887,54 @@ export default function EcomAgentPageClient() {
     [currentMedia, mediaStore, activeThreadId],
   );
 
+  // ── 工作区主动作 ──
+
+  const handleSendToChat = useCallback(
+    (asset: WorkspaceAsset) => {
+      const typeLabel = asset.type === "video" ? "视频" : "图片";
+      const context = `[基于${typeLabel}: ${asset.prompt.slice(0, 50)}] 请帮我 `;
+      setDraft(context);
+      setChatMode("电商智能体");
+      textareaRef.current?.focus();
+    },
+    [],
+  );
+
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  const handleAddToProject = useCallback(
+    (asset: WorkspaceAsset, brief: CurrentBrief) => {
+      saveProject({
+        id: generateProjectId(),
+        name: brief.threadTitle || "电商创作",
+        mode: asset.type === "video" ? "video" : "image",
+        prompt: asset.prompt,
+        resultUrl: asset.dataUrl,
+        resultType: asset.type,
+        createdAt: new Date().toISOString(),
+        metadata: {
+          sourceThreadId: brief.threadId,
+          sourceMessageId: asset.sourceMessageId,
+        },
+      });
+      setToastMsg("已加入项目");
+      setTimeout(() => setToastMsg(null), 2000);
+    },
+    [],
+  );
+
+  const handleRemoveAsset = useCallback(
+    (assetId: string) => {
+      mediaStore.removeMedia(activeThreadId, assetId);
+      workspace.handleAssetRemoved(assetId);
+    },
+    [activeThreadId, mediaStore, workspace],
+  );
+
   // ── 渲染 ──
 
   return (
-    <div className="h-[calc(100vh-140px)] flex rounded-2xl overflow-hidden bg-white/[0.02] border border-white/[0.06]">
+    <div className="relative h-[calc(100vh-140px)] flex rounded-2xl overflow-hidden bg-white/[0.02] border border-white/[0.06]">
       {/* ── 左侧对话面板 ── */}
       <div className="w-full lg:w-[350px] lg:min-w-[350px] flex flex-col lg:border-r border-white/[0.06]">
         {/* 线程选择器 */}
@@ -840,6 +958,8 @@ export default function EcomAgentPageClient() {
                 isLatest={idx === messages.length - 1}
                 currentMedia={currentMedia}
                 onGenerateVideo={handleGenerateVideo}
+                selectedAssetId={workspace.selectedAssetId}
+                onAssetClick={workspace.setSelectedAssetId}
               />
             ))}
             <div ref={messagesEndRef} />
@@ -881,6 +1001,7 @@ export default function EcomAgentPageClient() {
           </div>
           <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl overflow-hidden">
             <textarea
+              ref={textareaRef}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => {
@@ -930,11 +1051,27 @@ export default function EcomAgentPageClient() {
         </div>
       </div>
 
+      {/* ── Toast 提示 ── */}
+      {toastMsg && (
+        <div className="absolute top-4 right-4 z-50 px-4 py-2 rounded-lg bg-accent/15 border border-accent/20 text-accent text-xs font-bold animate-pulse">
+          {toastMsg}
+        </div>
+      )}
+
       {/* ── 右侧工作区 ── */}
       <div className="hidden lg:flex flex-1 flex-col min-w-0">
-        <MediaGallery
-          items={currentMedia}
-          onRemove={(mediaId) => mediaStore.removeMedia(activeThreadId, mediaId)}
+        <EcomWorkspacePanel
+          brief={workspace.brief}
+          jobs={workspace.jobs}
+          assets={workspace.assets}
+          selectedAsset={workspace.selectedAsset}
+          selectedAssetId={workspace.selectedAssetId}
+          onSelectAsset={workspace.setSelectedAssetId}
+          onRemoveAsset={handleRemoveAsset}
+          actions={{
+            onSendToChat: handleSendToChat,
+            onAddToProject: handleAddToProject,
+          }}
         />
       </div>
     </div>
