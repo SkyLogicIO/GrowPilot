@@ -265,7 +265,13 @@ export async function generateVideo(
   const firstVideo = operation.response.generatedVideos[0];
   if (!firstVideo?.video?.uri) throw new Error("生成的视频缺少 URI");
 
-  const videoUri = decodeURIComponent(firstVideo.video.uri);
+  // 将 Google 原始域名改写为后端代理地址，走统一认证
+  const rawUri = decodeURIComponent(firstVideo.video.uri);
+  const proxyBase = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/genai`;
+  const videoUri = rawUri.replace(
+    "https://generativelanguage.googleapis.com",
+    proxyBase,
+  );
   params.onProgress?.("下载视频中...");
 
   const videoResponse = await fetch(videoUri, {
