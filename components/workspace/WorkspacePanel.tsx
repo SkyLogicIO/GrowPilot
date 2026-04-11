@@ -15,7 +15,7 @@ interface CanvasActions {
   onAddToProject: (asset: WorkspaceAsset, brief: CurrentBrief) => void;
 }
 
-interface EcomWorkspacePanelProps {
+export interface WorkspacePanelProps {
   brief: CurrentBrief;
   jobs: WorkspaceJob[];
   assets: WorkspaceAsset[];
@@ -24,9 +24,12 @@ interface EcomWorkspacePanelProps {
   onSelectAsset: (assetId: string) => void;
   onRemoveAsset: (assetId: string) => void;
   actions: CanvasActions;
+  threadId: string;
+  imageDataMap: Record<string, string>;
+  onExportCanvas: (dataUrl: string, sourceAsset: WorkspaceAsset) => void;
 }
 
-export default function EcomWorkspacePanel({
+export default function WorkspacePanel({
   brief,
   jobs,
   assets,
@@ -35,7 +38,10 @@ export default function EcomWorkspacePanel({
   onSelectAsset,
   onRemoveAsset,
   actions,
-}: EcomWorkspacePanelProps) {
+  threadId,
+  imageDataMap,
+  onExportCanvas,
+}: WorkspacePanelProps) {
   return (
     <div className="flex flex-col h-full">
       <WorkspaceHeader brief={brief} />
@@ -45,6 +51,9 @@ export default function EcomWorkspacePanel({
         asset={selectedAsset}
         brief={brief}
         actions={actions}
+        threadId={threadId}
+        imageDataMap={imageDataMap}
+        onExport={onExportCanvas}
       />
 
       {/* 任务时间线 */}

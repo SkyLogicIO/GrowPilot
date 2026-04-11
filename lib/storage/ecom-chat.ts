@@ -30,7 +30,14 @@ interface EcomChatStorageSchema {
 
 // ─── 常量 ─────────────────────────────────────────────────────────────
 
-const STORAGE_KEY = "growpilot_ecom_chat";
+export type StorageToolKey = "ecom" | "selling-point";
+
+const STORAGE_KEY_MAP: Record<StorageToolKey, string> = {
+  ecom: "growpilot_ecom_chat",
+  "selling-point": "growpilot_selling_point_chat",
+};
+
+const DEFAULT_TOOL_KEY: StorageToolKey = "ecom";
 const STORAGE_VERSION = 1;
 const MAX_THREADS = 30;
 const MAX_MESSAGES_PER_THREAD = 200;
@@ -52,10 +59,11 @@ export function generateThreadId(): string {
 
 // ─── CRUD ─────────────────────────────────────────────────────────────
 
-export function loadThreads(): EcomChatThread[] {
+export function loadThreads(toolKey?: StorageToolKey): EcomChatThread[] {
   if (typeof window === "undefined") return [];
 
-  const stored = window.localStorage.getItem(STORAGE_KEY);
+  const key = STORAGE_KEY_MAP[toolKey ?? DEFAULT_TOOL_KEY];
+  const stored = window.localStorage.getItem(key);
   const data = safeJsonParse<EcomChatStorageSchema | null>(stored, null);
 
   if (!data || data.version !== STORAGE_VERSION) return [];
@@ -63,7 +71,7 @@ export function loadThreads(): EcomChatThread[] {
   return data.threads || [];
 }
 
-function writeThreads(threads: EcomChatThread[]): boolean {
+function writeThreads(threads: EcomChatThread[], toolKey?: StorageToolKey): boolean {
   if (typeof window === "undefined") return false;
 
   const trimmed = threads.slice(0, MAX_THREADS).map((t) => ({
@@ -72,8 +80,9 @@ function writeThreads(threads: EcomChatThread[]): boolean {
   }));
 
   try {
+    const key = STORAGE_KEY_MAP[toolKey ?? DEFAULT_TOOL_KEY];
     window.localStorage.setItem(
-      STORAGE_KEY,
+      key,
       JSON.stringify({ threads: trimmed, version: STORAGE_VERSION }),
     );
     return true;
@@ -84,30 +93,32 @@ function writeThreads(threads: EcomChatThread[]): boolean {
         ...t,
         messages: t.messages.slice(-50),
       }));
+      const key = STORAGE_KEY_MAP[toolKey ?? DEFAULT_TOOL_KEY];
       window.localStorage.setItem(
-        STORAGE_KEY,
+        key,
         JSON.stringify({ threads: minimal, version: STORAGE_VERSION }),
       );
       return true;
     } catch {
-      window.localStorage.removeItem(STORAGE_KEY);
+      const key = STORAGE_KEY_MAP[toolKey ?? DEFAULT_TOOL_KEY];
+      window.localStorage.removeItem(key);
       return false;
     }
   }
 }
 
-export function saveThread(thread: EcomChatThread): boolean {
-  const threads = loadThreads();
+export function saveThread(thread: EcomChatThread, toolKey?: StorageToolKey): boolean {
+  const threads = loadThreads(toolKey);
   const idx = threads.findIndex((t) => t.id === thread.id);
   if (idx !== -1) {
     threads[idx] = thread;
   } else {
     threads.unshift(thread);
   }
-  return writeThreads(threads);
+  return writeThreads(threads, toolKey);
 }
 
-export function deleteThread(id: string): void {
-  const threads = loadThreads().filter((t) => t.id !== id);
-  writeThreads(threads);
+export function deleteThread(id: string, toolKey?: StorageToolKey): void {
+  const threads = loadThreads(toolKey).filter((t) => t.id !== id);
+  writeThreads(threads, toolKey);
 }

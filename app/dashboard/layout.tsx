@@ -1,11 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Header from "@/components/header/Header";
 import CreateTeamModal from "@/components/shell/CreateTeamModal";
 import DashboardSidebar from "@/components/shell/DashboardSidebar";
 import Login from "@/components/Login";
 import GuestOverlay from "@/components/GuestOverlay";
+
+// ─── 登录态外部存储（localStorage） ──────────────────────────────
+
+const AUTH_STORAGE_KEY = "gp_token";
+const AUTH_STORAGE_KEY_ALT = "access_token";
+
+let authListeners: Array<() => void> = [];
+
+function subscribeAuth(cb: () => void) {
+  authListeners.push(cb);
+  return () => {
+    authListeners = authListeners.filter((l) => l !== cb);
+  };
+}
+
+function getSnapshot() {
+  if (typeof window === "undefined") return false;
+  return !!(
+    localStorage.getItem(AUTH_STORAGE_KEY) ??
+    localStorage.getItem(AUTH_STORAGE_KEY_ALT)
+  );
+}
+
+function getServerSnapshot() {
+  return false;
+}
+
+function emitAuthChange() {
+  for (const cb of authListeners) cb();
+}
 
 export default function DashboardGroupLayout({
   children,
@@ -15,21 +45,23 @@ export default function DashboardGroupLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [authed, setAuthed] = useState(false);
 
-  // 初始化时检查登录态
+  // 外部 store 感知登录态：初始值 false（SSR 安全），客户端 mount 后自动读 localStorage
+  const storeAuthed = useSyncExternalStore(subscribeAuth, getSnapshot, getServerSnapshot);
+
+  // 本地 state：null=检测中, false=未登录, true=已登录
+  // 首帧 SSR/水合阶段 authed=null → 不渲染遮罩 → 避免 hydration mismatch
+  const [authed, setAuthed] = useState<boolean | null>(null);
+
+  // store 值变化时同步到本地 state
   useEffect(() => {
-    const token =
-      localStorage.getItem("gp_token") ??
-      localStorage.getItem("access_token");
-    if (token) {
-      setAuthed(true);
-    }
-  }, []);
+    setAuthed(storeAuthed);
+  }, [storeAuthed]);
 
   // 监听登录成功事件
   useEffect(() => {
     const handleLogin = () => {
+      emitAuthChange(); // 通知 useSyncExternalStore 刷新
       setAuthed(true);
       setIsLoginOpen(false);
     };
@@ -40,6 +72,7 @@ export default function DashboardGroupLayout({
   // 监听登出事件
   useEffect(() => {
     const handleLogout = () => {
+      emitAuthChange();
       setAuthed(false);
       setIsLoginOpen(false);
     };
@@ -50,6 +83,7 @@ export default function DashboardGroupLayout({
   // 监听 Token 失效事件（API 401）
   useEffect(() => {
     const showLogin = () => {
+      emitAuthChange();
       setAuthed(false);
       setIsLoginOpen(true);
     };
@@ -77,7 +111,7 @@ export default function DashboardGroupLayout({
         </div>
       </main>
 
-      {!authed && (
+      {authed === false && (
         <GuestOverlay onOpenLogin={() => setIsLoginOpen(true)} />
       )}
 
@@ -87,6 +121,7 @@ export default function DashboardGroupLayout({
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
         onSuccess={() => {
+          emitAuthChange();
           setIsLoginOpen(false);
           setAuthed(true);
         }}

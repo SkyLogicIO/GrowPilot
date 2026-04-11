@@ -12,8 +12,9 @@ import {
 
 // 配置 SDK Base URL，指向后端 GenAI 代理
 // 注意：SDK 会自动追加 /{apiVersion}（默认 v1beta），所以这里只到 /api/v1/genai
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://35.240.178.148:10086";
 setDefaultBaseUrls({
-  geminiUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/genai`,
+  geminiUrl: `${API_BASE}/api/v1/genai`,
 });
 
 /** 从 localStorage 获取 JWT token */
@@ -258,32 +259,44 @@ export async function generateVideo(
     throw new Error(`视频生成失败: ${err.message || JSON.stringify(err)}`);
   }
 
-  if (!operation.response?.generatedVideos?.length) {
+  // 兼容 SDK 结构归一化：优先 generatedVideos，回退 generateVideoResponse
+  const rawResponse = (operation.response ?? {}) as Record<string, unknown>;
+  const generatedVideos = rawResponse?.generatedVideos as Array<{ video: { uri?: string } }> | undefined;
+  const genVideoResp = rawResponse?.generateVideoResponse as { generatedSamples?: Array<{ video: { uri?: string } }> } | undefined;
+  const videos = generatedVideos
+    ?? genVideoResp?.generatedSamples
+    ?? [];
+  if (!videos.length) {
     throw new Error(`视频生成完成但没有返回视频（响应: ${JSON.stringify(operation.response ?? operation).slice(0, 300)}）`);
   }
 
-  const firstVideo = operation.response.generatedVideos[0];
-  if (!firstVideo?.video?.uri) throw new Error("生成的视频缺少 URI");
+  const videoUri = videos[0]?.video?.uri;
+  if (!videoUri) throw new Error("生成的视频缺少 URI");
 
-  // 将 Google 原始域名改写为后端代理地址，走统一认证
-  const rawUri = decodeURIComponent(firstVideo.video.uri);
-  const proxyBase = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/genai`;
-  const videoUri = rawUri.replace(
+  // 改写 Google 原名为后端代理（仅换域名，保留原始 URL 形态）
+  const proxyBase = `${API_BASE}/api/v1/genai`;
+  const videoUrl = videoUri.replace(
     "https://generativelanguage.googleapis.com",
     proxyBase,
   );
+  console.log("[generateVideo] download URL:", videoUrl);
+
   params.onProgress?.("下载视频中...");
 
-  const videoResponse = await fetch(videoUri, {
+  const videoResponse = await fetch(videoUrl, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!videoResponse.ok) throw new Error(`获取视频文件失败: ${videoResponse.status}`);
 
   const videoBlob = await videoResponse.blob();
-  const videoBase64 = await blobToBase64(videoBlob);
+  console.log("[generateVideo] blob.size:", videoBlob.size, "blob.type:", videoBlob.type);
+
+  // 后端返回 application/octet-stream，强制修正 MIME 后用 ObjectURL 预览
+  const mp4Blob = new Blob([videoBlob], { type: "video/mp4" });
+  const videoObjectUrl = URL.createObjectURL(mp4Blob);
 
   return {
-    videoUrl: `data:${videoBlob.type};base64,${videoBase64}`,
+    videoUrl: videoObjectUrl,
     model: modelName,
     duration,
     resolution,
@@ -296,6 +309,7 @@ export async function generateVideo(
 export interface GeminiChatMessage {
   role: "user" | "model";
   content: string;
+  imageDataUrl?: string;
 }
 
 export interface GeminiChatParams {
@@ -313,10 +327,25 @@ export async function chatWithGemini(params: GeminiChatParams): Promise<string> 
   const ai = createAI();
   const modelName = params.model || "gemini-2.5-flash";
 
-  const contents = params.messages.map((m) => ({
-    role: m.role,
-    parts: [{ text: m.content }],
-  }));
+  const contents = params.messages.map((m) => {
+    if (m.imageDataUrl) {
+      const commaIdx = m.imageDataUrl.indexOf(",");
+      const meta = m.imageDataUrl.substring(0, commaIdx);
+      const mimeType = meta.replace("data:", "").replace(";base64", "");
+      const base64 = m.imageDataUrl.substring(commaIdx + 1);
+      return {
+        role: m.role,
+        parts: [
+          { text: m.content },
+          { inlineData: { mimeType, data: base64 } },
+        ],
+      };
+    }
+    return {
+      role: m.role,
+      parts: [{ text: m.content }],
+    };
+  });
 
   const config: Record<string, unknown> = {};
   if (params.systemInstruction) {
@@ -438,18 +467,5 @@ function fileToBase64(file: File): Promise<string> {
     };
     reader.onerror = reject;
     reader.readAsDataURL(file);
-  });
-}
-
-function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64 = result.split(",")[1];
-      resolve(base64);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
   });
 }

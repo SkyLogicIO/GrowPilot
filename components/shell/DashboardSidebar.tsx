@@ -64,9 +64,9 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
     ],
   },
   {
-    icon: Camera, label: "商品图设计", href: "/dashboard/product-image", color: "bg-pink-500", disabled: true,
+    icon: Camera, label: "商品图设计", href: "/dashboard/product-image", color: "bg-pink-500",
     children: [
-      { icon: Sparkles,    label: "卖点图设计",   href: "/dashboard/product-image/selling-point", color: "bg-pink-500", disabled: true },
+      { icon: Sparkles,    label: "卖点图设计",   href: "/dashboard/product-image/selling-point", color: "bg-pink-500" },
       { icon: ImageIcon,   label: "白底图设计",   href: "/dashboard/product-image/white-bg",     color: "bg-pink-500", disabled: true },
       { icon: ImageIcon,   label: "主图设计",     href: "/dashboard/product-image/main",         color: "bg-pink-500", disabled: true },
       { icon: ImageIcon,   label: "尺寸图设计",   href: "/dashboard/product-image/size",         color: "bg-pink-500", disabled: true },

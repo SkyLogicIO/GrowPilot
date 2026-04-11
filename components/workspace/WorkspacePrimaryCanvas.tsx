@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
 import {
   Download,
   X,
@@ -9,9 +10,17 @@ import {
   MessageSquare,
   FolderPlus,
   ImageIcon,
+  RotateCcw,
 } from "lucide-react";
 import type { WorkspaceAsset, CurrentBrief } from "./types";
+import { useWorkspaceCanvasDocument } from "./canvas/useWorkspaceCanvasDocument";
 import WorkspaceEmptyState from "./WorkspaceEmptyState";
+
+// Dynamic import Konva to avoid SSR issues
+const KonvaWorkspaceCanvas = dynamic(
+  () => import("./canvas/KonvaWorkspaceCanvas").then((m) => m.default),
+  { ssr: false, loading: () => <LoadingSkeleton /> },
+);
 
 // ─── 动作按钮类型 ─────────────────────────────────────────────────
 
@@ -22,52 +31,13 @@ interface CanvasActions {
 
 // ─── 骨架屏加载态 ─────────────────────────────────────────────────
 
-function LoadingSkeleton({
-  type,
-  prompt,
-  statusText,
-}: {
-  type?: "image" | "video";
-  prompt?: string;
-  statusText?: string;
-}) {
-  const isVideo = type === "video";
+function LoadingSkeleton() {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-4">
-      {/* 骨架预览框 */}
-      <div
-        className={`relative overflow-hidden rounded-xl bg-white/[0.03] border border-white/[0.06] animate-pulse ${
-          isVideo
-            ? "w-full max-w-[480px] aspect-video"
-            : "w-full max-w-[360px] aspect-square"
-        }`}
-      >
-        <div className="absolute inset-0 flex items-center justify-center">
-          {isVideo ? (
-            <div className="w-14 h-14 rounded-full bg-white/[0.06] flex items-center justify-center">
-              <Play size={22} className="text-accent/50 fill-current" />
-            </div>
-          ) : (
-            <div className="w-14 h-14 rounded-full bg-white/[0.06] flex items-center justify-center">
-              <ImageIcon size={22} className="text-accent/50" />
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 状态文字 */}
-      <div className="flex flex-col items-center gap-1.5">
-        <div className="flex items-center gap-2">
-          <Loader2 size={13} className="text-accent animate-spin" />
-          <p className="text-[12px] text-text-muted font-medium">
-            {statusText || (isVideo ? "视频生成中..." : "图片生成中...")}
-          </p>
-        </div>
-        {prompt && (
-          <p className="text-[11px] text-white/20 text-center px-4 line-clamp-2 max-w-[300px]">
-            {prompt}
-          </p>
-        )}
+      <div className="w-full max-w-[360px] aspect-[4/3] rounded-xl bg-white/[0.03] border border-white/[0.06] animate-pulse" />
+      <div className="flex items-center gap-2">
+        <Loader2 size={13} className="text-accent animate-spin" />
+        <p className="text-[12px] text-text-muted font-medium">加载画布中...</p>
       </div>
     </div>
   );
@@ -242,25 +212,166 @@ function PromptText({ text }: { text: string }) {
   );
 }
 
+// ─── 加载态（保留原版） ──────────────────────────────────────────
+
+function AssetLoadingSkeleton({
+  type,
+  prompt,
+  statusText,
+}: {
+  type?: "image" | "video";
+  prompt?: string;
+  statusText?: string;
+}) {
+  const isVideo = type === "video";
+  return (
+    <div className="flex flex-col items-center justify-center h-full gap-4">
+      <div
+        className={`relative overflow-hidden rounded-xl bg-white/[0.03] border border-white/[0.06] animate-pulse ${
+          isVideo
+            ? "w-full max-w-[480px] aspect-video"
+            : "w-full max-w-[360px] aspect-square"
+        }`}
+      >
+        <div className="absolute inset-0 flex items-center justify-center">
+          {isVideo ? (
+            <div className="w-14 h-14 rounded-full bg-white/[0.06] flex items-center justify-center">
+              <Play size={22} className="text-accent/50 fill-current" />
+            </div>
+          ) : (
+            <div className="w-14 h-14 rounded-full bg-white/[0.06] flex items-center justify-center">
+              <ImageIcon size={22} className="text-accent/50" />
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="flex flex-col items-center gap-1.5">
+        <div className="flex items-center gap-2">
+          <Loader2 size={13} className="text-accent animate-spin" />
+          <p className="text-[12px] text-text-muted font-medium">
+            {statusText || (isVideo ? "视频生成中..." : "图片生成中...")}
+          </p>
+        </div>
+        {prompt && (
+          <p className="text-[11px] text-white/20 text-center px-4 line-clamp-2 max-w-[300px]">
+            {prompt}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── 画板动作栏 ───────────────────────────────────────────────────
+
+function CanvasToolbar({
+  onReset,
+  onExport,
+  doc,
+}: {
+  onReset: () => void;
+  onExport: () => void;
+  doc: { width: number; height: number };
+}) {
+  return (
+    <div className="flex items-center justify-between px-4 py-2 border-t border-white/[0.06]">
+      <span className="text-[10px] text-text-muted/60">
+        {doc.width} x {doc.height}
+      </span>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onReset}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-[11px] font-bold text-text-secondary hover:bg-white/[0.08] hover:text-text-primary transition-colors"
+        >
+          <RotateCcw size={12} />
+          重置
+        </button>
+        <button
+          type="button"
+          onClick={onExport}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/15 border border-accent/20 text-[11px] font-bold text-accent hover:bg-accent/25 transition-colors"
+        >
+          <Download size={12} />
+          导出新素材
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── 主组件 ───────────────────────────────────────────────────────
+
+interface WorkspacePrimaryCanvasProps {
+  asset: WorkspaceAsset | null;
+  brief: CurrentBrief;
+  actions: CanvasActions;
+  threadId: string;
+  imageDataMap: Record<string, string>;
+  onExport: (dataUrl: string, sourceAsset: WorkspaceAsset) => void;
+}
 
 export default function WorkspacePrimaryCanvas({
   asset,
   brief,
   actions,
-}: {
-  asset: WorkspaceAsset | null;
-  brief: CurrentBrief;
-  actions: CanvasActions;
-}) {
+  threadId,
+  imageDataMap,
+  onExport,
+}: WorkspacePrimaryCanvasProps) {
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+
+  // Canvas document hook for image assets
+  const canvas = useWorkspaceCanvasDocument({
+    threadId,
+    assetId: asset?.type === "image" && asset?.status === "ready" ? asset.id : null,
+    assetDataUrl:
+      asset?.type === "image" && asset?.status === "ready" ? asset.dataUrl : null,
+  });
+
+  function handleCanvasExport() {
+    const stage = canvas.stageRef.current;
+    if (!stage || !asset || !canvas.document) return;
+    const doc = canvas.document;
+
+    // 暂存当前视口状态
+    const origW = stage.width();
+    const origH = stage.height();
+    const origSX = stage.scaleX();
+    const origSY = stage.scaleY();
+
+    // 临时切到文档原始尺寸导出（1:1，无缩放留白）
+    stage.width(doc.width);
+    stage.height(doc.height);
+    stage.scaleX(1);
+    stage.scaleY(1);
+    stage.batchDraw();
+
+    const dataUrl = stage.toDataURL({ pixelRatio: 2 });
+
+    // 还原视口
+    stage.width(origW);
+    stage.height(origH);
+    stage.scaleX(origSX);
+    stage.scaleY(origSY);
+    stage.batchDraw();
+
+    onExport(dataUrl, asset);
+  }
 
   // 空态
   if (!asset) return <WorkspaceEmptyState />;
 
   // 加载态
-  if (asset.status === "loading") return <LoadingSkeleton type={asset.type} prompt={asset.prompt} statusText={asset.statusText} />;
+  if (asset.status === "loading")
+    return (
+      <AssetLoadingSkeleton
+        type={asset.type}
+        prompt={asset.prompt}
+        statusText={asset.statusText}
+      />
+    );
 
   // 失败态
   if (asset.status === "failed") {
@@ -284,11 +395,11 @@ export default function WorkspacePrimaryCanvas({
     a.click();
   };
 
-  return (
-    <div className="flex-1 flex flex-col items-center justify-center p-4 relative min-h-0">
-      {/* 主资产展示 */}
-      <div className="flex-1 flex flex-col items-center justify-center w-full min-h-0 max-h-full">
-        {asset.type === "video" ? (
+  // Video → existing preview
+  if (asset.type === "video") {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-4 relative min-h-0">
+        <div className="flex-1 flex flex-col items-center justify-center w-full min-h-0 max-h-full">
           <div
             className="relative w-full max-w-[480px] aspect-video rounded-xl overflow-hidden bg-white/[0.03] border border-white/[0.06] cursor-pointer group"
             onClick={() => setVideoUrl(asset.dataUrl)}
@@ -304,7 +415,67 @@ export default function WorkspacePrimaryCanvas({
               </div>
             </div>
           </div>
-        ) : (
+          <PromptText text={asset.prompt} />
+          <ActionButtons asset={asset} brief={brief} actions={actions} />
+        </div>
+        {videoUrl && (
+          <VideoPlayerOverlay
+            url={videoUrl}
+            onClose={() => setVideoUrl(null)}
+            onDownload={handleDownload}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Image ready → Konva canvas
+  if (asset.type === "image" && asset.status === "ready" && canvas.document) {
+    return (
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* Konva canvas area */}
+        <div className="flex-1 min-h-0">
+          <KonvaWorkspaceCanvas
+            document={canvas.document}
+            imageDataMap={imageDataMap}
+            onUpdateNode={canvas.updateNode}
+            onSelectNode={canvas.selectNode}
+            stageRef={canvas.stageRef}
+          />
+        </div>
+
+        {/* Prompt text */}
+        <PromptText text={asset.prompt} />
+
+        {/* Canvas toolbar */}
+        <CanvasToolbar
+          onReset={canvas.resetDocument}
+          onExport={handleCanvasExport}
+          doc={canvas.document}
+        />
+
+        {/* Action buttons */}
+        <div className="px-4 pb-2">
+          <ActionButtons asset={asset} brief={brief} actions={actions} />
+        </div>
+
+        {/* Lightbox fallback */}
+        {lightboxUrl && (
+          <ImageLightbox
+            url={lightboxUrl}
+            onClose={() => setLightboxUrl(null)}
+            onDownload={handleDownload}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Image ready but canvas not yet loaded — show simple preview
+  if (asset.type === "image" && asset.status === "ready") {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-4 relative min-h-0">
+        <div className="flex-1 flex flex-col items-center justify-center w-full min-h-0 max-h-full">
           <div
             className="relative w-full max-w-[360px] cursor-pointer group"
             onClick={() => setLightboxUrl(asset.dataUrl)}
@@ -315,30 +486,19 @@ export default function WorkspacePrimaryCanvas({
               className="w-full rounded-xl"
             />
           </div>
+          <PromptText text={asset.prompt} />
+          <ActionButtons asset={asset} brief={brief} actions={actions} />
+        </div>
+        {lightboxUrl && (
+          <ImageLightbox
+            url={lightboxUrl}
+            onClose={() => setLightboxUrl(null)}
+            onDownload={handleDownload}
+          />
         )}
-
-        {/* Prompt 摘要 */}
-        <PromptText text={asset.prompt} />
-
-        {/* 主动作 */}
-        <ActionButtons asset={asset} brief={brief} actions={actions} />
       </div>
+    );
+  }
 
-      {/* 灯箱 */}
-      {lightboxUrl && (
-        <ImageLightbox
-          url={lightboxUrl}
-          onClose={() => setLightboxUrl(null)}
-          onDownload={handleDownload}
-        />
-      )}
-      {videoUrl && (
-        <VideoPlayerOverlay
-          url={videoUrl}
-          onClose={() => setVideoUrl(null)}
-          onDownload={handleDownload}
-        />
-      )}
-    </div>
-  );
+  return null;
 }
